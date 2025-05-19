@@ -1,7 +1,6 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 
-<<<<<<< HEAD
 class Category(models.Model):
     name = models.CharField(max_length=50)
     description = models.TextField()
@@ -145,7 +144,6 @@ class Notificacion(models.Model):
         if users is not None:
             self.users.set(users)  
 
-=======
 class Rating(models.Model):
     title = models.CharField(max_length=200)
     text = models.CharField(max_length=100)
@@ -264,7 +262,6 @@ class Comment(models.Model):
         self.title = title or self.title
         self.text = text or self.text
         self.save()
->>>>>>> ca3e4a859a910c91fc06b3707b657b88e05e82ef
 
 class Event(models.Model):
     category = models.ForeignKey('Category', on_delete=models.CASCADE, related_name='events')
