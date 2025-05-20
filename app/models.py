@@ -150,6 +150,7 @@ class Rating(models.Model):
     rating = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
     user_fk = models.ForeignKey('User', on_delete=models.CASCADE)
+    event_fk = models.ForeignKey("Event",on_delete= models.CASCADE)
 
     @classmethod
     def new(cls, title, text, rating, user):
@@ -186,6 +187,7 @@ class Ticket(models.Model):
         default=TicketType.GENERAL,
     )
     user_fk = models.ForeignKey('User', on_delete=models.CASCADE)
+    event_fk = models.ForeignKey("Event",on_delete= models.CASCADE)
 
     @classmethod
     def new(cls, ticket_code, quantity, type, user):
@@ -246,7 +248,7 @@ class Comment(models.Model):
     text = models.TextField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     user_fk = models.ForeignKey('User', on_delete=models.CASCADE)
-
+    event_fk = models.ForeignKey("Event",on_delete= models.CASCADE)
     @classmethod
     def new(cls, title, text, user):
         if not title or not text:
@@ -265,6 +267,7 @@ class Comment(models.Model):
 
 class Event(models.Model):
     category = models.ForeignKey('Category', on_delete=models.CASCADE, related_name='events')
+    venue_fk = models.ForeignKey("Venue",on_delete= models.CASCADE)
     title = models.CharField(max_length=200)
     description = models.TextField()
     date = models.DateTimeField()
