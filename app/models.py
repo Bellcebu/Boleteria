@@ -32,8 +32,10 @@ class Category(models.Model):
 
 
 class User(models.Model):
-    username = models.CharField(max_length=25)
+    username = models.CharField(max_length=25, unique=True)
     email = models.EmailField(unique=True)
+    password = models.CharField(max_length=128)
+
     @classmethod
     def validate(cls, username, email):
         errors = {}

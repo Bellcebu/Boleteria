@@ -1,5 +1,10 @@
 from django.views.generic import TemplateView, ListView, DetailView
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth.hashers import check_password,make_password
+from .models import User
 from .models import Event
+from django.views import View
 
 
 class HomeView(TemplateView):
@@ -23,3 +28,43 @@ class EventDetailView(DetailView):
     model = Event
     template_name = "app/event_detail.html"
     context_object_name = "event"
+
+class SignUpView(View):
+    def get(self, request):
+        return render(request, 'signup.html')
+
+    def post(self, request):
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "Username already exists.")
+        elif User.objects.filter(email=email).exists():
+            messages.error(request, "Email already registered.")
+        else:
+            hashed_password = make_password(password)
+            User.objects.create(username=username, email=email, password=hashed_password)
+            messages.success(request, "Account created. Please log in.")
+            return redirect('login')
+
+        return render(request, 'signup.html')
+
+
+# LOGIN View
+class LoginView(View):
+    def get(self, request):
+        return render(request, 'login.html')
+
+    def post(self, request):
+        identifier = request.POST.get('identifier')
+        password = request.POST.get('password')
+
+        user = User.objects.filter(username=identifier).first() or User.objects.filter(email=identifier).first()
+
+        if user and check_password(password, user.password):
+            request.session['user_id'] = user.id
+            return redirect('home')
+        else:
+            messages.error(request, 'Invalid username/email or password')
+            return render(request, 'login.html')
