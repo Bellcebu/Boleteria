@@ -1,0 +1,6 @@
+.perfil-foto {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border: 2px solid #dee2e6;
+}

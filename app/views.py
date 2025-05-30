@@ -74,6 +74,7 @@ class LoginView(View):
     def get(self, request):
         return render(request, 'login.html')
 
+
     def post(self, request):
         identifier = request.POST.get('identifier')
         password = request.POST.get('password')

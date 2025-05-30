@@ -13,4 +13,6 @@ urlpatterns = [
     path("events/<int:pk>/", EventDetailView.as_view(), name="event_detail"),
     path('login/', LoginView.as_view(), name='login'),
     path('signup/', SignUpView.as_view(), name='signup'),
+    path('historial/', SignUpView.as_view(), name='historial'),
+    path('user/', SignUpView.as_view(), name='user'),
 ]
