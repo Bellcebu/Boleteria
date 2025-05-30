@@ -5,6 +5,8 @@ from django.contrib.auth.hashers import check_password,make_password
 from .models import User
 from .models import Event
 from django.views import View
+from django.contrib.auth import login
+from django.contrib.auth.models import AnonymousUser
 import re
 
 
@@ -68,13 +70,9 @@ class SignUpView(View):
         return render(request, 'signup.html')
 
 
-# LOGIN View
 class LoginView(View):
     def get(self, request):
         return render(request, 'login.html')
-    
-    import re
-
 
     def post(self, request):
         identifier = request.POST.get('identifier')
@@ -83,7 +81,7 @@ class LoginView(View):
         user = User.objects.filter(username=identifier).first() or User.objects.filter(email=identifier).first()
 
         if user and check_password(password, user.password):
-            request.session['user_id'] = user.id
+            login(request, user) 
             return redirect('home')
         else:
             messages.error(request, 'Invalid username/email or password')
