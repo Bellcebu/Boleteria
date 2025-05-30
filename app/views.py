@@ -5,6 +5,7 @@ from django.contrib.auth.hashers import check_password,make_password
 from .models import User
 from .models import Event
 from django.views import View
+import re
 
 
 class HomeView(TemplateView):
@@ -38,7 +39,16 @@ class SignUpView(View):
     def get(self, request):
         return render(request, 'signup.html')
 
+    
     def post(self, request):
+        def is_password_secure(password):
+        # Regex explanation:
+        # (?=.*[A-Z])  → at least one uppercase letter
+        # (?=.*\d)     → at least one digit
+        # .{8,}        → at least 8 characters long (you can change this)
+            pattern = r'^(?=.*[A-Z])(?=.*\d).{8,}$'
+            return bool(re.match(pattern, password))
+        
         username = request.POST.get('username')
         email = request.POST.get('email')
         password = request.POST.get('password')
@@ -47,6 +57,8 @@ class SignUpView(View):
             messages.error(request, "Username already exists.")
         elif User.objects.filter(email=email).exists():
             messages.error(request, "Email already registered.")
+        elif not is_password_secure(password):   
+            messages.error = "Password must be at least 8 characters long, contain an uppercase letter and a number."
         else:
             hashed_password = make_password(password)
             User.objects.create(username=username, email=email, password=hashed_password)
@@ -60,6 +72,9 @@ class SignUpView(View):
 class LoginView(View):
     def get(self, request):
         return render(request, 'login.html')
+    
+    import re
+
 
     def post(self, request):
         identifier = request.POST.get('identifier')
