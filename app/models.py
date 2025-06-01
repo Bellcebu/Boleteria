@@ -33,38 +33,6 @@ class Category(models.Model):
         self.save()
 
 
-<<<<<<< HEAD
-=======
-class User(models.Model,):
-    username = models.CharField(max_length=25, unique=True)
-    email = models.EmailField(unique=True)
-    password = models.CharField(max_length=128)
->>>>>>> fb64834ee220a1a678cd87a5b36b6d48a85621f0
-
-    @classmethod
-    def validate(cls, username, email):
-        errors = {}
-        if not username:
-            errors["username"] = "El nombre de usuario es obligatorio"
-        if not email:
-            errors["email"] = "El email es obligatorio"
-        return errors
-
-    @classmethod
-    def new(cls, username, email):
-        errors = cls.validate(username, email)
-        if errors:
-            return False, errors
-        user = cls.objects.create(username=username, email=email)
-        return True, user
-
-    def update(self, username=None, email=None):
-        if username is not None:
-            self.username = username
-        if email is not None:
-            self.email = email
-        self.save()
-
 class RefundRequest(models.Model):
     user = models.ForeignKey('User', on_delete=models.CASCADE, related_name='refund_requests')
     approved = models.BooleanField(default=False)
@@ -185,10 +153,11 @@ class Ticket(models.Model):
         GENERAL = 'GENERAL', 'General'
         VIP = 'VIP', 'VIP'
 
+    ticket_code = models.TextField(max_length=100,primary_key=True)
     buy_date = models.DateField(auto_now_add=True)
-    ticket_code = models.TextField(max_length=100)
     quantity = models.IntegerField()
     refund_request = models.BooleanField(default=False)
+    refunded = models.BooleanField(default=False)
     type = models.CharField(
         max_length=10,
         choices=TicketType.choices,
@@ -304,5 +273,3 @@ class Event(models.Model):
         self.description = description or self.description
         self.date = date or self.date
         self.save()
-
-    
