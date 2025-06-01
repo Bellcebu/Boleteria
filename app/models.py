@@ -1,5 +1,7 @@
 from django.db import models
 from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
+
 
 class Category(models.Model):
     name = models.CharField(max_length=50)
@@ -31,10 +33,6 @@ class Category(models.Model):
         self.save()
 
 
-class User(models.Model):
-    username = models.CharField(max_length=25, unique=True)
-    email = models.EmailField(unique=True)
-    password = models.CharField(max_length=128)
 
     @classmethod
     def validate(cls, username, email):
@@ -183,6 +181,7 @@ class Ticket(models.Model):
     buy_date = models.DateField(auto_now_add=True)
     ticket_code = models.TextField(max_length=100)
     quantity = models.IntegerField()
+    refund_request = models.BooleanField(default=False)
     type = models.CharField(
         max_length=10,
         choices=TicketType.choices,
