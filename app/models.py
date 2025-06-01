@@ -156,8 +156,6 @@ class Ticket(models.Model):
     ticket_code = models.TextField(max_length=100,primary_key=True)
     buy_date = models.DateField(auto_now_add=True)
     quantity = models.IntegerField()
-    refund_request = models.BooleanField(default=False)
-    refunded = models.BooleanField(default=False)
     type = models.CharField(
         max_length=10,
         choices=TicketType.choices,
