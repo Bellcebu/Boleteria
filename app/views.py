@@ -1,17 +1,22 @@
 from django.views.generic import TemplateView, ListView, DetailView
+from django.views import View
 from django.contrib.auth.forms import AuthenticationForm
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.hashers import check_password,make_password
+from django.contrib.auth.models import User
+from django.contrib.auth import login,logout
+from .forms import (
+    SignUpForm,
+    CommentForm,
+    RatingForm,
+)
 from .models import (
     Event,
     Ticket,
+    RefundRequest,
+    Comment,
 )
-from django.contrib.auth.models import User
-from django.views import View
-from django.contrib.auth import login,logout
-from .forms import SignUpForm
 
 class HomeView(TemplateView):
     template_name = 'home.html'
@@ -87,11 +92,56 @@ class ticketListView(LoginRequiredMixin,ListView):
     
     def post(self,request,*args,**kwargs):
         ticket_id=request.POST.get('ticket_id')
+        reason =request.POST.get('reason') 
 
         if ticket_id:
             ticket = Ticket.objects.filter(ticket_code=ticket_id, user_fk=request.user).first
             if ticket:
-                ticket.refound_request=True
-                ticket.save() 
+                refund_request = RefundRequest.objets.filter(ticket_code = ticket.ticket_code).first
+                if refund_request:
+                    messages.error("ya le hiciste la refundrequest wey")
+                else:
+                    RefundRequest.new(request.user,ticket_code=ticket.ticket_code,reason=reason)
+                    messages.add_message("se creo con exito la solicitud de rembolso")
         return redirect(request,'tickets.html')
 
+class UserProfileView(LoginRequiredMixin,View):
+
+    def get(self, request, username):
+        user_profile = get_object_or_404(User, username=username)
+        return render(request, 'users/profile.html', {'profile_user': user_profile})
+    
+class CommentCreateView(View):
+    def post(self, request, pk):
+        event = get_object_or_404(Event, pk=pk)
+        form = CommentForm(request.POST)
+
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.event = event
+            comment.user = request.user
+            comment.save()
+            return redirect('event_detail', pk=pk)
+
+        return render(request, 'events/event_detail.html', {
+            'event': event,
+            'form': form,
+        })
+    
+class RatingCreateView(View):
+
+    def post(self,request,pk):
+        event = get_object_or_404(Event,pk=pk)
+        form = RatingForm(request.POST)
+
+        if form.is_valid():
+            rating = form.save(commit=False)
+            rating.user_fk=request.user
+            rating.event=event
+            rating.save()
+            return redirect('event_detail', pk=pk)
+        
+        return render(request, 'events/event_detail.html', {
+            'event': event,
+            'form': form,
+        })

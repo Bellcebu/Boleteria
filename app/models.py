@@ -36,7 +36,7 @@ class Category(models.Model):
 class RefundRequest(models.Model):
     user = models.ForeignKey('User', on_delete=models.CASCADE, related_name='refund_requests')
     approved = models.BooleanField(default=False)
-    approval_date = models.DateField(auto_now_add=True)
+    approval_date = models.DateField(default = None)
     ticket_code = models.CharField(max_length=50)
     reason = models.TextField()
     created_at = models.DateField(auto_now_add=True)
@@ -51,7 +51,7 @@ class RefundRequest(models.Model):
         return errors
 
     @classmethod
-    def new(cls, user, ticket_code, reason, approved=False):
+    def new(cls, user, ticket_code, reason):
         errors = cls.validate(ticket_code, reason)
         if errors:
             return False, errors
@@ -59,7 +59,6 @@ class RefundRequest(models.Model):
             user=user,
             ticket_code=ticket_code,
             reason=reason,
-            approved=approved
         )
         return True, refund_request
 
@@ -120,15 +119,15 @@ class Notificacion(models.Model):
             self.users.set(users)  
 
 class Rating(models.Model):
-    title = models.CharField(max_length=200)
-    text = models.CharField(max_length=100)
+    title = models.CharField(max_length=100)
+    text = models.CharField(max_length=250)
     rating = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
-    user_fk = models.ForeignKey('User', on_delete=models.CASCADE)
+    user_fk = models.ForeignKey('User', on_delete=models.CASCADE, default = None)
     event_fk = models.ForeignKey("Event",on_delete= models.CASCADE, default = None)
 
     @classmethod
-    def new(cls, title, text, rating, user):
+    def new(cls, title, text, rating):
         if not title or not text:
             raise ValidationError("Title and text are required.")
         if not (1 <= rating <= 5):
@@ -138,7 +137,6 @@ class Rating(models.Model):
             title=title,
             text=text,
             rating=rating,
-            user_fk=user
         )
 
     def update(self, title, text, rating):
