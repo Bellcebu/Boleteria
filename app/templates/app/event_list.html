@@ -1,0 +1,33 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Listado de eventos</title>
+</head>
+<body>
+    <h1>Eventos</h1>
+
+    <form method="get">
+        <label for="categoria">Filtrar por categoría:</label>
+        <select name="categoria" id="categoria" onchange="this.form.submit()">
+            <option value="">-- Todas --</option>
+            {% for cat in categorias %}
+                <option value="{{ cat.id }}" {% if cat.id == categoria_seleccionada %}selected{% endif %}>{{ cat.name }}</option>
+            {% endfor %}
+        </select>
+    </form>
+
+    <ul>
+        {% for evento in eventos %}
+            <li>
+                <h3>{{ evento.title }}</h3>
+                <p>{{ evento.description }}</p>
+                <p><strong>Fecha:</strong> {{ evento.date }}</p>
+                <p><strong>Categoría:</strong> {{ evento.category.name }}</p>
+            </li>
+        {% empty %}
+            <li>No hay eventos para esta categoría.</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

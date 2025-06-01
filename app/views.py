@@ -46,6 +46,7 @@ class LoginView(View):
         form = AuthenticationForm()
         return render(request, 'login.html', {'form': form})
 
+
     def post(self, request):
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
