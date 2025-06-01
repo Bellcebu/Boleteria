@@ -16,6 +16,7 @@ from .models import (
     Ticket,
     RefundRequest,
     Comment,
+    Notificacion,
 )
 
 class HomeView(TemplateView):
@@ -140,8 +141,36 @@ class RatingCreateView(View):
             rating.event=event
             rating.save()
             return redirect('event_detail', pk=pk)
-        
+
         return render(request, 'events/event_detail.html', {
             'event': event,
             'form': form,
         })
+    
+class NotificationListView(LoginRequiredMixin, ListView):
+    model = Notificacion
+    template_name = 'notificaciones.html'   
+    context_object_name = 'notificaciones'  
+
+    def get_queryset(self):
+        return Notificacion.objects.filter(users=self.request.user).order_by('-created_at')
+
+    def post(self, request, *args, **kwargs):
+        notificacion_id = request.POST.get('notification_id')
+
+        if notificacion_id:
+            notification = get_object_or_404(Notificacion, pk=notificacion_id, users=request.user)
+            notification.is_read = True
+            notification.save()
+            messages.success(request, 'Notificación marcada como leída.')
+        else:
+            messages.error(request, 'ID de notificación no válido.')
+
+        return redirect('notificationes')
+    
+
+class NotificationDetailView(DetailView):
+    model = Notificacion
+    template_name = "app/notification_detail.html"
+    context_object_name = "notificacion"
+    
