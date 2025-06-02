@@ -22,7 +22,7 @@ urlpatterns = [
     path('login/', LoginView.as_view(), name='login'),
     path('signup/', SignUpView.as_view(), name='signup'),
     path('logout/',LogOutView.as_view(),name='logout'),
-    path('ticket/<int:pk>',ticketListView.as_view(), name='ticket'),
+    path('tickets/',ticketListView.as_view(), name='ticket'),
     path('events/<int:pk>/comment/', CommentCreateView.as_view(), name='add_comment'),
     path('events/<int:pk>/rating/', RatingCreateView.as_view(), name='add_rating'),
 ]

@@ -79,32 +79,32 @@ class SignUpView(View):
             redirect('home.html')
         return(render,'signup.html',{'form':form})
     
-class ticketListView(LoginRequiredMixin,ListView):
+class TicketListView(LoginRequiredMixin, ListView):
     model = Ticket
-    template = "tickets.html"
-    context = "tickets"
+    template_name = "tickets.html"
+    context_object_name = "tickets"
 
     def get_queryset(self):
         return Ticket.objects.filter(user_fk=self.request.user).order_by("-buy_date")
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        return context
-    
-    def post(self,request,*args,**kwargs):
-        ticket_id=request.POST.get('ticket_id')
-        reason =request.POST.get('reason') 
+    def post(self, request, *args, **kwargs):
+        ticket_id = request.POST.get('ticket_id')
+        reason = request.POST.get('reason')
 
-        if ticket_id:
-            ticket = Ticket.objects.filter(ticket_code=ticket_id, user_fk=request.user).first
-            if ticket:
-                refund_request = RefundRequest.objets.filter(ticket_code = ticket.ticket_code).first
-                if refund_request:
-                    messages.error("ya le hiciste la refundrequest wey")
-                else:
-                    RefundRequest.new(request.user,ticket_code=ticket.ticket_code,reason=reason)
-                    messages.add_message("se creo con exito la solicitud de rembolso")
-        return redirect(request,'tickets.html')
+        if not reason:
+            messages.error(request, "Por favor, proporciona un motivo para el reembolso.")
+            return redirect('tickets')
+
+        ticket = get_object_or_404(Ticket, ticket_code=ticket_id, user_fk=request.user)
+
+        existing_request = RefundRequest.objects.filter(ticket_code=ticket.ticket_code).first()
+        if existing_request:
+            messages.error(request, "Ya solicitaste un reembolso para este ticket.")
+        else:
+            RefundRequest.new(user=request.user, ticket_code=ticket.ticket_code, reason=reason)
+            messages.success(request, "Tu solicitud de reembolso fue enviada con éxito.")
+
+        return redirect('tickets')
 
 class UserProfileView(LoginRequiredMixin,View):
 
