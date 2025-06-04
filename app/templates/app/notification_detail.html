@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}{{ notificacion.title }} - MiEvento{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h4>{{ notificacion.title }}</h4>
+        <small>{{ notificacion.created_at|date:"d/m/Y" }}</small>
+    </div>
+    <div class="card-body">
+        <p>{{ notificacion.message }}</p>
+        <p><strong>Prioridad:</strong> {{ notificacion.get_priority_display }}</p>
+    </div>
+    <div class="card-footer">
+        <a href="{% url 'notifications' %}" class="btn btn-secondary">Volver a Notificaciones</a>
+    </div>
+</div>
+{% endblock %}
+

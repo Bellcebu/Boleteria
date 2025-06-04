@@ -3,26 +3,32 @@ from .views import (
     HomeView,
     EventListView,
     EventDetailView,
-    LoginView, 
+    LoginView,
     SignUpView,
     LogOutView,
-    ticketListView,
+    TicketListView,
     CommentCreateView,
     RatingCreateView,
     NotificationDetailView,
     NotificationListView,
+    UserProfileView,
 )
 
 urlpatterns = [
     path("", HomeView.as_view(), name="home"),
     path("events/", EventListView.as_view(), name="events"),
     path("events/<int:pk>/", EventDetailView.as_view(), name="event_detail"),
-    path('notificaciones/',NotificationListView.as_view(), name = 'notificaciones' ),
-    path('notificaciones/<int:pk>', NotificationDetailView.as_view(), 'notification_detail'),    
-    path('login/', LoginView.as_view(), name='login'),
-    path('signup/', SignUpView.as_view(), name='signup'),
-    path('logout/',LogOutView.as_view(),name='logout'),
-    path('tickets/',ticketListView.as_view(), name='ticket'),
-    path('events/<int:pk>/comment/', CommentCreateView.as_view(), name='add_comment'),
-    path('events/<int:pk>/rating/', RatingCreateView.as_view(), name='add_rating'),
+
+    path("notificaciones/", NotificationListView.as_view(), name="notificaciones"),
+    path("notificaciones/<int:pk>/", NotificationDetailView.as_view(), name="notification_detail"),
+
+    path("login/", LoginView.as_view(), name="login"),
+    path("signup/", SignUpView.as_view(), name="signup"),
+    path("logout/", LogOutView.as_view(), name="logout"),
+    path('users/<str:username>/', UserProfileView.as_view(), name='user_profile'),
+
+    path("tickets/", TicketListView.as_view(), name="tickets"),
+
+    path("events/<int:pk>/comment/", CommentCreateView.as_view(), name="add_comment"),
+    path("events/<int:pk>/rating/", RatingCreateView.as_view(), name="add_rating"),
 ]

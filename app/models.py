@@ -1,6 +1,6 @@
 from django.db import models
 from django.core.exceptions import ValidationError
-from django.contrib.auth.models import User
+from django.conf import settings
 
 
 class Category(models.Model):
@@ -34,9 +34,13 @@ class Category(models.Model):
 
 
 class RefundRequest(models.Model):
-    user = models.ForeignKey('User', on_delete=models.CASCADE, related_name='refund_requests')
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='refund_requests'
+    )
     approved = models.BooleanField(default=False)
-    approval_date = models.DateField(default = None)
+    approval_date = models.DateField(default=None)
     ticket_code = models.CharField(max_length=50)
     reason = models.TextField()
     created_at = models.DateField(auto_now_add=True)
@@ -82,7 +86,10 @@ class Notificacion(models.Model):
         default='media'
     )
     is_read = models.BooleanField(default=False)
-    users = models.ManyToManyField('User', related_name='notificaciones')
+    users = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name='notificaciones'
+    )
 
     @classmethod
     def validate(cls, title, message, priority):
@@ -102,7 +109,7 @@ class Notificacion(models.Model):
             return False, errors
         notificacion = cls.objects.create(title=title, message=message, priority=priority)
         if users:
-            notificacion.users.set(users)  
+            notificacion.users.set(users)
         return True, notificacion
 
     def update(self, title=None, message=None, priority=None, is_read=None, users=None):
@@ -116,30 +123,40 @@ class Notificacion(models.Model):
             self.is_read = is_read
         self.save()
         if users is not None:
-            self.users.set(users)  
+            self.users.set(users)
+
 
 class Rating(models.Model):
     title = models.CharField(max_length=100)
     text = models.CharField(max_length=250)
     rating = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
-    user_fk = models.ForeignKey('User', on_delete=models.CASCADE, default = None)
-    event_fk = models.ForeignKey("Event",on_delete= models.CASCADE, default = None)
+    user_fk = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        default=None
+    )
+    event_fk = models.ForeignKey(
+        "Event",
+        on_delete=models.CASCADE,
+        default=None
+    )
 
     @classmethod
-    def new(cls, title, text, rating):
+    def new(cls, title, text, rating, user, event):
         if not title or not text:
             raise ValidationError("Title and text are required.")
         if not (1 <= rating <= 5):
             raise ValidationError("Rating must be between 1 and 5.")
-
         return cls.objects.create(
             title=title,
             text=text,
             rating=rating,
+            user_fk=user,
+            event_fk=event
         )
 
-    def update(self, title, text, rating):
+    def update(self, title=None, text=None, rating=None):
         self.title = title or self.title
         self.text = text or self.text
         self.rating = rating or self.rating
@@ -151,7 +168,7 @@ class Ticket(models.Model):
         GENERAL = 'GENERAL', 'General'
         VIP = 'VIP', 'VIP'
 
-    ticket_code = models.TextField(max_length=100,primary_key=True)
+    ticket_code = models.TextField(max_length=100, primary_key=True)
     buy_date = models.DateField(auto_now_add=True)
     quantity = models.IntegerField()
     type = models.CharField(
@@ -159,29 +176,36 @@ class Ticket(models.Model):
         choices=TicketType.choices,
         default=TicketType.GENERAL,
     )
-    user_fk = models.ForeignKey('User', on_delete=models.CASCADE)
-    event_fk = models.ForeignKey("Event",on_delete= models.CASCADE, default = None)
+    user_fk = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+    event_fk = models.ForeignKey(
+        "Event",
+        on_delete=models.CASCADE,
+        default=None
+    )
 
     @classmethod
-    def new(cls, ticket_code, quantity, type, user):
+    def new(cls, ticket_code, quantity, ticket_type, user, event):
         if not ticket_code:
             raise ValidationError("Ticket code is required.")
         if quantity <= 0:
             raise ValidationError("Quantity must be greater than 0.")
-        if type not in cls.TicketType.values:
+        if ticket_type not in cls.TicketType.values:
             raise ValidationError(f"Type must be one of: {cls.TicketType.values}")
-
         return cls.objects.create(
             ticket_code=ticket_code,
             quantity=quantity,
-            type=type,
-            user_fk=user
+            type=ticket_type,
+            user_fk=user,
+            event_fk=event
         )
 
-    def update(self, ticket_code, quantity, type):
+    def update(self, ticket_code=None, quantity=None, ticket_type=None):
         self.ticket_code = ticket_code or self.ticket_code
         self.quantity = quantity or self.quantity
-        self.type = type or self.type
+        self.type = ticket_type or self.type
         self.save()
 
 
@@ -198,7 +222,6 @@ class Venue(models.Model):
             raise ValidationError("All fields except capacity are required.")
         if capacity <= 0:
             raise ValidationError("Capacity must be a positive number.")
-
         return cls.objects.create(
             name=name,
             address=address,
@@ -207,7 +230,7 @@ class Venue(models.Model):
             contact=contact
         )
 
-    def update(self, name, address, city, capacity, contact):
+    def update(self, name=None, address=None, city=None, capacity=None, contact=None):
         self.name = name or self.name
         self.address = address or self.address
         self.city = city or self.city
@@ -220,27 +243,44 @@ class Comment(models.Model):
     title = models.TextField(max_length=100)
     text = models.TextField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
-    user_fk = models.ForeignKey('User', on_delete=models.CASCADE)
-    event_fk = models.ForeignKey("Event",on_delete= models.CASCADE, default = None)
+    user_fk = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+    event_fk = models.ForeignKey(
+        "Event",
+        on_delete=models.CASCADE,
+        default=None
+    )
+
     @classmethod
-    def new(cls, title, text, user):
+    def new(cls, title, text, user, event):
         if not title or not text:
             raise ValidationError("Title and text are required.")
-
         return cls.objects.create(
             title=title,
             text=text,
-            user_fk=user
+            user_fk=user,
+            event_fk=event
         )
 
-    def update(self, title, text):
+    def update(self, title=None, text=None):
         self.title = title or self.title
         self.text = text or self.text
         self.save()
 
+
 class Event(models.Model):
-    category = models.ForeignKey('Category', on_delete=models.CASCADE, related_name='events')
-    venue_fk = models.ForeignKey("Venue",on_delete= models.CASCADE, default = None)
+    category = models.ForeignKey(
+        'Category',
+        on_delete=models.CASCADE,
+        related_name='events'
+    )
+    venue_fk = models.ForeignKey(
+        "Venue",
+        on_delete=models.CASCADE,
+        default=None
+    )
     title = models.CharField(max_length=200)
     description = models.TextField()
     date = models.DateTimeField()
@@ -251,20 +291,26 @@ class Event(models.Model):
     def validate(cls, title, description, date):
         errors = {}
         if not title:
-            errors["title"] = "Por favor ingrese un titulo"
+            errors["title"] = "Por favor ingrese un título"
         if not description:
-            errors["description"] = "Por favor ingrese una descripcion"
+            errors["description"] = "Por favor ingrese una descripción"
         return errors
 
     @classmethod
-    def new(cls, title, description, date):
+    def new(cls, title, description, date, category, venue):
         errors = cls.validate(title, description, date)
         if errors:
             return False, errors
-        event = cls.objects.create(title=title, description=description, date=date)
+        event = cls.objects.create(
+            title=title,
+            description=description,
+            date=date,
+            category=category,
+            venue_fk=venue
+        )
         return True, event
 
-    def update(self, title, description, date):
+    def update(self, title=None, description=None, date=None):
         self.title = title or self.title
         self.description = description or self.description
         self.date = date or self.date

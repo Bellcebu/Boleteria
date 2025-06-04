@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}Perfil de {{ profile_user.username }}{% endblock %}
+
+{% block content %}
+  <div class="container">
+    <h2>Perfil de {{ profile_user.username }}</h2>
+    <p><strong>Email:</strong> {{ profile_user.email }}</p>
+    
+    {% if request.user == profile_user %}
+      <p>Este es tu propio perfil.</p>
+    {% else %}
+      <p>Estás viendo el perfil de otro usuario.</p>
+    {% endif %}
+
+    {% if request.user.is_staff %}
+      <div class="alert alert-info mt-3">
+        Vista de administrador activa.
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}
