@@ -48,7 +48,7 @@ urlpatterns = [
     path("venues/<int>:pk/editar/", VenueUpdateView.as_view(), name="venue_editar"),
     path("venues/<int>:pk/borrar/", VenueDeleteView.as_view(), name="venue_borrar"),
 
-    path("categories/", VenueListView.as_view(), name="category_listar"),
+    path("categories/", CategoryListView.as_view(), name="category_listar"),
     path("categories/nuevo", CategoryCreateView.as_view(), name="category_crear"),
     path("categories/<int>:pk", CategoryDetailView.as_view(), name="category_detalle"),
     path("categories/<int>:pk", CategoryUpdateView.as_view(), name="category_editar"),
