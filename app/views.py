@@ -1,4 +1,5 @@
 from django.views.generic import TemplateView, ListView, DetailView
+from django.urls import reverse_lazy
 from django.views import View
 from django.contrib.auth.forms import AuthenticationForm
 from django.shortcuts import render, redirect, get_object_or_404
@@ -6,10 +7,13 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.contrib.auth import login,logout
+from django.views.generic.edit import CreateView, UpdateView, FormView,DeleteView
 from .forms import (
     SignUpForm,
     CommentForm,
     RatingForm,
+    VenueModelForm,
+    CategoryModelForm,
 )
 from .models import (
     Event,
@@ -17,6 +21,8 @@ from .models import (
     RefundRequest,
     Comment,
     Notificacion,
+    Venue,
+    Category,
 )
 
 class HomeView(TemplateView):
@@ -173,4 +179,92 @@ class NotificationDetailView(DetailView):
     model = Notificacion
     template_name = "app/notification_detail.html"
     context_object_name = "notificacion"
+
+#Venue CRUD inicio
+class VenueListView(ListView):
+    model = Venue
+    template_name = 'venue/venues.html'
+    context_object_name = 'venues'
+    paginate_by = 10
+
+class VenueCreateView(CreateView):
+    model = Venue
+    form_class = VenueModelForm
+    template_name = 'venue/venue_form.html'
+    success_url = reverse_lazy('venue_listar')
+
+    def form_valid(self, form):
+        venue = form.save(commit=False)
+        venue.save()
+        messages.success(self.request, f'esta bien el venue {venue.name} fue creado correctamente')
+        return super().form_valid(form)
     
+class VenueUpdateView(UpdateView):
+    model = Venue
+    form_class = VenueModelForm
+    template_name = 'venue/venue_form.html'
+    success_url = reverse_lazy('venue_listar')
+
+    def form_valid(self, form):
+        venue = form.save(commit=False)
+        venue.save()
+        messages.success(self.request, f'esta bien actualizado el venue {venue.name}')
+
+class VenueDeleteView(DeleteView):
+    model = Venue
+    template_name = 'venue/venue_form.html'
+    success_url = reverse_lazy('venue_listar')
+
+class VenueDetailView(DetailView):
+    model = Venue
+    template_name = "venue/venue_detalle.html"
+    context_object_name = "venue"
+#Venue CRUD fin
+
+#Category CRUD inicio
+
+class CategoryListView(ListView):
+    model = Category
+    template_name = "category/categories.html"
+    context_object_name = "categories"
+
+    def get_queryset(self):
+        return super().get_queryset()
+
+class CategoryDetailView(DetailView):
+    model = Category
+    template_name = "category/categories.html"
+    context_object_name = "category"
+
+class CategoryCreateView(CreateView):
+    model = Category
+    form_class = CategoryModelForm
+    template_name = "category/category_form.html"
+    success_url = reverse_lazy("category_listar")
+
+    def form_valid(self, form):
+        category = form.save(commit=False)
+        category.save()
+        messages.success(self.request, f"la categoria {category.name} fue creada con exito")
+        return super().form_valid(form)
+    
+class CategoryUpdateView(UpdateView):
+    model = Category
+    form_class = CategoryModelForm
+    template_name = "category/category_form.html"
+    success_url = reverse_lazy("categoria_listar")
+
+    def form_valid(self, form):
+        category = form.save(commit=False)
+        category.save()
+        messages.success(self.request, f"la categoria {category.name} fue editada con exito")
+        return super().form_valid(form)
+
+class CategoryDeleteView(DeleteView):
+    model = Category
+    template_name = "category/category_confirm_delete.html"
+    success_url = reverse_lazy("category_listar")
+
+#category CRUD fin
+    
+
