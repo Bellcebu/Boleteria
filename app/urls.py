@@ -3,7 +3,7 @@ from .views import (
     HomeView,
     EventListView,
     EventDetailView,
-    LoginView, 
+    LoginView,
     SignUpView,
     LogOutView,
     TicketListView,
@@ -11,6 +11,7 @@ from .views import (
     RatingCreateView,
     NotificationDetailView,
     NotificationListView,
+    UserProfileView,
 
     VenueCreateView,
     VenueUpdateView,
@@ -35,6 +36,8 @@ urlpatterns = [
     path('login/', LoginView.as_view(), name='login'),
     path('signup/', SignUpView.as_view(), name='signup'),
     path('logout/',LogOutView.as_view(),name='logout'),
+    path('users/<str:username>/', UserProfileView.as_view(), name='user_profile'),
+
     path('tickets/',TicketListView.as_view(), name='ticket'),
     path('events/<int:pk>/comment/', CommentCreateView.as_view(), name='add_comment'),
     path('events/<int:pk>/rating/', RatingCreateView.as_view(), name='add_rating'),

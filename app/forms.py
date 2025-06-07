@@ -11,19 +11,20 @@ from models import(
 class RatingForm(forms.ModelForm):
     class Meta:
         model = Rating
-        fields = ['title','text','rating']
+        fields = ['title', 'text', 'rating']
+
 
 class SignUpForm(UserCreationForm):
+    email = forms.EmailField(required=True)  # definir el campo fuera de Meta
 
     class Meta:
-        email = forms.EmailField(required=True)
+        model = User
+        fields = ['username', 'email', 'password1', 'password2']
 
-        model=User
-        fields = ['username','email','password1','password2']
 
 class CommentForm(forms.ModelForm):
     class Meta:
-        model=Comment
+        model = Comment
         fields = ['title', 'text']
 
 class VenueModelForm(forms.ModelForm):

@@ -73,21 +73,21 @@ class LogOutView(View):
         return redirect('login')
         
 class SignUpView(View):
-    def get(self,request):
-        form = SignUpForm
-        return(render,'signup.html',{'form':form})
+    def get(self, request):
+        form = SignUpForm()  
+        return render(request, 'signup.html', {'form': form})
 
-    def post(self,request):
+    def post(self, request):
         form = SignUpForm(request.POST)
-        if form.is_valid:
+        if form.is_valid():  
             user = form.save()
-            login(request,user)
-            redirect('home.html')
-        return(render,'signup.html',{'form':form})
+            login(request, user)
+            return redirect('home')  
+        return render(request, 'signup.html', {'form': form})
     
 class TicketListView(LoginRequiredMixin, ListView):
     model = Ticket
-    template_name = "tickets.html"
+    template_name = "app/tickets.html"
     context_object_name = "tickets"
 
     def get_queryset(self):
@@ -155,7 +155,7 @@ class RatingCreateView(View):
     
 class NotificationListView(LoginRequiredMixin, ListView):
     model = Notificacion
-    template_name = 'notificaciones.html'   
+    template_name = 'app/notificaciones.html'   
     context_object_name = 'notificaciones'  
 
     def get_queryset(self):

@@ -1,55 +1,15 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Main Event + Grilla</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'home/home.css' %}">
-</head>
-<body>
+{% extends 'base.html' %}
+{% block title %}Inicio - MiEvento{% endblock %}
 
-    {% include "navbar.html" %}
-    
-    <div class="main-event" style="background-image: url('{% static 'imagenes/prueba.png' %}');">
-        <div class="main-event-gradient"></div>
-    </div>
-
-    <div class="scrolling-label-wrapper">
-        <div class="scrolling-label">
-            <div class="slider-content">
-                <span>BRANDING ✦ GRAPHIC DESIGN ✦ WEB DESIGN ✦ DIGITAL MARKETING ✦</span>
-                <span>BRANDING ✦ GRAPHIC DESIGN ✦ WEB DESIGN ✦ DIGITAL MARKETING ✦</span>
-                <span>BRANDING ✦ GRAPHIC DESIGN ✦ WEB DESIGN ✦ DIGITAL MARKETING ✦</span>
-                <span>BRANDING ✦ GRAPHIC DESIGN ✦ WEB DESIGN ✦ DIGITAL MARKETING ✦</span>
-            </div>
-        </div>
-    </div>
-
-    <div class="event-grid">
-        <div class="event-card">
-            <img src="{% static 'imagenes/prueba2.png' %}" alt="Evento 1">
-            <div class="event-info">
-                <h5>$1000</h5>
-                <button class="btn btn-primary btn-comprar">Comprar</button>
-            </div>
-        </div>
-        <div class="event-card">
-            <img src="{% static 'imagenes/prueba3.png' %}" alt="Evento 2">
-            <div class="event-info">
-                <h5>$1200</h5>
-                <button class="btn btn-primary btn-comprar">Comprar</button>
-            </div>
-        </div>
-        <div class="event-card">
-            <img src="{% static 'imagenes/prueba4.png' %}" alt="Evento 3">
-            <div class="event-info">
-                <h5>$900</h5>
-                <button class="btn btn-primary btn-comprar">Comprar</button>
-            </div>
-        </div>
-    </div>
-
-</body>
-</html>
+{% block content %}
+<div class="text-center">
+    <h1 class="mb-4">Bienvenido a MiEvento</h1>
+    {% if not is_authenticated %}
+        <a href="{% url 'login' %}" class="btn btn-primary mx-2">Iniciar sesión</a>
+        <a href="{% url 'signup' %}" class="btn btn-secondary mx-2">Registrarse</a>
+    {% else %}
+        <p class="lead">¡Hola, {{ request.user.username }}!</p>
+        <a href="{% url 'events' %}" class="btn btn-primary">Ver eventos</a>
+    {% endif %}
+</div>
+{% endblock %}
