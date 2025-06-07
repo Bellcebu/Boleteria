@@ -32,7 +32,7 @@ urlpatterns = [
     path("events/", EventListView.as_view(), name="events"),
     path("events/<int:pk>/", EventDetailView.as_view(), name="event_detail"),
     path('notificaciones/',NotificationListView.as_view(), name = 'notificaciones' ),
-    path('notificaciones/<int:pk>', NotificationDetailView.as_view(), 'notification_detail'),    
+    path('notificaciones/<int:pk>', NotificationDetailView.as_view(), name= 'notification_detail'),    
     path('login/', LoginView.as_view(), name='login'),
     path('signup/', SignUpView.as_view(), name='signup'),
     path('logout/',LogOutView.as_view(),name='logout'),
@@ -50,7 +50,7 @@ urlpatterns = [
 
     path("categories/", VenueListView.as_view(), name="category_listar"),
     path("categories/nuevo", CategoryCreateView.as_view(), name="category_crear"),
-    path("categories/<int>:pk", CategoryDetailView.as_vieww(), name="category_detalle"),
+    path("categories/<int>:pk", CategoryDetailView.as_view(), name="category_detalle"),
     path("categories/<int>:pk", CategoryUpdateView.as_view(), name="category_editar"),
     path("categories/<int>:pk", CategoryDeleteView.as_view(), name="category_borrar"),
 ]
