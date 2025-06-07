@@ -225,7 +225,7 @@ class VenueDetailView(DetailView):
 
 class CategoryListView(ListView):
     model = Category
-    template_name = "category/categories.html"
+    template_name = "category/category_list.html"
     context_object_name = "categories"
 
     def get_queryset(self):
@@ -233,7 +233,7 @@ class CategoryListView(ListView):
 
 class CategoryDetailView(DetailView):
     model = Category
-    template_name = "category/categories.html"
+    template_name = "category/category_detail.html"
     context_object_name = "category"
 
 class CategoryCreateView(CreateView):
@@ -252,7 +252,7 @@ class CategoryUpdateView(UpdateView):
     model = Category
     form_class = CategoryModelForm
     template_name = "category/category_form.html"
-    success_url = reverse_lazy("categoria_listar")
+    success_url = reverse_lazy("category_listar")
 
     def form_valid(self, form):
         category = form.save(commit=False)
