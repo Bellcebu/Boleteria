@@ -44,13 +44,13 @@ urlpatterns = [
 
     path("venues/", VenueListView.as_view(), name="venue_listar"),
     path("venues/nuevo", VenueCreateView.as_view(), name="venue_crear"),
-    path("venues/<int>:pk", VenueDetailView.as_view(), name= "venue_detalle"),
-    path("venues/<int>:pk/editar/", VenueUpdateView.as_view(), name="venue_editar"),
-    path("venues/<int>:pk/borrar/", VenueDeleteView.as_view(), name="venue_borrar"),
+    path("venues/<int:pk>", VenueDetailView.as_view(), name= "venue_detalle"),
+    path("venues/<int:pk>/editar/", VenueUpdateView.as_view(), name="venue_editar"),
+    path("venues/<int:pk>/borrar/", VenueDeleteView.as_view(), name="venue_borrar"),
 
     path("categories/", CategoryListView.as_view(), name="category_listar"),
-    path("categories/nuevo", CategoryCreateView.as_view(), name="category_crear"),
-    path("categories/<int>:pk", CategoryDetailView.as_view(), name="category_detalle"),
-    path("categories/<int>:pk", CategoryUpdateView.as_view(), name="category_editar"),
-    path("categories/<int>:pk", CategoryDeleteView.as_view(), name="category_borrar"),
+    path("categories/nuevo/", CategoryCreateView.as_view(), name="category_crear"),
+    path("categories/<int:pk>/", CategoryDetailView.as_view(), name="category_detalle"),
+    path("categories/<int:pk>/editar/", CategoryUpdateView.as_view(), name="category_editar"),
+    path("categories/<int:pk>/borrar/", CategoryDeleteView.as_view(), name="category_borrar"),
 ]
