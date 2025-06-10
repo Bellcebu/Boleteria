@@ -20,7 +20,7 @@ from .models import (
 )
 
 class HomeView(TemplateView):
-    template_name = 'home.html'
+    template_name = 'home/home.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -30,7 +30,7 @@ class HomeView(TemplateView):
 
 class EventListView(ListView):
     model = Event
-    template_name = "app/events.html"
+    template_name = "app/event/events.html"
     context_object_name = "events"
 
     def get_queryset(self):
@@ -43,14 +43,14 @@ class EventListView(ListView):
 
 class EventDetailView(DetailView):
     model = Event
-    template_name = "app/event_detail.html"
+    template_name = "app/event/event_detail.html"
     context_object_name = "event"
 
 
 class LoginView(View):
     def get(self, request):
         form = AuthenticationForm()
-        return render(request, 'login.html', {'form': form})
+        return render(request, 'session/login.html', {'form': form})
 
 
     def post(self, request):
@@ -59,7 +59,7 @@ class LoginView(View):
             user = form.get_user()
             login(request, user)
             return redirect('home')
-        return render(request, 'login.html', {'form': form})
+        return render(request, 'session/login.html', {'form': form})
     
 class LogOutView(View):
     def get(self,request):
@@ -69,7 +69,7 @@ class LogOutView(View):
 class SignUpView(View):
     def get(self, request):
         form = SignUpForm()  
-        return render(request, 'signup.html', {'form': form})
+        return render(request, 'session/signup.html', {'form': form})
 
     def post(self, request):
         form = SignUpForm(request.POST)
@@ -77,11 +77,11 @@ class SignUpView(View):
             user = form.save()
             login(request, user)
             return redirect('home')  
-        return render(request, 'signup.html', {'form': form})
+        return render(request, 'session/signup.html', {'form': form})
     
 class TicketListView(LoginRequiredMixin, ListView):
     model = Ticket
-    template_name = "app/tickets.html"
+    template_name = "app/tickets/tickets.html"
     context_object_name = "tickets"
 
     def get_queryset(self):
@@ -124,7 +124,7 @@ class CommentCreateView(View):
             comment.save()
             return redirect('event_detail', pk=pk)
 
-        return render(request, 'events/event_detail.html', {
+        return render(request, 'app/event/event_detail.html', {
             'event': event,
             'form': form,
         })
@@ -142,14 +142,14 @@ class RatingCreateView(View):
             rating.save()
             return redirect('event_detail', pk=pk)
 
-        return render(request, 'events/event_detail.html', {
+        return render(request, 'app/events/event_detail.html', {
             'event': event,
             'form': form,
         })
     
 class NotificationListView(LoginRequiredMixin, ListView):
     model = Notificacion
-    template_name = 'app/notificaciones.html'   
+    template_name = 'app/notificacion/notificaciones.html'   
     context_object_name = 'notificaciones'  
 
     def get_queryset(self):
@@ -171,6 +171,6 @@ class NotificationListView(LoginRequiredMixin, ListView):
 
 class NotificationDetailView(DetailView):
     model = Notificacion
-    template_name = "app/notification_detail.html"
+    template_name = "app/notificacion/notification_detail.html"
     context_object_name = "notificacion"
     

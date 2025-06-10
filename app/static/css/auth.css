@@ -1,0 +1,45 @@
+.auth-body {
+    background-color: #000000;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', sans-serif;
+  }
+  
+  .auth-container {
+    display: flex;
+    height: 100vh;
+  }
+  
+  .auth-left {
+    flex: 1;
+    background-image: url('/static/images/main_event.jpg'); 
+    background-size: cover;
+    background-position: center;
+    position: relative;
+  }
+  
+  .overlay-text {
+    position: absolute;
+    bottom: 30px;
+    left: 30px;
+    color: white;
+  }
+  
+  .auth-right {
+    flex: 1;
+    background-color: #000000;
+    padding: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .auth-form {
+    width: 100%;
+    max-width: 400px;
+  }
+  
+  .auth-form h2 {
+    font-weight: bold;
+  }
+  
