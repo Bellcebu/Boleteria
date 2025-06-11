@@ -178,7 +178,7 @@ class Ticket(models.Model):
     )
     user_fk = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE    
     )
     event_fk = models.ForeignKey(
         "Event",

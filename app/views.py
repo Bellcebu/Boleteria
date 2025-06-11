@@ -4,7 +4,7 @@ from django.views import View
 from django.contrib.auth.forms import AuthenticationForm
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import (LoginRequiredMixin, PermissionRequiredMixin)
 from django.contrib.auth.models import User
 from django.contrib.auth import login,logout
 from django.views.generic.edit import CreateView, UpdateView, FormView,DeleteView
@@ -14,6 +14,7 @@ from .forms import (
     RatingForm,
     VenueModelForm,
     CategoryModelForm,
+    TicketModelForm,
 )
 from .models import (
     Event,
@@ -50,7 +51,7 @@ class EventListView(ListView):
 class EventDetailView(DetailView):
     model = Event
     template_name = "app/event_detail.html"
-    context_object_name = "event"
+    context_object_name = "event_detail"
 
 
 class LoginView(View):
@@ -87,7 +88,7 @@ class SignUpView(View):
     
 class TicketListView(LoginRequiredMixin, ListView):
     model = Ticket
-    template_name = "app/tickets.html"
+    template_name = "ticket/ticket_list.html"
     context_object_name = "tickets"
 
     def get_queryset(self):
@@ -111,6 +112,26 @@ class TicketListView(LoginRequiredMixin, ListView):
             messages.success(request, "Tu solicitud de reembolso fue enviada con éxito.")
 
         return redirect('tickets')
+    
+class TicketDetailView(DetailView):
+    model=Ticket
+    template_name="ticket/ticket_detail"
+    context_object_name="ticket"
+
+class TicketCreateView(LoginRequiredMixin,CreateView):#esta mal tenes que hacer que el ticket salga de un query
+    model = Ticket
+    form_class = TicketModelForm
+    template_name = "ticket/ticket_form.html"
+    
+    def form_valid(self, form):
+        ticket = form.save(commit=False)
+        ticket.user_fk = self.request.user
+        ticket.event_fk = get_object_or_404(Event, pk=self.kwargs['pk'])
+        ticket.save()
+        messages.success(self.request, "¡Tu entrada fue comprada con éxito!")
+        return redirect("event_detail", pk=self.kwargs['pk'])  
+
+
 
 class UserProfileView(LoginRequiredMixin,View):
 
@@ -187,11 +208,12 @@ class VenueListView(ListView):
     context_object_name = 'venues'
     paginate_by = 10
 
-class VenueCreateView(CreateView):
+class VenueCreateView(LoginRequiredMixin,CreateView):
     model = Venue
     form_class = VenueModelForm
     template_name = 'venue/venue_form.html'
     success_url = reverse_lazy('venue_listar')
+    permission_required="can_create_venue"
 
     def form_valid(self, form):
         venue = form.save(commit=False)
@@ -199,21 +221,23 @@ class VenueCreateView(CreateView):
         messages.success(self.request, f'esta bien el venue {venue.name} fue creado correctamente')
         return super().form_valid(form)
     
-class VenueUpdateView(UpdateView):
+class VenueUpdateView(LoginRequiredMixin,UpdateView):
     model = Venue
     form_class = VenueModelForm
     template_name = 'venue/venue_form.html'
     success_url = reverse_lazy('venue_listar')
+    permission_required="can_update_venue"
 
     def form_valid(self, form):
         venue = form.save(commit=False)
         venue.save()
         messages.success(self.request, f'esta bien actualizado el venue {venue.name}')
 
-class VenueDeleteView(DeleteView):
+class VenueDeleteView(LoginRequiredMixin,DeleteView):
     model = Venue
     template_name = 'venue/venue_form.html'
     success_url = reverse_lazy('venue_listar')
+    permission_required="can_delete_venue"
 
 class VenueDetailView(DetailView):
     model = Venue
@@ -236,11 +260,12 @@ class CategoryDetailView(DetailView):
     template_name = "category/category_detail.html"
     context_object_name = "category"
 
-class CategoryCreateView(CreateView):
+class CategoryCreateView(LoginRequiredMixin,CreateView):
     model = Category
     form_class = CategoryModelForm
     template_name = "category/category_form.html"
     success_url = reverse_lazy("category_listar")
+    permission_required="can_create_category"
 
     def form_valid(self, form):
         category = form.save(commit=False)
@@ -248,11 +273,12 @@ class CategoryCreateView(CreateView):
         messages.success(self.request, f"la categoria {category.name} fue creada con exito")
         return super().form_valid(form)
     
-class CategoryUpdateView(UpdateView):
+class CategoryUpdateView(LoginRequiredMixin,UpdateView):
     model = Category
     form_class = CategoryModelForm
     template_name = "category/category_form.html"
     success_url = reverse_lazy("category_listar")
+    permission_required="can_update_category"
 
     def form_valid(self, form):
         category = form.save(commit=False)
@@ -260,10 +286,11 @@ class CategoryUpdateView(UpdateView):
         messages.success(self.request, f"la categoria {category.name} fue editada con exito")
         return super().form_valid(form)
 
-class CategoryDeleteView(DeleteView):
+class CategoryDeleteView(LoginRequiredMixin,DeleteView):
     model = Category
     template_name = "category/category_confirm_delete.html"
     success_url = reverse_lazy("category_listar")
+    permission_required="can_delete_category"
 
 #category CRUD fin
     
