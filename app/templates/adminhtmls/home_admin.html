@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Inicio - MiEvento{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+{% endblock %}
+
+{% block content %}
+  {% include 'navbar.html' %}
+  
+  <div class="container mt-5 pt-5 text-center">
+      <h1 class="mb-4">Bienvenido Admin</h1>
+      {% if not is_authenticated %}
+          <a href="{% url 'auth' %}" class="btn btn-primary mx-2">Entrar</a>
+      {% else %}
+          <p class="lead">¡Hola, {{ request.user.username }}!</p>
+          <a href="{% url 'events' %}" class="btn btn-primary">Ver eventos</a>
+      {% endif %}
+  </div>
+{% endblock %}

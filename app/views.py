@@ -66,15 +66,20 @@ class LoginView(View):
     def get(self, request):
         form = AuthenticationForm()
         return render(request, 'auth.html', {'form': form})
-
-
+    
     def post(self, request):
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            return redirect('home')
+
+            if user.is_staff:
+                return redirect('admin_dashboard') 
+            else:
+                return redirect('home')  
+
         return render(request, 'auth.html', {'form': form})
+
     
 class LogOutView(View):
     def get(self,request):

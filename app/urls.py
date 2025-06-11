@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path ,include
 from .views import (
     HomeView,
     EventListView,
@@ -29,6 +29,8 @@ from .views import (
 )
 
 urlpatterns = [
+    path('admin-panel/', include('admin_panel.urls')),
+
     path("", HomeView.as_view(), name="home"),
     path("events/", EventListView.as_view(), name="events"),
     path("events/<int:pk>/", EventDetailView.as_view(), name="event_detail"),
