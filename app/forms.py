@@ -6,7 +6,31 @@ from .models import(
     Rating,
     Venue,
     Category,
+    Ticket,
 )
+
+class TicketModelForm(forms.ModelForm):
+    class Meta:
+        model=Ticket
+        fields=["quantity","type"]
+        widgets = {
+            "quantity":forms.NumberInput(attrs={
+                "class" : "from-control"
+            }),
+            "type": forms.Select(attrs={
+                'class': 'form-control'
+            }),
+        }
+
+        labels={
+            "quantity":"cantidad",
+            "type":"tipo",
+        }
+
+    def clean_quantity(self):
+        pass
+    def clean_type(self):
+        pass
 
 class RatingForm(forms.ModelForm):
     class Meta:
@@ -15,7 +39,7 @@ class RatingForm(forms.ModelForm):
 
 
 class SignUpForm(UserCreationForm):
-    email = forms.EmailField(required=True)  # definir el campo fuera de Meta
+    email = forms.EmailField(required=True)  
 
     class Meta:
         model = User
