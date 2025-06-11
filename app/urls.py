@@ -5,6 +5,7 @@ from .views import (
     EventDetailView,
     LoginView,
     SignUpView,
+    AuthView,
     LogOutView,
     TicketListView,
     CommentCreateView,
@@ -35,6 +36,7 @@ urlpatterns = [
     path('notificaciones/<int:pk>', NotificationDetailView.as_view(), name= 'notification_detail'),    
     path('login/', LoginView.as_view(), name='login'),
     path('signup/', SignUpView.as_view(), name='signup'),
+    path('auth/', AuthView.as_view(), name='auth'),
     path('logout/',LogOutView.as_view(),name='logout'),
     path('users/<str:username>/', UserProfileView.as_view(), name='user_profile'),
 

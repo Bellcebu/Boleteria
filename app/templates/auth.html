@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Login / Registro{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+
+<style>
+  #slideBox, .topLayer {
+    transition: margin-left 0.5s ease;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<style>
+  .backLeft,
+  .backRight {
+    background-image: url("{% static 'images/back.jpg' %}");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+</style>
+<div id="back">
+  <canvas id="canvas" class="canvas-back"></canvas>
+  <div class="backRight"></div>
+  <div class="backLeft"></div>
+</div>
+<div id="slideBox">
+  <div class="topLayer">
+    <div style="scrollbar-width: none;" class="left">
+      <div class="content">
+        <h2>Sign Up</h2>
+        <form method="post" action="{% url 'signup' %}">
+          {% csrf_token %}
+          <div class="form-element form-stack">
+            <label for="email" class="form-label">Email</label>
+            <input id="email" type="email" name="email" required>
+          </div>
+          <div class="form-element form-stack">
+            <label for="username-signup" class="form-label">Username</label>
+            <input id="username-signup" type="text" name="username" required>
+          </div>
+          <div class="form-element form-stack">
+            <label for="password-signup" class="form-label">Password</label>
+            <input id="password-signup" type="password" name="password1" required>
+          </div>
+          <div class="form-element form-stack">
+            <label for="password2-signup" class="form-label">Confirm Password</label>
+            <input id="password2-signup" type="password" name="password2" required>
+          </div>
+          <div class="form-element form-submit">
+            <button id="signUp" class="signup" type="submit" name="signup">Sign up</button>
+            <button id="goLeft" class="signup off" type="button">Log In</button> 
+          </div>
+        </form>
+      </div>
+    </div>
+    <div style="scrollbar-width: none;" class="right">
+      <div class="content">
+        <h2>Login</h2>
+        <form method="post" action="{% url 'login' %}">
+          {% csrf_token %}
+          <div class="form-element form-stack">
+            <label for="username-login" class="form-label">Username</label>
+            <input id="username-login" type="text" name="username" required>
+          </div>
+          <div class="form-element form-stack">
+            <label for="password-login" class="form-label">Password</label>
+            <input id="password-login" type="password" name="password" required>
+          </div>
+          <div class="form-element form-submit">
+            <button id="logIn" class="login" type="submit" name="login">Log In</button>
+            <button id="goRight" class="login off" type="button">Sign Up</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/auth.js' %}"></script>
+{% endblock %}

@@ -1,7 +1,11 @@
-{% extends 'base/base.html' %}
+{% extends 'base.html' %}
+{% load static %}
 {% block title %}Eventos - MiEvento{% endblock %}
-
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+{% endblock %}
 {% block content %}
+{% include 'navbar.html' %}
 <h2 class="mb-4">Listado de Eventos</h2>
 {% if events %}
     <div class="list-group">

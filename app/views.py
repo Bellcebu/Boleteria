@@ -26,7 +26,7 @@ from .models import (
 )
 
 class HomeView(TemplateView):
-    template_name = 'home/home.html'
+    template_name = 'home.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -52,11 +52,19 @@ class EventDetailView(DetailView):
     template_name = "app/event/event_detail.html"
     context_object_name = "event"
 
+class AuthView(View):
+    def get(self, request):
+        login_form = AuthenticationForm()
+        signup_form = SignUpForm()
+        return render(request, 'auth.html', {
+            'login_form': login_form,
+            'signup_form': signup_form,
+        })
 
 class LoginView(View):
     def get(self, request):
         form = AuthenticationForm()
-        return render(request, 'session/login.html', {'form': form})
+        return render(request, 'auth.html', {'form': form})
 
 
     def post(self, request):
@@ -65,17 +73,17 @@ class LoginView(View):
             user = form.get_user()
             login(request, user)
             return redirect('home')
-        return render(request, 'session/login.html', {'form': form})
+        return render(request, 'auth.html', {'form': form})
     
 class LogOutView(View):
     def get(self,request):
         logout(request)
-        return redirect('login')
+        return redirect('home')
         
 class SignUpView(View):
     def get(self, request):
         form = SignUpForm()  
-        return render(request, 'session/signup.html', {'form': form})
+        return render(request, 'auth.html', {'form': form})
 
     def post(self, request):
         form = SignUpForm(request.POST)
@@ -83,7 +91,7 @@ class SignUpView(View):
             user = form.save()
             login(request, user)
             return redirect('home')  
-        return render(request, 'session/signup.html', {'form': form})
+        return render(request, 'auth.html', {'form': form})
     
 class TicketListView(LoginRequiredMixin, ListView):
     model = Ticket

@@ -1,8 +1,14 @@
-{% extends 'base/base.html' %}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+{% endblock %}
 
 {% block title %}Perfil de {{ profile_user.username }}{% endblock %}
 
 {% block content %}
+{% include 'navbar.html' %}
   <div class="container">
     <h2>Perfil de {{ profile_user.username }}</h2>
     <p><strong>Email:</strong> {{ profile_user.email }}</p>
