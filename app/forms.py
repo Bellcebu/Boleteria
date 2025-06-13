@@ -7,7 +7,49 @@ from .models import(
     Venue,
     Category,
     Ticket,
+    Event,
 )
+
+class EventModelForm(forms.ModelForm):
+    class Meta:
+        model = Event
+        fields = ['category', 'venue_fk', 'title', 'description', 'date', 'image', 'base_price']
+        widgets = {
+            'category': forms.Select(attrs={'class': 'form-control'}),
+            'venue_fk': forms.Select(attrs={'class': 'form-control'}),
+            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Título del evento'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'Descripción'}),
+            'date': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
+            'image': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+            'base_price': forms.NumberInput(attrs={'class': 'form-control'}),
+        }
+        labels = {
+            'category': 'Categoría',
+            'venue_fk': 'Lugar',
+            'title': 'Título',
+            'description': 'Descripción',
+            'date': 'Fecha y hora',
+            'image': 'Imagen del evento',
+            'base_price': 'Precio base',
+        }
+
+    def clean_title(self):
+        title = self.cleaned_data.get("title", "").strip()
+        if len(title) < 5:
+            raise forms.ValidationError("El título debe tener al menos 5 caracteres.")
+        return title
+
+    def clean_description(self):
+        description = self.cleaned_data.get("description", "").strip()
+        if len(description) < 20:
+            raise forms.ValidationError("La descripción debe tener al menos 20 caracteres.")
+        return description
+
+    def clean_base_price(self):
+        base_price = self.cleaned_data.get("base_price")
+        if base_price < 0:
+            raise forms.ValidationError("El precio no puede ser negativo.")
+        return base_price
 
 class TicketModelForm(forms.ModelForm):
     class Meta:

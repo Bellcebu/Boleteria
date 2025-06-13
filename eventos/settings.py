@@ -56,7 +56,7 @@ ROOT_URLCONF = "eventos.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
+        "DIRS": [],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -82,8 +82,6 @@ DATABASES = {
     }
 }
 
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -104,10 +102,10 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-STATIC_URL = "/static/"
+STATIC_URL = "static/"
 
 # Bootstrap 5
-STATICFILES_DIRS = [BASE_DIR / "static"]
+STATICFILES_DIRS = [BASE_DIR / "static/"]
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/

@@ -15,6 +15,7 @@ from .forms import (
     VenueModelForm,
     CategoryModelForm,
     TicketModelForm,
+    EventModelForm,
 )
 from .models import (
     Event,
@@ -52,6 +53,17 @@ class EventDetailView(DetailView):
     model = Event
     template_name = "app/event_detail.html"
     context_object_name = "event"
+
+
+class EventCreateView(CreateView):
+    model = Event
+    form_class = EventModelForm
+    template_name = 'app/event/event_form.html'
+    success_url = reverse_lazy('event_listar')  # Change to your list view route
+
+    def form_valid(self, form):
+        messages.success(self.request, "El evento fue creado con éxito.")
+        return super().form_valid(form)
 
 class AuthView(View):
     def get(self, request):
