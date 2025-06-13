@@ -26,6 +26,9 @@ from .views import (
     CategoryUpdateView,
     CategoryDeleteView,
 
+    TicketCreateView,
+    RefundRequestListView,
+
 )
 
 urlpatterns = [
@@ -57,4 +60,7 @@ urlpatterns = [
     path("categories/<int:pk>/", CategoryDetailView.as_view(), name="category_detalle"),
     path("categories/<int:pk>/editar/", CategoryUpdateView.as_view(), name="category_editar"),
     path("categories/<int:pk>/borrar/", CategoryDeleteView.as_view(), name="category_borrar"),
+
+    path('events/<int:pk>/compar/',TicketCreateView.as_view(), name='ticket_compar'),
+    path('refund_request/<int:pk>/',RefundRequestListView.as_view(), name='refund_request_listar'),
 ]

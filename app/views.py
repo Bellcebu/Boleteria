@@ -131,11 +131,14 @@ class TicketDetailView(DetailView):
     template_name="ticket/ticket_detail"
     context_object_name="ticket"
 
-class RefoundRequestListView(ListView,PermissionRequiredMixin):
+class RefundRequestListView(ListView,PermissionRequiredMixin,LoginRequiredMixin):
     model=RefundRequest
     template_name='refund_request/refund_request_list_admin'
     context_object_name='refund_request_admin'
     permission_required='can_view_refund_request'
+
+    def get_queryset(self):
+        return RefundRequest.objects.all().order_by('-created_at')
 
 class TicketCreateView(LoginRequiredMixin,CreateView):
     model = Ticket
