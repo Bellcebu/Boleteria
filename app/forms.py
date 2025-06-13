@@ -93,6 +93,7 @@ class CommentForm(forms.ModelForm):
         model = Comment
         fields = ['title', 'text']
 
+
 class VenueModelForm(forms.ModelForm):
     class Meta:
         model = Venue
@@ -103,14 +104,14 @@ class VenueModelForm(forms.ModelForm):
                 "placeholder": "Nombre",
             }),
             "address": forms.TextInput(attrs={
-                "class": "from_control",
-                "placeholder": "Direccion",
+                "class": "form-control",
+                "placeholder": "Dirección",
             }),
-            "city": forms.NumberInput(attrs={
+            "city": forms.TextInput(attrs={
                 "class": "form-control",
                 "placeholder": "Ciudad",
             }),
-            "capacity": forms.TextInput(attrs={
+            "capacity": forms.NumberInput(attrs={
                 "class": "form-control",
                 "placeholder": "Capacidad"
             }),
@@ -119,27 +120,39 @@ class VenueModelForm(forms.ModelForm):
                 "placeholder": "Contacto",
             }),
         }
-
         labels = {
             "name": "Nombre",
             "city": "Ciudad",
-            "address": "Direccion",
+            "address": "Dirección",
             "capacity": "Capacidad",
             "contact": "Contacto", 
         }
 
-
     def clean_name(self):
-        pass
+        name = self.cleaned_data.get("name", "").strip()
+        if len(name) < 3:
+            raise forms.ValidationError("El nombre debe tener al menos 3 caracteres.")
+        return name
 
     def clean_city(self):
-        pass
+        city = self.cleaned_data.get("city", "").strip()
+        if not city:
+            raise forms.ValidationError("La ciudad es obligatoria.")
+        if city.isnumeric():
+            raise forms.ValidationError("La ciudad no puede ser un número.")
+        return city
 
     def clean_address(self):
-        pass
+        address = self.cleaned_data.get("address", "").strip()
+        if len(address) < 5:
+            raise forms.ValidationError("La dirección debe tener al menos 5 caracteres.")
+        return address
 
     def clean_contact(self):
-        pass
+        contact = self.cleaned_data.get("contact", "").strip()
+        if len(contact) < 5:
+            raise forms.ValidationError("El contacto debe tener al menos 5 caracteres.")
+        return contact
 
 
 class CategoryModelForm(forms.ModelForm):
