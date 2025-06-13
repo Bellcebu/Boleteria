@@ -64,5 +64,5 @@ urlpatterns = [
 
     path('events/<int:pk>/compar/',TicketCreateView.as_view(), name='ticket_compar'),
     path('refund_request/<int:pk>/',RefundRequestListView.as_view(), name='refund_request_listar'),
-     path('eventos/nuevo/', EventCreateView.as_view(), name='event_crear'),
+    path('eventos/nuevo/', EventCreateView.as_view(), name='event_crear'),
 ]
