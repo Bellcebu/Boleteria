@@ -14,7 +14,7 @@
       </div>
     {% endfor %}
     <button type="submit" class="btn btn-primary">Comprar</button>
-    <a href="{% url 'event_detail' pk=kwargs.pk %}" class="btn btn-secondary">Cancelar</a>
+    <a href="{% url 'event_detail' pk=evento.pk %}" class="btn btn-secondary">Cancelar</a>
   </form>
 </div>
 {% endblock %}

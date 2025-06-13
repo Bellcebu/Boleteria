@@ -182,6 +182,14 @@ class TicketCreateView(LoginRequiredMixin, CreateView):
     form_class = TicketModelForm
     template_name = "ticket/ticket_form.html"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        event_pk = self.kwargs.get('pk')
+        event = get_object_or_404(Event, pk=event_pk)
+        context['evento'] = event  # o 'event' si así usás en el template
+        return context
+
+
     def form_valid(self, form):
         ticket = form.save(commit=False)
         ticket.user_fk = self.request.user
