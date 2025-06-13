@@ -12,11 +12,35 @@
   
   <div class="container mt-5 pt-5 text-center">
       <h1 class="mb-4">Bienvenido a MiEvento</h1>
-      {% if not is_authenticated %}
-          <a href="{% url 'auth' %}" class="btn btn-primary mx-2">Entrar</a>
-      {% else %}
-          <p class="lead">¡Hola, {{ request.user.username }}!</p>
-          <a href="{% url 'events' %}" class="btn btn-primary">Ver eventos</a>
-      {% endif %}
-  </div>
+      <div class="container mt-5">
+        <h2 class="text-center mb-4">Próximos eventos</h2>
+        <div class="row">
+            {% for evento in eventos %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow">
+                    {% if evento.image %}
+                        <img src="{{ evento.image.url }}" class="card-img-top" alt="{{ evento.name }}">
+                    {% else %}
+                        <img src="{% static 'img/default_event.jpg' %}" class="card-img-top" alt="Evento">
+                    {% endif %}
+                    <div class="card-body text-center">
+                        <h5 class="card-title">{{ evento.name }}</h5>
+                        <p class="card-text">{{ evento.description|truncatewords:15 }}</p>
+                        <p class="card-text"><strong>Fecha:</strong> {{ evento.date|date:"d/m/Y H:i" }}</p>
+                        <a href="{% url 'event_detail' evento.pk %}" class="btn btn-outline-primary">Ver más</a>
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'ticket_compar' evento.pk %}" class="btn btn-success mt-2">Comprar entrada</a>
+                        {% else %}
+                            <a href="{% url 'auth' %}" class="btn btn-secondary mt-2">Iniciar sesión</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+                <p class="text-center">No hay eventos disponibles por el momento.</p>
+            {% endfor %}
+        </div>
+    </div>
+    
+  
 {% endblock %}
