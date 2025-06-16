@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestión de Roles - Admin{% endblock %}
+
+{% block navigation %}
+<nav class="navbar navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{% url 'admin_dashboard' %}">
+            <i class="fas fa-arrow-left me-2"></i>Volver al Dashboard
+        </a>
+        <span class="navbar-text">
+            <i class="fas fa-users-cog me-2"></i>Gestión de Roles
+        </span>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col">
+            <div class="card shadow">
+                <div class="card-header bg-warning">
+                    <h4 class="mb-0">
+                        <i class="fas fa-users me-2"></i>Lista de Usuarios
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th><i class="fas fa-user me-2"></i>Usuario</th>
+                                    <th><i class="fas fa-envelope me-2"></i>Email</th>
+                                    <th><i class="fas fa-id-badge me-2"></i>Rol Actual</th>
+                                    <th><i class="fas fa-calendar me-2"></i>Fecha de Registro</th>
+                                    <th><i class="fas fa-cogs me-2"></i>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ user.username }}</strong>
+                                            {% if user.first_name or user.last_name %}
+                                                <br><small class="text-muted">{{ user.first_name }} {{ user.last_name }}</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ user.email|default:"Sin email" }}</td>
+                                        <td>
+                                            {% if user.is_staff and user.groups.all %}
+                                                {% for group in user.groups.all %}
+                                                    {% if group.name == 'Admin' %}
+                                                        <span class="badge bg-danger">
+                                                            <i class="fas fa-crown me-1"></i>Administrador
+                                                        </span>
+                                                    {% elif group.name == 'Vendedor' %}
+                                                        <span class="badge bg-info">
+                                                            <i class="fas fa-store me-1"></i>Vendedor
+                                                        </span>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            {% elif user.is_superuser %}
+                                                <span class="badge bg-dark">
+                                                    <i class="fas fa-user-shield me-1"></i>Superusuario
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">
+                                                    <i class="fas fa-user me-1"></i>Usuario
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ user.date_joined|date:"d/m/Y" }}</td>
+                                        <td>
+                                            {% if not user.is_superuser %}
+                                                <a href="{% url 'admin_assign_role' user.id %}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-edit me-1"></i>Cambiar Rol
+                                                </a>
+                                            {% else %}
+                                                <span class="badge bg-dark">Superusuario</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted">
+                                            <i class="fas fa-users fa-2x mb-2"></i>
+                                            <br>No hay usuarios registrados
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col">
+            <div class="card border-info">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Información sobre Roles
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6><i class="fas fa-crown text-danger me-2"></i>Administrador</h6>
+                            <p class="small">Acceso completo al sistema. Puede crear, editar y eliminar eventos, categorías y gestionar usuarios.</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6><i class="fas fa-store text-info me-2"></i>Vendedor</h6>
+                            <p class="small">Puede ver eventos y categorías, pero no puede crear o modificar contenido.</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6><i class="fas fa-user text-secondary me-2"></i>Usuario</h6>
+                            <p class="small">Acceso básico al sistema. Puede ver eventos y comprar tickets.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

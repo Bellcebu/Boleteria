@@ -7,6 +7,8 @@ from .models import (
     Venue,
     Category,
     Ticket,
+    TicketTier,
+    Promotion,
     Event,
 )
 
@@ -114,6 +116,36 @@ class VenueModelForm(forms.ModelForm):
 
 
 class EventModelForm(forms.ModelForm):
+    # Campos adicionales para los precios de tickets
+    general_price = forms.DecimalField(
+        max_digits=8, 
+        decimal_places=2, 
+        required=True,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'step': '0.01'}),
+        label='Precio Entrada General'
+    )
+    premium_price = forms.DecimalField(
+        max_digits=8, 
+        decimal_places=2, 
+        required=False,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'step': '0.01'}),
+        label='Precio Entrada Premium (Opcional)'
+    )
+    vip_price = forms.DecimalField(
+        max_digits=8, 
+        decimal_places=2, 
+        required=False,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'step': '0.01'}),
+        label='Precio Entrada VIP (Opcional)'
+    )
+    ultra_vip_price = forms.DecimalField(
+        max_digits=8, 
+        decimal_places=2, 
+        required=False,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'step': '0.01'}),
+        label='Precio Entrada Ultra VIP (Opcional)'
+    )
+
     class Meta:
         model = Event
         fields = ['category', 'venue_fk', 'title', 'description', 'date', 'image', 'base_price']
@@ -154,11 +186,43 @@ class EventModelForm(forms.ModelForm):
             raise forms.ValidationError("El precio no puede ser negativo.")
         return base_price
 
+    def clean_general_price(self):
+        general_price = self.cleaned_data.get("general_price")
+        if general_price < 0:
+            raise forms.ValidationError("El precio general no puede ser negativo.")
+        return general_price
+
+    def clean(self):
+        cleaned_data = super().clean()
+        general_price = cleaned_data.get('general_price')
+        premium_price = cleaned_data.get('premium_price')
+        vip_price = cleaned_data.get('vip_price')
+        ultra_vip_price = cleaned_data.get('ultra_vip_price')
+        
+        # Validar que los precios estén en orden ascendente
+        prices = []
+        if general_price is not None:
+            prices.append(('General', general_price))
+        if premium_price is not None:
+            prices.append(('Premium', premium_price))
+        if vip_price is not None:
+            prices.append(('VIP', vip_price))
+        if ultra_vip_price is not None:
+            prices.append(('Ultra VIP', ultra_vip_price))
+        
+        # Verificar orden
+        for i in range(1, len(prices)):
+            if prices[i][1] <= prices[i-1][1]:
+                raise forms.ValidationError(
+                    f"El precio {prices[i][0]} debe ser mayor que {prices[i-1][0]}"
+                )
+        
+        return cleaned_data
 
 class TicketModelForm(forms.ModelForm):
     class Meta:
-        model = Ticket
-        fields = ["quantity", "type"]
+        model = TicketTier
+        fields = ['name', 'price', 'description', 'max_quantity']
         widgets = {
             "quantity": forms.NumberInput(attrs={
                 "class": "form-control"
@@ -184,6 +248,11 @@ class TicketModelForm(forms.ModelForm):
         if ticket_type not in valid_types:
             raise forms.ValidationError(f"Tipo inválido. Debe ser uno de {valid_types}.")
         return ticket_type
+    
+class PromotionForm(forms.ModelForm):
+    class Meta:
+        model = Promotion
+        fields = ['code', 'discount_percentage', 'start_date', 'end_date', 'max_uses']
 
 
 class RatingForm(forms.ModelForm):

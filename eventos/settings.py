@@ -116,8 +116,10 @@ STATICFILES_DIRS = [BASE_DIR / "static/"]
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
 LANGUAGE_CODE = "es-ar"
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
-TIME_ZONE = "UTC"
+USE_TZ = True
+TIME_ZONE = 'America/Argentina/Buenos_Aires'
 
 USE_I18N = True
 

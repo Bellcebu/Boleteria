@@ -2,6 +2,8 @@ from django.urls import path, include
 from .views import (
     HomeView,
     EventListView,
+    EventUpdateView,
+    EventDeleteView,
     EventDetailView,
     LoginView,
     SignUpView,
@@ -37,12 +39,14 @@ urlpatterns = [
 
     path("", HomeView.as_view(), name="home"),
 
-    path("events/", EventListView.as_view(), name="events"),
+    path("events/", EventListView.as_view(), name="event_list"),
     path("events/<int:pk>/", EventDetailView.as_view(), name="event_detail"),
+    path("events/nuevo/", EventCreateView.as_view(), name="event_crear"),  
+    path("events/<int:pk>/editar/", EventUpdateView.as_view(), name="editar_evento"),
+    path("events/<int:pk>/borrar/", EventDeleteView.as_view(), name="eliminar_evento"),
     path("events/<int:pk>/comment/", CommentCreateView.as_view(), name="add_comment"),
     path("events/<int:pk>/rating/", RatingCreateView.as_view(), name="add_rating"),
-    path("events/<int:pk>/compar/", TicketCreateView.as_view(), name="ticket_compar"),
-    path("eventos/nuevo/", EventCreateView.as_view(), name="event_crear"),
+    path("events/<int:pk>/comprar/", TicketCreateView.as_view(), name="ticket_comprar"),  
 
     path('notificaciones/', NotificationListView.as_view(), name='notificaciones'),
     path('notificaciones/<int:pk>/', NotificationDetailView.as_view(), name='notification_detail'),
@@ -54,7 +58,7 @@ urlpatterns = [
 
     path('users/<str:username>/', UserProfileView.as_view(), name='user_profile'),
 
-    path('tickets/', TicketListView.as_view(), name='ticket'),
+    path('tickets/', TicketListView.as_view(), name='ticket_list'),
 
     path("venues/", VenueListView.as_view(), name="venue_listar"),
     path("venues/nuevo/", VenueCreateView.as_view(), name="venue_crear"),
@@ -68,5 +72,5 @@ urlpatterns = [
     path("categories/<int:pk>/editar/", CategoryUpdateView.as_view(), name="category_editar"),
     path("categories/<int:pk>/borrar/", CategoryDeleteView.as_view(), name="category_borrar"),
 
-    path('refund_request/<int:pk>/', RefundRequestListView.as_view(), name='refund_request_listar'),
+    path('refund-requests/', RefundRequestListView.as_view(), name='refund_request_listar'),
 ]

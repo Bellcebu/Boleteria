@@ -9,6 +9,10 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.auth import login, logout
 from django.contrib.auth.models import User
+from datetime import datetime, time
+from django.utils import timezone
+
+
 
 from .forms import (
     SignUpForm,
@@ -92,11 +96,100 @@ class SignUpView(View):
 # ===== 2. EVENTOS =====
 class EventListView(ListView):
     model = Event
-    template_name = "app/event/events.html"
-    context_object_name = "events"
+    template_name = "app/event/event_list.html"
+    context_object_name = "eventos"
+    paginate_by = 10
 
     def get_queryset(self):
-        return Event.objects.all().order_by("date")
+        queryset = Event.objects.all().order_by("date")
+        
+        # Filtros
+        categoria_id = self.request.GET.get('categoria')
+        fecha_desde = self.request.GET.get('fecha_desde')
+        fecha_hasta = self.request.GET.get('fecha_hasta')
+        
+        if categoria_id:
+            queryset = queryset.filter(category_id=categoria_id)
+            
+        if fecha_desde:
+            try:
+                # Convertir fecha a datetime con hora 00:00:00
+                fecha_desde_dt = datetime.strptime(fecha_desde, '%Y-%m-%d')
+                fecha_desde_dt = timezone.make_aware(
+                    datetime.combine(fecha_desde_dt.date(), time.min)
+                )
+                queryset = queryset.filter(date__gte=fecha_desde_dt)
+            except ValueError:
+                pass  # Si la fecha no es válida, ignorar el filtro
+            
+        if fecha_hasta:
+            try:
+                # Convertir fecha a datetime con hora 23:59:59
+                fecha_hasta_dt = datetime.strptime(fecha_hasta, '%Y-%m-%d')
+                fecha_hasta_dt = timezone.make_aware(
+                    datetime.combine(fecha_hasta_dt.date(), time.max)
+                )
+                queryset = queryset.filter(date__lte=fecha_hasta_dt)
+            except ValueError:
+                pass  # Si la fecha no es válida, ignorar el filtro
+            
+        return queryset
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['categorias'] = Category.objects.filter(is_active=True)
+        context['categoria_seleccionada'] = self.request.GET.get('categoria', '')
+        context['fecha_desde'] = self.request.GET.get('fecha_desde', '')
+        context['fecha_hasta'] = self.request.GET.get('fecha_hasta', '')
+        
+        # Debug info - puedes quitar esto después
+        print(f"Fecha desde: {self.request.GET.get('fecha_desde')}")
+        print(f"Fecha hasta: {self.request.GET.get('fecha_hasta')}")
+        print(f"Total eventos encontrados: {context['eventos'].count()}")
+        
+        return context
+    
+    def post(self, request, *args, **kwargs):
+        """Maneja la eliminación de eventos via AJAX/POST"""
+        if not request.user.has_perm('app.delete_event'):
+            messages.error(request, "No tienes permisos para eliminar eventos.")
+            return redirect('event_list')
+            
+        event_id = request.POST.get('event_id')
+        if event_id:
+            try:
+                event = Event.objects.get(id=event_id)
+                event_title = event.title
+                event.delete()
+                messages.success(request, f"El evento '{event_title}' fue eliminado con éxito.")
+            except Event.DoesNotExist:
+                messages.error(request, "El evento no existe.")
+        
+        return redirect('event_list')
+
+class EventUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
+    model = Event
+    form_class = EventModelForm
+    template_name = "app/event/event_form.html"
+    success_url = reverse_lazy("event_lit")
+    permission_required = "app.change_event"
+
+    def form_valid(self, form):
+        messages.success(self.request, f"El evento '{form.instance.title}' fue editado con éxito.")
+        return super().form_valid(form)
+
+
+class EventDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
+    model = Event
+    template_name = "app/event/event_confirm_delete.html"
+    success_url = reverse_lazy("event_lit")
+    permission_required = "app.delete_event"
+
+    def delete(self, request, *args, **kwargs):
+        obj = self.get_object()
+        messages.success(request, f"El evento '{obj.title}' fue eliminado.")
+        return super().delete(request, *args, **kwargs)
+
 
 
 class EventDetailView(DetailView):
@@ -109,10 +202,31 @@ class EventCreateView(CreateView):
     model = Event
     form_class = EventModelForm
     template_name = 'app/event/event_form.html'
-    success_url = reverse_lazy('event_listar')
-
+    success_url = reverse_lazy('event_list')  # Corregido el nombre de la URL
+    
     def form_valid(self, form):
-        messages.success(self.request, "El evento fue creado con éxito.")
+        # Crear el evento
+        event = form.save()
+        
+        # Crear los tipos de entrada automáticamente
+        ticket_types = [
+            ('GENERAL', form.cleaned_data.get('general_price')),
+            ('PREMIUM', form.cleaned_data.get('premium_price')),
+            ('VIP', form.cleaned_data.get('vip_price')),
+            ('ULTRA_VIP', form.cleaned_data.get('ultra_vip_price')),
+        ]
+        
+        # Solo crear tickets para precios que no sean None o 0
+        for ticket_name, price in ticket_types:
+            if price is not None and price > 0:
+                TicketTier.objects.create(
+                    event=event,
+                    name=ticket_name,
+                    price=price,
+                    is_available=True
+                )
+        
+        messages.success(self.request, f"El evento '{event.title}' fue creado con éxito junto con sus tipos de entrada.")
         return super().form_valid(form)
 
 
@@ -203,7 +317,7 @@ class RefundRequestListView(LoginRequiredMixin, PermissionRequiredMixin, ListVie
     model = RefundRequest
     template_name = 'refund_request/refund_request_list_admin.html'
     context_object_name = 'refund_request_admin'
-    permission_required = 'can_view_refund_request'
+    permission_required = "app.view_refundrequest"
 
     def get_queryset(self):
         return RefundRequest.objects.all().order_by('-created_at')
@@ -248,7 +362,7 @@ class NotificationDetailView(DetailView):
 # ===== 6. VENUES CRUD =====
 class VenueListView(ListView):
     model = Venue
-    template_name = 'venue/venues.html'
+    template_name = 'venue/venue_list.html'
     context_object_name = 'venues'
     paginate_by = 10
 
@@ -258,7 +372,7 @@ class VenueCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     form_class = VenueModelForm
     template_name = 'venue/venue_form.html'
     success_url = reverse_lazy('venue_listar')
-    permission_required = "can_create_venue"
+    permission_required = "app.add_venue"
 
     def form_valid(self, form):
         venue = form.save(commit=False)
@@ -272,7 +386,7 @@ class VenueUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     form_class = VenueModelForm
     template_name = 'venue/venue_form.html'
     success_url = reverse_lazy('venue_listar')
-    permission_required = "can_update_venue"
+    permission_required = "app.change_venue"
 
     def form_valid(self, form):
         venue = form.save(commit=False)
@@ -285,7 +399,7 @@ class VenueDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     model = Venue
     template_name = 'venue/venue_form.html'
     success_url = reverse_lazy('venue_listar')
-    permission_required = "can_delete_venue"
+    permission_required = "app.delete_venue"
 
 
 class VenueDetailView(DetailView):
@@ -312,7 +426,7 @@ class CategoryCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView
     form_class = CategoryModelForm
     template_name = "category/category_form.html"
     success_url = reverse_lazy("category_listar")
-    permission_required = "can_create_category"
+    permission_required = "app.add_category"
 
     def form_valid(self, form):
         category = form.save(commit=False)
@@ -326,7 +440,7 @@ class CategoryUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView
     form_class = CategoryModelForm
     template_name = "category/category_form.html"
     success_url = reverse_lazy("category_listar")
-    permission_required = "can_update_category"
+    permission_required = "app.change_category"
 
     def form_valid(self, form):
         category = form.save(commit=False)
@@ -339,4 +453,4 @@ class CategoryDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView
     model = Category
     template_name = "category/category_confirm_delete.html"
     success_url = reverse_lazy("category_listar")
-    permission_required = "can_delete_category"
+    permission_required = "app.delete_category"

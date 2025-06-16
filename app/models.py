@@ -9,6 +9,9 @@ class Category(models.Model):
     description = models.TextField()
     is_active = models.BooleanField(default=True)
 
+    def __str__(self):
+        return self.name
+
     @classmethod
     def validate(cls, name):
         errors = {}
@@ -40,6 +43,9 @@ class Venue(models.Model):
     city = models.TextField(max_length=100)
     capacity = models.IntegerField()
     contact = models.TextField(max_length=100)
+
+    def __str__(self):
+        return f"{self.name} - {self.city}"
 
     @classmethod
     def new(cls, name, address, city, capacity, contact):
@@ -84,6 +90,13 @@ class Event(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return self.title
+    
+    def get_base_price(self):
+        tier = self.ticket_tiers.filter(is_available=True).order_by('price').first()
+        return tier.price if tier else 0
+
     @classmethod
     def validate(cls, title, description, date):
         errors = {}
@@ -112,6 +125,21 @@ class Event(models.Model):
         self.description = description or self.description
         self.date = date or self.date
         self.save()
+
+class Promotion(models.Model):
+    code = models.CharField(max_length=50, unique=True)
+    discount_percentage = models.DecimalField(max_digits=5, decimal_places=2) 
+    event = models.ForeignKey('Event', on_delete=models.CASCADE, related_name='promotions')
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    max_uses = models.IntegerField(default=None, null=True, blank=True)  
+    current_uses = models.IntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.code} - {self.discount_percentage}% para {self.event.title}"
 
 
 class Comment(models.Model):
@@ -183,50 +211,47 @@ class Rating(models.Model):
 
 
 # --- Tickets ---
+class TicketTier(models.Model):
+    TIER_CHOICES = [
+        ('GENERAL', 'General'),
+        ('PREMIUM', 'Premium'),
+        ('VIP', 'VIP'),
+        ('ULTRA_VIP', 'Ultra VIP'),
+    ]
+    
+    event = models.ForeignKey('Event', on_delete=models.CASCADE, related_name='ticket_tiers')
+    name = models.CharField(max_length=50, choices=TIER_CHOICES)
+    price = models.DecimalField(max_digits=8, decimal_places=2)
+    description = models.TextField(blank=True)  
+    max_quantity = models.IntegerField(default=None, null=True, blank=True) 
+    is_available = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ['event', 'name'] 
+    
+    def __str__(self):
+        return f"{self.event.title} - {self.name} (${self.price})"
+
+
 class Ticket(models.Model):
-    class TicketType(models.TextChoices):
-        GENERAL = 'GENERAL', 'General'
-        VIP = 'VIP', 'VIP'
+    ticket_tier = models.ForeignKey(TicketTier, on_delete=models.CASCADE)
+    promotion_used = models.ForeignKey('Promotion', on_delete=models.SET_NULL, null=True, blank=True)
+    original_price = models.DecimalField(max_digits=8, decimal_places=2)
+    final_price = models.DecimalField(max_digits=8, decimal_places=2)  # Después del descuento
+    user_fk = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    quantity = models.IntegerField(default=1)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def calculate_final_price(self):
+        price = self.ticket_tier.price * self.quantity
+        if self.promotion_used:
+            discount = price * (self.promotion_used.discount_percentage / 100)
+            price -= discount
+        return price
+    
+    def __str__(self):
+        return f"Ticket {self.id} - {self.ticket_tier.event.title}"
 
-    ticket_code = models.TextField(max_length=100, primary_key=True)
-    buy_date = models.DateField(auto_now_add=True)
-    quantity = models.IntegerField()
-    type = models.CharField(
-        max_length=10,
-        choices=TicketType.choices,
-        default=TicketType.GENERAL,
-    )
-    user_fk = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE    
-    )
-    event_fk = models.ForeignKey(
-        "Event",
-        on_delete=models.CASCADE,
-        default=None
-    )
-
-    @classmethod
-    def new(cls, ticket_code, quantity, ticket_type, user, event):
-        if not ticket_code:
-            raise ValidationError("Ticket code is required.")
-        if quantity <= 0:
-            raise ValidationError("Quantity must be greater than 0.")
-        if ticket_type not in cls.TicketType.values:
-            raise ValidationError(f"Type must be one of: {cls.TicketType.values}")
-        return cls.objects.create(
-            ticket_code=ticket_code,
-            quantity=quantity,
-            type=ticket_type,
-            user_fk=user,
-            event_fk=event
-        )
-
-    def update(self, ticket_code=None, quantity=None, ticket_type=None):
-        self.ticket_code = ticket_code or self.ticket_code
-        self.quantity = quantity or self.quantity
-        self.type = ticket_type or self.type
-        self.save()
 
 
 # --- Notificaciones ---
