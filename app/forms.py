@@ -1,15 +1,18 @@
 from django import forms
+from django.core.exceptions import ValidationError
+from django.forms.models import BaseInlineFormSet, inlineformset_factory
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
+
 from .models import (
+    Event,
+    TicketTier,
     Comment,
     Rating,
     Venue,
     Category,
-    Ticket,
-    TicketTier,
+    Profile,
     Promotion,
-    Event,
 )
 
 
@@ -37,7 +40,8 @@ class CategoryModelForm(forms.ModelForm):
         }
 
     def clean_name(self):
-        name = self.cleaned_data.get("name", "").strip()
+        name = self.cleaned_data.get("name", "") or ""
+        name = name.strip()
         if not name:
             raise forms.ValidationError("El nombre no puede estar vacío.")
         if len(name) < 3:
@@ -45,7 +49,8 @@ class CategoryModelForm(forms.ModelForm):
         return name
 
     def clean_description(self):
-        description = self.cleaned_data.get("description", "").strip()
+        description = self.cleaned_data.get("description", "") or ""
+        description = description.strip()
         if len(description) < 10:
             raise forms.ValidationError("La descripción debe tener al menos 10 caracteres.")
         return description
@@ -89,13 +94,15 @@ class VenueModelForm(forms.ModelForm):
         }
 
     def clean_name(self):
-        name = self.cleaned_data.get("name", "").strip()
+        name = self.cleaned_data.get("name", "") or ""
+        name = name.strip()
         if len(name) < 3:
             raise forms.ValidationError("El nombre debe tener al menos 3 caracteres.")
         return name
 
     def clean_city(self):
-        city = self.cleaned_data.get("city", "").strip()
+        city = self.cleaned_data.get("city", "") or ""
+        city = city.strip()
         if not city:
             raise forms.ValidationError("La ciudad es obligatoria.")
         if city.isnumeric():
@@ -103,52 +110,24 @@ class VenueModelForm(forms.ModelForm):
         return city
 
     def clean_address(self):
-        address = self.cleaned_data.get("address", "").strip()
+        address = self.cleaned_data.get("address", "") or ""
+        address = address.strip()
         if len(address) < 5:
             raise forms.ValidationError("La dirección debe tener al menos 5 caracteres.")
         return address
 
     def clean_contact(self):
-        contact = self.cleaned_data.get("contact", "").strip()
+        contact = self.cleaned_data.get("contact", "") or ""
+        contact = contact.strip()
         if len(contact) < 5:
             raise forms.ValidationError("El contacto debe tener al menos 5 caracteres.")
         return contact
 
 
 class EventModelForm(forms.ModelForm):
-    # Campos adicionales para los precios de tickets
-    general_price = forms.DecimalField(
-        max_digits=8, 
-        decimal_places=2, 
-        required=True,
-        widget=forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'step': '0.01'}),
-        label='Precio Entrada General'
-    )
-    premium_price = forms.DecimalField(
-        max_digits=8, 
-        decimal_places=2, 
-        required=False,
-        widget=forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'step': '0.01'}),
-        label='Precio Entrada Premium (Opcional)'
-    )
-    vip_price = forms.DecimalField(
-        max_digits=8, 
-        decimal_places=2, 
-        required=False,
-        widget=forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'step': '0.01'}),
-        label='Precio Entrada VIP (Opcional)'
-    )
-    ultra_vip_price = forms.DecimalField(
-        max_digits=8, 
-        decimal_places=2, 
-        required=False,
-        widget=forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'step': '0.01'}),
-        label='Precio Entrada Ultra VIP (Opcional)'
-    )
-
     class Meta:
         model = Event
-        fields = ['category', 'venue_fk', 'title', 'description', 'date', 'image', 'base_price']
+        fields = ['category', 'venue_fk', 'title', 'description', 'date', 'image']
         widgets = {
             'category': forms.Select(attrs={'class': 'form-control'}),
             'venue_fk': forms.Select(attrs={'class': 'form-control'}),
@@ -156,7 +135,6 @@ class EventModelForm(forms.ModelForm):
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'Descripción'}),
             'date': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
             'image': forms.ClearableFileInput(attrs={'class': 'form-control'}),
-            'base_price': forms.NumberInput(attrs={'class': 'form-control'}),
         }
         labels = {
             'category': 'Categoría',
@@ -165,111 +143,149 @@ class EventModelForm(forms.ModelForm):
             'description': 'Descripción',
             'date': 'Fecha y hora',
             'image': 'Imagen del evento',
-            'base_price': 'Precio base',
         }
 
     def clean_title(self):
-        title = self.cleaned_data.get("title", "").strip()
+        title = self.cleaned_data.get("title", "") or ""
+        title = title.strip()
         if len(title) < 5:
             raise forms.ValidationError("El título debe tener al menos 5 caracteres.")
         return title
 
     def clean_description(self):
-        description = self.cleaned_data.get("description", "").strip()
+        description = self.cleaned_data.get("description", "") or ""
+        description = description.strip()
         if len(description) < 20:
             raise forms.ValidationError("La descripción debe tener al menos 20 caracteres.")
         return description
 
-    def clean_base_price(self):
-        base_price = self.cleaned_data.get("base_price")
-        if base_price < 0:
-            raise forms.ValidationError("El precio no puede ser negativo.")
-        return base_price
-
-    def clean_general_price(self):
-        general_price = self.cleaned_data.get("general_price")
-        if general_price < 0:
-            raise forms.ValidationError("El precio general no puede ser negativo.")
-        return general_price
-
-    def clean(self):
-        cleaned_data = super().clean()
-        general_price = cleaned_data.get('general_price')
-        premium_price = cleaned_data.get('premium_price')
-        vip_price = cleaned_data.get('vip_price')
-        ultra_vip_price = cleaned_data.get('ultra_vip_price')
-        
-        # Validar que los precios estén en orden ascendente
-        prices = []
-        if general_price is not None:
-            prices.append(('General', general_price))
-        if premium_price is not None:
-            prices.append(('Premium', premium_price))
-        if vip_price is not None:
-            prices.append(('VIP', vip_price))
-        if ultra_vip_price is not None:
-            prices.append(('Ultra VIP', ultra_vip_price))
-        
-        # Verificar orden
-        for i in range(1, len(prices)):
-            if prices[i][1] <= prices[i-1][1]:
-                raise forms.ValidationError(
-                    f"El precio {prices[i][0]} debe ser mayor que {prices[i-1][0]}"
-                )
-        
-        return cleaned_data
 
 class TicketModelForm(forms.ModelForm):
     class Meta:
         model = TicketTier
-        fields = ['name', 'price', 'description', 'max_quantity']
+        fields = ['name', 'price', 'description', 'max_quantity', 'is_available']
         widgets = {
-            "quantity": forms.NumberInput(attrs={
-                "class": "form-control"
-            }),
-            "type": forms.Select(attrs={
-                'class': 'form-control'
-            }),
+            'name': forms.TextInput(attrs={'class':'form-control','placeholder':'Nombre del ticket'}),
+            'price': forms.NumberInput(attrs={'class':'form-control','min':'0','step':'0.01'}),
+            'description': forms.Textarea(attrs={'class':'form-control','rows':2,'placeholder':'Descripción opcional'}),
+            'max_quantity': forms.NumberInput(attrs={'class':'form-control','min':'1'}),
+            'is_available': forms.CheckboxInput(attrs={'class':'form-check-input'}),
         }
         labels = {
-            "quantity": "Cantidad",
-            "type": "Tipo",
+            'name': 'Nombre de la entrada',
+            'price': 'Precio',
+            'description': 'Descripción',
+            'max_quantity': 'Cantidad máxima',
+            'is_available': 'Disponible',
         }
 
-    def clean_quantity(self):
-        quantity = self.cleaned_data.get("quantity")
-        if quantity is None or quantity <= 0:
-            raise forms.ValidationError("La cantidad debe ser mayor que 0.")
-        return quantity
+    def clean_max_quantity(self):
+        max_quantity = self.cleaned_data.get("max_quantity")
+        if max_quantity is None or max_quantity <= 0:
+            raise forms.ValidationError("La cantidad máxima debe ser mayor que 0.")
+        return max_quantity
 
-    def clean_type(self):
-        ticket_type = self.cleaned_data.get("type")
-        valid_types = [choice[0] for choice in Ticket.TicketType.choices]
-        if ticket_type not in valid_types:
-            raise forms.ValidationError(f"Tipo inválido. Debe ser uno de {valid_types}.")
-        return ticket_type
-    
+
+class TicketTierInlineFormSet(BaseInlineFormSet):
+    def clean(self):
+        super().clean()
+        total_qty = 0
+        for form in self.forms:
+            if form.cleaned_data and not form.cleaned_data.get('DELETE', False):
+                qty = form.cleaned_data.get('max_quantity') or 0
+                total_qty += qty
+
+        venue = self.instance.venue_fk
+        if venue and total_qty > venue.capacity:
+            raise ValidationError(
+                f"La suma de cantidades ({total_qty}) excede la capacidad del venue ({venue.capacity})."
+            )
+
+
+TicketTierFormSet = inlineformset_factory(
+    Event,
+    TicketTier,
+    form=TicketModelForm,
+    formset=TicketTierInlineFormSet,
+    extra=1,
+    can_delete=True,
+)
+
+
 class PromotionForm(forms.ModelForm):
     class Meta:
         model = Promotion
         fields = ['code', 'discount_percentage', 'start_date', 'end_date', 'max_uses']
+        widgets = {
+            'code': forms.TextInput(attrs={'class':'form-control', 'placeholder':'Código promocional'}),
+            'discount_percentage': forms.NumberInput(attrs={'class':'form-control', 'min':'0', 'max':'100'}),
+            'start_date': forms.DateTimeInput(attrs={'class':'form-control', 'type':'datetime-local'}),
+            'end_date': forms.DateTimeInput(attrs={'class':'form-control', 'type':'datetime-local'}),
+            'max_uses': forms.NumberInput(attrs={'class':'form-control', 'min':'1'}),
+        }
+        labels = {
+            'code': 'Código',
+            'discount_percentage': 'Porcentaje de descuento',
+            'start_date': 'Fecha de inicio',
+            'end_date': 'Fecha de fin',
+            'max_uses': 'Usos máximos',
+        }
 
 
 class RatingForm(forms.ModelForm):
     class Meta:
         model = Rating
         fields = ['title', 'text', 'rating']
+        widgets = {
+            'title': forms.TextInput(attrs={'class':'form-control'}),
+            'text': forms.Textarea(attrs={'class':'form-control', 'rows':3}),
+            'rating': forms.NumberInput(attrs={'class':'form-control', 'min':'1', 'max':'5'}),
+        }
+        labels = {
+            'title': 'Título',
+            'text': 'Comentario',
+            'rating': 'Calificación',
+        }
 
 
 class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment
         fields = ['title', 'text']
+        widgets = {
+            'title': forms.TextInput(attrs={'class':'form-control'}),
+            'text': forms.Textarea(attrs={'class':'form-control', 'rows':3}),
+        }
+        labels = {
+            'title': 'Título',
+            'text': 'Comentario',
+        }
 
 
 class SignUpForm(UserCreationForm):
-    email = forms.EmailField(required=True)
+    email = forms.EmailField(required=True, widget=forms.EmailInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'Correo electrónico',
+    }))
 
     class Meta:
         model = User
         fields = ['username', 'email', 'password1', 'password2']
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre de usuario'}),
+            'password1': forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Contraseña'}),
+            'password2': forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Confirmar contraseña'}),
+        }
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email', '') or ''
+        email = email.strip()
+        if User.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError("Este correo electrónico ya está registrado.")
+        return email
+
+class ProfileImageForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['avatar']
+

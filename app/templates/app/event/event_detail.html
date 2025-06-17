@@ -1,103 +1,62 @@
 {% extends 'base.html' %}
+{% load static %}
+
 {% block title %}{{ event.title }} - MiEvento{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/event_detail.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="row">
-    <div class="col-md-8">
-        <h2>{{ event.title }}</h2>
-        <p><strong>Fecha:</strong> {{ event.date|date:"d/m/Y H:i" }}</p>
-        <p><strong>Categoría:</strong> {{ event.category.name }}</p>
-        <p><strong>Lugar:</strong> {{ event.venue_fk.name }} ({{ event.venue_fk.city }})</p>
-        <hr>
-        <p>{{ event.description }}</p>
-
-        {% if request.user.is_authenticated %}
-            {% if event.date > now %}
-                <!-- Formulario de compra (ejemplo) -->
-                <form method="post" action="{% url 'buy_ticket' event.id %}">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="quantity" class="form-label">Cantidad de tickets</label>
-                        <input type="number" class="form-control" name="quantity" id="quantity" min="1" value="1">
-                    </div>
-                    <div class="mb-3">
-                        <label for="type" class="form-label">Tipo de ticket</label>
-                        <select class="form-select" name="type" id="type">
-                            <option value="GENERAL">General</option>
-                            <option value="VIP">VIP</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-success">Comprar</button>
-                </form>
-                <hr>
-            {% else %}
-                <p class="text-danger">Este evento ya finalizó. No es posible comprar tickets.</p>
+<div class="container">
+    <div class="row">
+        <!-- Columna principal con detalles y lugar al final -->
+        <div class="col-md-8">
+            <!-- Imagen y detalles del evento -->
+            {% if event.image %}
+                <img src="{{ event.image.url }}" class="img-fluid mb-3" alt="{{ event.title }}">
             {% endif %}
-        {% else %}
-            <p><a href="{% url 'login' %}">Inicia sesión</a> para comprar tickets.</p>
-        {% endif %}
 
-        <!-- Comentarios -->
-        <hr>
-        <h4>Comentarios</h4>
-        {% for comment in event.comment_set.all %}
-            <div class="card mb-2">
-                <div class="card-body">
-                    <h5 class="card-title">{{ comment.title }}</h5>
-                    <h6 class="card-subtitle mb-2 text-muted">
-                        {{ comment.user_fk.username }} - {{ comment.created_at|date:"d/m/Y H:i" }}
-                    </h6>
-                    <p class="card-text">{{ comment.text }}</p>
-                </div>
-            </div>
-        {% empty %}
-            <p>No hay comentarios aún.</p>
-        {% endfor %}
-
-        {% if request.user.is_authenticated and event.date < now %}
-            <!-- Solo permitir comentar si el evento ocurrió o se quiere permitir antes -->
-            <form method="post" action="{% url 'comment_create' event.id %}">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit" class="btn btn-primary">Agregar comentario</button>
-            </form>
-        {% elif not request.user.is_authenticated %}
-            <p><a href="{% url 'login' %}">Inicia sesión</a> para comentar.</p>
-        {% endif %}
-
-        <!-- Ratings -->
-        <hr>
-        <h4>Calificaciones</h4>
-        {% for rating in event.rating_set.all %}
-            <div class="d-flex justify-content-between mb-2">
-                <strong>{{ rating.user_fk.username }}</strong>
-                <span>{{ rating.rating }}/5</span>
-            </div>
-            <p>{{ rating.text }}</p>
+            <h2>{{ event.title }}</h2>
+            <p><strong>Fecha:</strong> {{ event.date|date:"d/m/Y H:i" }}</p>
+            <p><strong>Categoría:</strong> {{ event.category.name }}</p>
             <hr>
-        {% empty %}
-            <p>Aún no hay calificaciones.</p>
-        {% endfor %}
+            <p>{{ event.description }}</p>
 
-        {% if request.user.is_authenticated and event.date < now %}
-            <form method="post" action="{% url 'rating_create' event.id %}">
-                {% csrf_token %}
-                {{ rating_form.as_p }}
-                <button type="submit" class="btn btn-primary">Agregar calificación</button>
-            </form>
-        {% elif not request.user.is_authenticated %}
-            <p><a href="{% url 'login' %}">Inicia sesión</a> para calificar.</p>
-        {% endif %}
-    </div>
-    <div class="col-md-4">
-        <!-- Sidebar con información del Venue -->
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Información del lugar</h5>
+            <!-- Información del lugar abajo -->
+            <div class="sidebar-card mt-4 p-3 border rounded">
+                <h5>Información del lugar</h5>
                 <p><strong>Nombre:</strong> {{ event.venue_fk.name }}</p>
                 <p><strong>Dirección:</strong> {{ event.venue_fk.address }}, {{ event.venue_fk.city }}</p>
                 <p><strong>Capacidad:</strong> {{ event.venue_fk.capacity }}</p>
                 <p><strong>Contacto:</strong> {{ event.venue_fk.contact }}</p>
             </div>
+        </div>
+
+        <!-- Entradas al costado derecho -->
+        <div class="col-md-4">
+            <h4>Entradas</h4>
+            {% if event.ticket_tiers.all %}
+                {% for tier in event.ticket_tiers.all %}
+                    {% if tier.is_available %}
+                    <div class="card mb-3">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title mb-1">{{ tier.name }}</h5>
+                            <p class="card-text mb-1 small">{{ tier.description }}</p>
+                            <p class="mb-1"><strong>Precio:</strong> ${{ tier.price }}</p>
+                            <p class="mb-2"><strong>Disponibles:</strong> {{ tier.max_quantity }}</p>
+                            {% if tier.max_quantity > 0 %}
+                                <button class="btn btn-success mt-auto" style="align-self: flex-start; padding: 0.25rem 0.75rem; font-size: 0.875rem;">Comprar</button>
+                            {% else %}
+                                <button class="btn btn-secondary mt-auto" disabled style="align-self: flex-start; padding: 0.25rem 0.75rem; font-size: 0.875rem;">Agotado</button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <p>No hay entradas disponibles.</p>
+            {% endif %}
         </div>
     </div>
 </div>

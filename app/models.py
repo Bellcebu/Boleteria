@@ -1,10 +1,24 @@
 from django.db import models
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.conf import settings
 
 
+class BaseModel(models.Model):
+    class Meta:
+        abstract = True
+
+    @classmethod
+    def validate_required_fields(cls, **fields):
+        errors = {}
+        for field_name, value in fields.items():
+            if not value:
+                errors[field_name] = f"El campo {field_name} es obligatorio"
+        return errors
+
+
 # --- Categorías y lugares ---
-class Category(models.Model):
+class Category(BaseModel):
     name = models.CharField(max_length=50)
     description = models.TextField()
     is_active = models.BooleanField(default=True)
@@ -14,10 +28,7 @@ class Category(models.Model):
 
     @classmethod
     def validate(cls, name):
-        errors = {}
-        if not name:
-            errors["name"] = "El nombre es obligatorio"
-        return errors
+        return cls.validate_required_fields(name=name)
 
     @classmethod
     def new(cls, name, description='', is_active=True):
@@ -37,41 +48,53 @@ class Category(models.Model):
         self.save()
 
 
-class Venue(models.Model):
-    name = models.TextField(max_length=100)
-    address = models.TextField(max_length=100)
-    city = models.TextField(max_length=100)
+class Venue(BaseModel):
+    name = models.CharField(max_length=100)
+    address = models.CharField(max_length=100)
+    city = models.CharField(max_length=100)
     capacity = models.IntegerField()
-    contact = models.TextField(max_length=100)
+    contact = models.CharField(max_length=100)
 
     def __str__(self):
         return f"{self.name} - {self.city}"
 
     @classmethod
+    def validate(cls, name, address, city, capacity, contact):
+        errors = cls.validate_required_fields(name=name, address=address, city=city, contact=contact)
+        if capacity is None or capacity <= 0:
+            errors["capacity"] = "La capacidad debe ser un número positivo"
+        return errors
+
+    @classmethod
     def new(cls, name, address, city, capacity, contact):
-        if not name or not address or not city or not contact:
-            raise ValidationError("All fields except capacity are required.")
-        if capacity <= 0:
-            raise ValidationError("Capacity must be a positive number.")
-        return cls.objects.create(
+        errors = cls.validate(name, address, city, capacity, contact)
+        if errors:
+            return False, errors
+        venue = cls.objects.create(
             name=name,
             address=address,
             city=city,
             capacity=capacity,
             contact=contact
         )
+        return True, venue
 
     def update(self, name=None, address=None, city=None, capacity=None, contact=None):
-        self.name = name or self.name
-        self.address = address or self.address
-        self.city = city or self.city
-        self.capacity = capacity or self.capacity
-        self.contact = contact or self.contact
+        if name is not None:
+            self.name = name
+        if address is not None:
+            self.address = address
+        if city is not None:
+            self.city = city
+        if capacity is not None:
+            self.capacity = capacity
+        if contact is not None:
+            self.contact = contact
         self.save()
 
 
 # --- Eventos, Comentarios, Ratings ---
-class Event(models.Model):
+class Event(BaseModel):
     category = models.ForeignKey(
         'Category',
         on_delete=models.CASCADE,
@@ -86,7 +109,6 @@ class Event(models.Model):
     description = models.TextField()
     date = models.DateTimeField()
     image = models.ImageField(upload_to='events/', null=True, blank=True)
-    base_price = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -99,11 +121,11 @@ class Event(models.Model):
 
     @classmethod
     def validate(cls, title, description, date):
-        errors = {}
-        if not title:
-            errors["title"] = "Por favor ingrese un título"
-        if not description:
-            errors["description"] = "Por favor ingrese una descripción"
+        errors = cls.validate_required_fields(title=title, description=description)
+        if not date:
+            errors["date"] = "La fecha es obligatoria"
+        elif date and date < models.DateTimeField().to_python('now'):
+            pass
         return errors
 
     @classmethod
@@ -121,10 +143,14 @@ class Event(models.Model):
         return True, event
 
     def update(self, title=None, description=None, date=None):
-        self.title = title or self.title
-        self.description = description or self.description
-        self.date = date or self.date
+        if title is not None:
+            self.title = title
+        if description is not None:
+            self.description = description
+        if date is not None:
+            self.date = date
         self.save()
+
 
 class Promotion(models.Model):
     code = models.CharField(max_length=50, unique=True)
@@ -132,7 +158,7 @@ class Promotion(models.Model):
     event = models.ForeignKey('Event', on_delete=models.CASCADE, related_name='promotions')
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
-    max_uses = models.IntegerField(default=None, null=True, blank=True)  
+    max_uses = models.IntegerField(null=True, blank=True)  
     current_uses = models.IntegerField(default=0)
     is_active = models.BooleanField(default=True)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -142,9 +168,9 @@ class Promotion(models.Model):
         return f"{self.code} - {self.discount_percentage}% para {self.event.title}"
 
 
-class Comment(models.Model):
-    title = models.TextField(max_length=100)
-    text = models.TextField(max_length=100)
+class Comment(BaseModel):
+    title = models.CharField(max_length=100)
+    text = models.TextField(max_length=500)
     created_at = models.DateTimeField(auto_now_add=True)
     user_fk = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -157,9 +183,14 @@ class Comment(models.Model):
     )
 
     @classmethod
+    def validate(cls, title, text):
+        return cls.validate_required_fields(title=title, text=text)
+
+    @classmethod
     def new(cls, title, text, user, event):
-        if not title or not text:
-            raise ValidationError("Title and text are required.")
+        errors = cls.validate(title, text)
+        if errors:
+            return False, errors
         return cls.objects.create(
             title=title,
             text=text,
@@ -168,14 +199,16 @@ class Comment(models.Model):
         )
 
     def update(self, title=None, text=None):
-        self.title = title or self.title
-        self.text = text or self.text
+        if title is not None:
+            self.title = title
+        if text is not None:
+            self.text = text
         self.save()
 
 
-class Rating(models.Model):
+class Rating(BaseModel):
     title = models.CharField(max_length=100)
-    text = models.CharField(max_length=250)
+    text = models.TextField(max_length=500)
     rating = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
     user_fk = models.ForeignKey(
@@ -190,11 +223,17 @@ class Rating(models.Model):
     )
 
     @classmethod
+    def validate(cls, title, text, rating):
+        errors = cls.validate_required_fields(title=title, text=text)
+        if rating is None or not (1 <= rating <= 5):
+            errors["rating"] = "La calificación debe estar entre 1 y 5"
+        return errors
+
+    @classmethod
     def new(cls, title, text, rating, user, event):
-        if not title or not text:
-            raise ValidationError("Title and text are required.")
-        if not (1 <= rating <= 5):
-            raise ValidationError("Rating must be between 1 and 5.")
+        errors = cls.validate(title, text, rating)
+        if errors:
+            return False, errors
         return cls.objects.create(
             title=title,
             text=text,
@@ -204,26 +243,22 @@ class Rating(models.Model):
         )
 
     def update(self, title=None, text=None, rating=None):
-        self.title = title or self.title
-        self.text = text or self.text
-        self.rating = rating or self.rating
+        if title is not None:
+            self.title = title
+        if text is not None:
+            self.text = text
+        if rating is not None:
+            self.rating = rating
         self.save()
 
 
 # --- Tickets ---
-class TicketTier(models.Model):
-    TIER_CHOICES = [
-        ('GENERAL', 'General'),
-        ('PREMIUM', 'Premium'),
-        ('VIP', 'VIP'),
-        ('ULTRA_VIP', 'Ultra VIP'),
-    ]
-    
+class TicketTier(models.Model):    
     event = models.ForeignKey('Event', on_delete=models.CASCADE, related_name='ticket_tiers')
-    name = models.CharField(max_length=50, choices=TIER_CHOICES)
+    name = models.CharField(max_length=50)
     price = models.DecimalField(max_digits=8, decimal_places=2)
     description = models.TextField(blank=True)  
-    max_quantity = models.IntegerField(default=None, null=True, blank=True) 
+    max_quantity = models.IntegerField(null=True, blank=True) 
     is_available = models.BooleanField(default=True)
 
     class Meta:
@@ -237,7 +272,7 @@ class Ticket(models.Model):
     ticket_tier = models.ForeignKey(TicketTier, on_delete=models.CASCADE)
     promotion_used = models.ForeignKey('Promotion', on_delete=models.SET_NULL, null=True, blank=True)
     original_price = models.DecimalField(max_digits=8, decimal_places=2)
-    final_price = models.DecimalField(max_digits=8, decimal_places=2)  # Después del descuento
+    final_price = models.DecimalField(max_digits=8, decimal_places=2)  
     user_fk = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     quantity = models.IntegerField(default=1)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -253,9 +288,8 @@ class Ticket(models.Model):
         return f"Ticket {self.id} - {self.ticket_tier.event.title}"
 
 
-
 # --- Notificaciones ---
-class Notificacion(models.Model):
+class Notificacion(BaseModel):
     title = models.CharField(max_length=50)
     message = models.TextField()
     created_at = models.DateField(auto_now_add=True)
@@ -272,11 +306,7 @@ class Notificacion(models.Model):
 
     @classmethod
     def validate(cls, title, message, priority):
-        errors = {}
-        if not title:
-            errors["title"] = "El título es obligatorio"
-        if not message:
-            errors["message"] = "El mensaje es obligatorio"
+        errors = cls.validate_required_fields(title=title, message=message)
         if priority not in ['alta', 'media', 'baja']:
             errors["priority"] = "Prioridad inválida"
         return errors
@@ -306,26 +336,21 @@ class Notificacion(models.Model):
 
 
 # --- Solicitudes de Reembolso ---
-class RefundRequest(models.Model):
+class RefundRequest(BaseModel):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='refund_requests'
     )
     approved = models.BooleanField(default=False)
-    approval_date = models.DateField(default=None)
+    approval_date = models.DateField(null=True, blank=True)
     ticket_code = models.CharField(max_length=50)
     reason = models.TextField()
     created_at = models.DateField(auto_now_add=True)
 
     @classmethod
     def validate(cls, ticket_code, reason):
-        errors = {}
-        if not ticket_code:
-            errors["ticket_code"] = "El código del ticket es obligatorio"
-        if not reason:
-            errors["reason"] = "La razón es obligatoria"
-        return errors
+        return cls.validate_required_fields(ticket_code=ticket_code, reason=reason)
 
     @classmethod
     def new(cls, user, ticket_code, reason):
@@ -347,3 +372,11 @@ class RefundRequest(models.Model):
         if approved is not None:
             self.approved = approved
         self.save()
+
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    avatar = models.ImageField(upload_to='avatars/', default='avatars/default.png', blank=True)
+
+    def __str__(self):
+        return f"Perfil de {self.user.username}"
+

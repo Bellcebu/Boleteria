@@ -73,7 +73,7 @@
                                         <td>{{ user.date_joined|date:"d/m/Y" }}</td>
                                         <td>
                                             {% if not user.is_superuser %}
-                                                <a href="{% url 'admin_assign_role' user.id %}" class="btn btn-sm btn-outline-primary">
+                                                <a href="{% url 'assign_role' user.id %}" class="btn btn-sm btn-outline-primary">
                                                     <i class="fas fa-edit me-1"></i>Cambiar Rol
                                                 </a>
                                             {% else %}
