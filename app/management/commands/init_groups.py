@@ -17,7 +17,6 @@ class Command(BaseCommand):
                 codename__in=[f"{action}_{model._meta.model_name}" for action in actions]
             )
 
-        # Permisos para admin
         admin_perms = (
             get_perms(Event, ['add', 'change', 'delete', 'view']) |
             get_perms(Category, ['add', 'change', 'delete', 'view']) |
@@ -26,7 +25,6 @@ class Command(BaseCommand):
         )
         admin_group.permissions.set(admin_perms)
 
-        # Permisos para vendedor
         vendedor_perms = (
             get_perms(Event, ['view']) |
             get_perms(Category, ['view']) |
@@ -34,4 +32,4 @@ class Command(BaseCommand):
         )
         vendedor_group.permissions.set(vendedor_perms)
 
-        self.stdout.write(self.style.SUCCESS("✅ Grupos y permisos configurados correctamente."))
+        self.stdout.write(self.style.SUCCESS("Grupos y permisos configurados correctamente."))

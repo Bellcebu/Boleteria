@@ -46,7 +46,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const newForm = templateForm.cloneNode(true);
         clearValues(newForm);
         updateIndices(newForm, currentCount);
-        // Mostrar botón de eliminar
         const header = newForm.querySelector('.d-flex.justify-content-between');
         if (!header.querySelector('.remove-ticket-btn')) {
             const btn = document.createElement('button');

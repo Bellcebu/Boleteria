@@ -1,11 +1,12 @@
-from django.db import models
-from django.contrib.auth.models import User
-from decimal import Decimal, ROUND_DOWN,InvalidOperation
-from django.db.models import Sum
-from django.core.exceptions import ValidationError
+from decimal import Decimal, ROUND_DOWN, InvalidOperation
 from django.conf import settings
+from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from django.db import models
+from django.db.models import Sum
 
 
+# --- Base ---
 class BaseModel(models.Model):
     class Meta:
         abstract = True
@@ -19,7 +20,7 @@ class BaseModel(models.Model):
         return errors
 
 
-# --- Categorías y lugares ---
+# --- Categorías y Lugares ---
 class Category(BaseModel):
     name = models.CharField(max_length=50)
     description = models.TextField()
@@ -95,18 +96,10 @@ class Venue(BaseModel):
         self.save()
 
 
-# --- Eventos, Comentarios, Ratings ---
+# --- Eventos ---
 class Event(BaseModel):
-    category = models.ForeignKey(
-        'Category',
-        on_delete=models.CASCADE,
-        related_name='events'
-    )
-    venue_fk = models.ForeignKey(
-        "Venue",
-        on_delete=models.CASCADE,
-        default=None
-    )
+    category = models.ForeignKey('Category', on_delete=models.CASCADE, related_name='events')
+    venue_fk = models.ForeignKey("Venue", on_delete=models.CASCADE, default=None)
     title = models.CharField(max_length=200)
     description = models.TextField()
     date = models.DateTimeField()
@@ -116,7 +109,7 @@ class Event(BaseModel):
 
     def __str__(self):
         return self.title
-    
+
     def get_base_price(self):
         tier = self.ticket_tiers.filter(is_available=True).order_by('price').first()
         return tier.price if tier else 0
@@ -126,8 +119,6 @@ class Event(BaseModel):
         errors = cls.validate_required_fields(title=title, description=description)
         if not date:
             errors["date"] = "La fecha es obligatoria"
-        elif date and date < models.DateTimeField().to_python('now'):
-            pass
         return errors
 
     @classmethod
@@ -154,13 +145,14 @@ class Event(BaseModel):
         self.save()
 
 
+# --- Promociones ---
 class Promotion(models.Model):
     code = models.CharField(max_length=50, unique=True)
-    discount_percentage = models.DecimalField(max_digits=5, decimal_places=2) 
+    discount_percentage = models.DecimalField(max_digits=5, decimal_places=2)
     event = models.ForeignKey('Event', on_delete=models.CASCADE, related_name='promotions')
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
-    max_uses = models.IntegerField(null=True, blank=True)  
+    max_uses = models.IntegerField(null=True, blank=True)
     current_uses = models.IntegerField(default=0)
     is_active = models.BooleanField(default=True)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -170,19 +162,13 @@ class Promotion(models.Model):
         return f"{self.code} - {self.discount_percentage}% para {self.event.title}"
 
 
+# --- Comentarios ---
 class Comment(BaseModel):
     title = models.CharField(max_length=100)
     text = models.TextField(max_length=500)
     created_at = models.DateTimeField(auto_now_add=True)
-    user_fk = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE
-    )
-    event_fk = models.ForeignKey(
-        "Event",
-        on_delete=models.CASCADE,
-        default=None
-    )
+    user_fk = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    event_fk = models.ForeignKey("Event", on_delete=models.CASCADE, default=None)
 
     @classmethod
     def validate(cls, title, text):
@@ -193,12 +179,7 @@ class Comment(BaseModel):
         errors = cls.validate(title, text)
         if errors:
             return False, errors
-        return cls.objects.create(
-            title=title,
-            text=text,
-            user_fk=user,
-            event_fk=event
-        )
+        return cls.objects.create(title=title, text=text, user_fk=user, event_fk=event)
 
     def update(self, title=None, text=None):
         if title is not None:
@@ -208,21 +189,14 @@ class Comment(BaseModel):
         self.save()
 
 
+# --- Ratings ---
 class Rating(BaseModel):
     title = models.CharField(max_length=100)
     text = models.TextField(max_length=500)
     rating = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
-    user_fk = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        default=None
-    )
-    event_fk = models.ForeignKey(
-        "Event",
-        on_delete=models.CASCADE,
-        default=None
-    )
+    user_fk = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, default=None)
+    event_fk = models.ForeignKey("Event", on_delete=models.CASCADE, default=None)
 
     @classmethod
     def validate(cls, title, text, rating):
@@ -236,13 +210,7 @@ class Rating(BaseModel):
         errors = cls.validate(title, text, rating)
         if errors:
             return False, errors
-        return cls.objects.create(
-            title=title,
-            text=text,
-            rating=rating,
-            user_fk=user,
-            event_fk=event
-        )
+        return cls.objects.create(title=title, text=text, rating=rating, user_fk=user, event_fk=event)
 
     def update(self, title=None, text=None, rating=None):
         if title is not None:
@@ -254,71 +222,50 @@ class Rating(BaseModel):
         self.save()
 
 
-# --- Tickets ---
-class TicketTier(models.Model):    
+# --- Entradas (Tickets) ---
+class TicketTier(models.Model):
     event = models.ForeignKey('Event', on_delete=models.CASCADE, related_name='ticket_tiers')
     name = models.CharField(max_length=50)
     price = models.DecimalField(max_digits=8, decimal_places=2)
-    description = models.TextField(blank=True)  
-    max_quantity = models.IntegerField(null=True, blank=True) 
+    description = models.TextField(blank=True)
+    max_quantity = models.IntegerField(null=True, blank=True)
     is_available = models.BooleanField(default=True)
 
     class Meta:
-        unique_together = ['event', 'name'] 
+        unique_together = ['event', 'name']
 
     def get_available_quantity(self):
         if not self.max_quantity:
             return 0
-            
-        sold_qty = self.ticket_set.aggregate(
-            total=Sum('quantity')
-        )['total'] or 0
-        
+        sold_qty = self.ticket_set.aggregate(total=Sum('quantity'))['total'] or 0
         return max(0, self.max_quantity - sold_qty)
-    
+
     def has_available_quantity(self, requested_qty):
         return self.get_available_quantity() >= requested_qty
-    
+
     def __str__(self):
         return f"{self.event.title} - {self.name} (${self.price})"
 
+
 class Ticket(models.Model):
     ticket_tier = models.ForeignKey(TicketTier, on_delete=models.CASCADE)
-    promotion_used = models.ForeignKey(
-        'Promotion', on_delete=models.SET_NULL, null=True, blank=True
-    )
-    original_price = models.DecimalField(
-        max_digits=10,  # Aumentado de 8 a 10
-        decimal_places=2,
-        default=Decimal('0.00'),
-        null=False,
-        blank=False
-    )
-    final_price = models.DecimalField(
-        max_digits=10,  # Aumentado de 8 a 10
-        decimal_places=2,
-        default=Decimal('0.00'),
-        null=False,
-        blank=False
-    )
+    promotion_used = models.ForeignKey('Promotion', on_delete=models.SET_NULL, null=True, blank=True)
+    original_price = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    final_price = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
     user_fk = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     quantity = models.IntegerField(default=1)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def calculate_final_price(self):
-        """Calcula el precio final con promociones aplicadas"""
         try:
             base_price = Decimal(str(self.ticket_tier.price))
             quantity = Decimal(str(self.quantity))
             total_price = base_price * quantity
-            
             if self.promotion_used:
-                discount_percentage = Decimal(str(self.promotion_used.discount_percentage))
-                discount_amount = total_price * (discount_percentage / Decimal('100'))
-                final_price = total_price - discount_amount
+                discount = total_price * (Decimal(str(self.promotion_used.discount_percentage)) / 100)
+                final_price = total_price - discount
             else:
                 final_price = total_price
-                
             return final_price.quantize(Decimal('0.01'), rounding=ROUND_DOWN)
         except (InvalidOperation, ValueError, TypeError) as e:
             print(f"Error calculando precio: {e}")
@@ -327,31 +274,21 @@ class Ticket(models.Model):
     def save(self, *args, **kwargs):
         if self.quantity < 1:
             raise ValidationError("La cantidad debe ser al menos 1.")
-        
         try:
-            base_price = Decimal(str(self.ticket_tier.price))
-            quantity = Decimal(str(self.quantity))
-            self.original_price = (base_price * quantity).quantize(
-                Decimal('0.01'), rounding=ROUND_DOWN
-            )
-
+            self.original_price = (Decimal(str(self.ticket_tier.price)) * self.quantity).quantize(Decimal('0.01'), rounding=ROUND_DOWN)
             if self.promotion_used:
-                discount_percentage = Decimal(str(self.promotion_used.discount_percentage))
-                discount_amount = self.original_price * (discount_percentage / Decimal('100'))
-                self.final_price = (self.original_price - discount_amount).quantize(
-                    Decimal('0.01'), rounding=ROUND_DOWN
-                )
+                discount = self.original_price * (Decimal(str(self.promotion_used.discount_percentage)) / 100)
+                self.final_price = (self.original_price - discount).quantize(Decimal('0.01'), rounding=ROUND_DOWN)
             else:
                 self.final_price = self.original_price
-                
         except (InvalidOperation, ValueError, TypeError) as e:
             raise ValidationError(f"Error en el cálculo de precios: {e}")
-            
         super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Ticket {self.pk} - {self.ticket_tier.event.title}"
-   
+
+
 # --- Notificaciones ---
 class Notificacion(BaseModel):
     title = models.CharField(max_length=50)
@@ -363,10 +300,7 @@ class Notificacion(BaseModel):
         default='media'
     )
     is_read = models.BooleanField(default=False)
-    users = models.ManyToManyField(
-        settings.AUTH_USER_MODEL,
-        related_name='notificaciones'
-    )
+    users = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='notificaciones')
 
     @classmethod
     def validate(cls, title, message, priority):
@@ -401,11 +335,7 @@ class Notificacion(BaseModel):
 
 # --- Solicitudes de Reembolso ---
 class RefundRequest(BaseModel):
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name='refund_requests'
-    )
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='refund_requests')
     approved = models.BooleanField(default=False)
     approval_date = models.DateField(null=True, blank=True)
     ticket_code = models.CharField(max_length=50)
@@ -421,11 +351,7 @@ class RefundRequest(BaseModel):
         errors = cls.validate(ticket_code, reason)
         if errors:
             return False, errors
-        refund_request = cls.objects.create(
-            user=user,
-            ticket_code=ticket_code,
-            reason=reason,
-        )
+        refund_request = cls.objects.create(user=user, ticket_code=ticket_code, reason=reason)
         return True, refund_request
 
     def update(self, ticket_code=None, reason=None, approved=None):
@@ -437,10 +363,11 @@ class RefundRequest(BaseModel):
             self.approved = approved
         self.save()
 
+
+# --- Perfil de Usuario ---
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     avatar = models.ImageField(upload_to='avatars/', default='avatars/default.png', blank=True)
 
     def __str__(self):
         return f"Perfil de {self.user.username}"
-

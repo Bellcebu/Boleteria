@@ -1,4 +1,3 @@
-# admin_panel/views.py
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -10,7 +9,6 @@ from django.forms import inlineformset_factory
 
 from app.models import Event, Category, Venue, RefundRequest, TicketTier
 from app.forms import EventModelForm, CategoryModelForm, VenueModelForm, TicketModelForm, TicketTierFormSet
-
 
 
 def is_admin(user):
@@ -28,8 +26,7 @@ def admin_dashboard(request):
     return render(request, 'admin_dashboard.html', context)
 
 
-# Eventos CRUD
-# admin_panel/views.py
+# --- Eventos CRUD ---
 
 class EventCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Event
@@ -58,7 +55,6 @@ class EventCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         return self.render_to_response(
             self.get_context_data(form=form, formset=formset)
         )
-
 
 
 class EventUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
@@ -90,7 +86,6 @@ class EventUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return self.render_to_response(self.get_context_data(form=form))
 
 
-
 class EventDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Event
     template_name = 'app/event/event_confirm_delete.html'
@@ -105,7 +100,8 @@ class EventDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         return super().delete(request, *args, **kwargs)
 
 
-# Categorías CRUD
+# --- Categorías CRUD ---
+
 class CategoryCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Category
     form_class = CategoryModelForm
@@ -148,7 +144,8 @@ class CategoryDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         return super().delete(request, *args, **kwargs)
 
 
-# Venues CRUD
+# --- Venues CRUD ---
+
 class VenueCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Venue
     form_class = VenueModelForm
@@ -191,7 +188,8 @@ class VenueDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         return super().delete(request, *args, **kwargs)
 
 
-# Refund Requests CRUD
+# --- Refund Requests CRUD ---
+
 class RefundRequestListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = RefundRequest
     template_name = 'refund_request/refund_request_list_admin.html'
@@ -205,7 +203,8 @@ class RefundRequestListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
         return RefundRequest.objects.all().order_by('-created_at')
 
 
-# Roles
+# --- Roles ---
+
 @login_required
 @user_passes_test(is_admin)
 def user_roles_list(request):

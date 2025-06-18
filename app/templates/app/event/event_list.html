@@ -67,10 +67,7 @@
 
 {% block extra_js %}
   {% if es_admin %}
-    <!-- Intentamos cargar desde /static -->
     <script src="{% static 'js/event_list.js' %}"></script>
-
-    <!-- Y además, inline JS de respaldo -->
     <script>
       function confirmDelete(eventId, eventTitle) {
         const modal      = document.getElementById('deleteModal');
