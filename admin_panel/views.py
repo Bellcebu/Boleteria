@@ -14,6 +14,9 @@ from app.forms import EventModelForm, CategoryModelForm, VenueModelForm, TicketM
 def is_admin(user):
     return user.is_staff or user.groups.filter(name='Admin').exists()
 
+def is_vendedor(user):
+    return user.groups.filter(name='Vendedor').exists() 
+
 
 @login_required
 @user_passes_test(is_admin)
