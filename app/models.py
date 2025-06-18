@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from decimal import Decimal, ROUND_DOWN,InvalidOperation
+from django.db.models import Sum
 from django.core.exceptions import ValidationError
 from django.conf import settings
 
@@ -263,31 +265,93 @@ class TicketTier(models.Model):
 
     class Meta:
         unique_together = ['event', 'name'] 
+
+    def get_available_quantity(self):
+        if not self.max_quantity:
+            return 0
+            
+        sold_qty = self.ticket_set.aggregate(
+            total=Sum('quantity')
+        )['total'] or 0
+        
+        return max(0, self.max_quantity - sold_qty)
+    
+    def has_available_quantity(self, requested_qty):
+        return self.get_available_quantity() >= requested_qty
     
     def __str__(self):
         return f"{self.event.title} - {self.name} (${self.price})"
 
-
 class Ticket(models.Model):
     ticket_tier = models.ForeignKey(TicketTier, on_delete=models.CASCADE)
-    promotion_used = models.ForeignKey('Promotion', on_delete=models.SET_NULL, null=True, blank=True)
-    original_price = models.DecimalField(max_digits=8, decimal_places=2)
-    final_price = models.DecimalField(max_digits=8, decimal_places=2)  
+    promotion_used = models.ForeignKey(
+        'Promotion', on_delete=models.SET_NULL, null=True, blank=True
+    )
+    original_price = models.DecimalField(
+        max_digits=10,  # Aumentado de 8 a 10
+        decimal_places=2,
+        default=Decimal('0.00'),
+        null=False,
+        blank=False
+    )
+    final_price = models.DecimalField(
+        max_digits=10,  # Aumentado de 8 a 10
+        decimal_places=2,
+        default=Decimal('0.00'),
+        null=False,
+        blank=False
+    )
     user_fk = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     quantity = models.IntegerField(default=1)
     created_at = models.DateTimeField(auto_now_add=True)
-    
+
     def calculate_final_price(self):
-        price = self.ticket_tier.price * self.quantity
-        if self.promotion_used:
-            discount = price * (self.promotion_used.discount_percentage / 100)
-            price -= discount
-        return price
-    
+        """Calcula el precio final con promociones aplicadas"""
+        try:
+            base_price = Decimal(str(self.ticket_tier.price))
+            quantity = Decimal(str(self.quantity))
+            total_price = base_price * quantity
+            
+            if self.promotion_used:
+                discount_percentage = Decimal(str(self.promotion_used.discount_percentage))
+                discount_amount = total_price * (discount_percentage / Decimal('100'))
+                final_price = total_price - discount_amount
+            else:
+                final_price = total_price
+                
+            return final_price.quantize(Decimal('0.01'), rounding=ROUND_DOWN)
+        except (InvalidOperation, ValueError, TypeError) as e:
+            print(f"Error calculando precio: {e}")
+            return Decimal('0.00')
+
+    def save(self, *args, **kwargs):
+        if self.quantity < 1:
+            raise ValidationError("La cantidad debe ser al menos 1.")
+        
+        try:
+            base_price = Decimal(str(self.ticket_tier.price))
+            quantity = Decimal(str(self.quantity))
+            self.original_price = (base_price * quantity).quantize(
+                Decimal('0.01'), rounding=ROUND_DOWN
+            )
+
+            if self.promotion_used:
+                discount_percentage = Decimal(str(self.promotion_used.discount_percentage))
+                discount_amount = self.original_price * (discount_percentage / Decimal('100'))
+                self.final_price = (self.original_price - discount_amount).quantize(
+                    Decimal('0.01'), rounding=ROUND_DOWN
+                )
+            else:
+                self.final_price = self.original_price
+                
+        except (InvalidOperation, ValueError, TypeError) as e:
+            raise ValidationError(f"Error en el cálculo de precios: {e}")
+            
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return f"Ticket {self.id} - {self.ticket_tier.event.title}"
-
-
+        return f"Ticket {self.pk} - {self.ticket_tier.event.title}"
+   
 # --- Notificaciones ---
 class Notificacion(BaseModel):
     title = models.CharField(max_length=50)

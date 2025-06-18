@@ -9,87 +9,91 @@
 
 {% block content %}
 <div class="container mt-5">
-    <div class="header text-center mb-5">
-        <h1><i class="fas fa-calendar-alt"></i> Lista de Eventos</h1>
-        <p class="subtitle">Visualiza y gestiona todos tus eventos</p>
-    </div>
+  <div class="header text-center mb-5">
+    <h1><i class="fas fa-calendar-alt"></i> Lista de Eventos</h1>
+    <p class="subtitle">Visualiza y gestiona todos tus eventos</p>
+  </div>
 
-    <div class="filters-section mb-4">
-        <form method="get" id="filterForm" class="row g-3">
-            <div class="col-md-4">
-                <label for="categoria" class="form-label">Categoría</label>
-                <select name="categoria" id="categoria" class="form-select">
-                    <option value="">-- Todas las categorías --</option>
-                    {% for cat in categorias %}
-                        <option value="{{ cat.id }}" {% if cat.id|stringformat:"s" == categoria_seleccionada %}selected{% endif %}>
-                            {{ cat.name }}
-                        </option>
-                    {% endfor %}
-                </select>
+  {% if eventos %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+      {% for evento in eventos %}
+        <div class="col">
+          <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+              <h5 class="card-title mb-0">{{ evento.title }}</h5>
+              <small><i class="fas fa-calendar"></i> {{ evento.date|date:"d M Y" }}</small>
             </div>
-            <div class="col-md-3">
-                <label for="fecha_desde" class="form-label">Desde</label>
-                <input type="date" name="fecha_desde" id="fecha_desde" class="form-control" value="{{ fecha_desde }}">
+            <div class="card-body">
+              <p class="card-text">{{ evento.description|truncatewords:20 }}</p>
             </div>
-            <div class="col-md-3">
-                <label for="fecha_hasta" class="form-label">Hasta</label>
-                <input type="date" name="fecha_hasta" id="fecha_hasta" class="form-control" value="{{ fecha_hasta }}">
+            <div class="card-footer d-flex justify-content-between">
+              <a href="{% url 'event_detail' evento.id %}" class="btn btn-outline-info btn-sm">Ver</a>
+              {% if es_admin %}
+                <a href="{% url 'event_edit' evento.id %}" class="btn btn-outline-warning btn-sm">Editar</a>
+                <button
+                  onclick="confirmDelete('{{ evento.id }}','{{ evento.title }}')"
+                  class="btn btn-outline-danger btn-sm"
+                >Eliminar</button>
+              {% else %}
+                <a href="{% url 'event_detail' evento.id %}" class="btn btn-outline-success btn-sm">Comprar</a>
+              {% endif %}
             </div>
-            <div class="col-md-2 d-flex align-items-end">
-                <button type="submit" class="btn btn-primary w-100">Filtrar</button>
-            </div>
-        </form>
+          </div>
+        </div>
+      {% endfor %}
     </div>
-
-    {% if eventos %}
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-            {% for evento in eventos %}
-                <div class="col">
-                    <div class="card h-100">
-                        <div class="card-header bg-primary text-white">
-                            <h5 class="card-title mb-0">{{ evento.title }}</h5>
-                            <small><i class="fas fa-calendar"></i> {{ evento.date|date:"d M Y" }}</small>
-                        </div>
-                        <div class="card-body">
-                            <p class="card-text">{{ evento.description|truncatewords:20 }}</p>
-                        </div>
-                        <div class="card-footer d-flex justify-content-between">
-                            <a href="{% url 'event_detail' evento.id %}" class="btn btn-outline-info btn-sm">Ver</a>
-                            <a href="{% url 'editar_evento' evento.id %}" class="btn btn-outline-warning btn-sm">Editar</a>
-                            <button onclick="confirmDelete('{{ evento.id }}', '{{ evento.title }}')" class="btn btn-outline-danger btn-sm">Eliminar</button>
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <div class="alert alert-info text-center mt-4">
-            <i class="fas fa-info-circle"></i> No se encontraron eventos con los filtros aplicados.
-        </div>
-    {% endif %}
+  {% else %}
+    <div class="alert alert-info text-center mt-4">
+      <i class="fas fa-info-circle"></i> No hay eventos disponibles.
+    </div>
+  {% endif %}
 </div>
 
-<!-- Modal de confirmación para eliminar -->
-<div class="delete-modal" id="deleteModal">
+{% if es_admin %}
+  <div class="delete-modal" id="deleteModal">
     <div class="modal-content">
-        <h3><i class="fas fa-exclamation-triangle"></i> Confirmar eliminación</h3>
-        <p>¿Estás seguro de que deseas eliminar el evento "<span id="eventTitle"></span>"?</p>
-        <p><small>Esta acción no se puede deshacer.</small></p>
-        <div class="modal-actions">
-            <form method="post" id="deleteForm">
-                {% csrf_token %}
-                <button type="submit" class="action-btn confirm-delete">
-                    <i class="fas fa-trash"></i> Sí, eliminar
-                </button>
-            </form>
-            <button onclick="closeDeleteModal()" class="action-btn cancel-delete">
-                <i class="fas fa-times"></i> Cancelar
-            </button>
-        </div>
+      <h3><i class="fas fa-exclamation-triangle"></i> Confirmar eliminación</h3>
+      <p>¿Eliminar "<span id="eventTitle"></span>"?</p>
+      <div class="modal-actions">
+        <form method="post" id="deleteForm">{% csrf_token %}</form>
+        <button onclick="closeDeleteModal()" class="action-btn cancel-delete">
+          <i class="fas fa-times"></i> Cancelar
+        </button>
+      </div>
     </div>
-</div>
+  </div>
+{% endif %}
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/event_list.js' %}"></script>
+  {% if es_admin %}
+    <!-- Intentamos cargar desde /static -->
+    <script src="{% static 'js/event_list.js' %}"></script>
+
+    <!-- Y además, inline JS de respaldo -->
+    <script>
+      function confirmDelete(eventId, eventTitle) {
+        const modal      = document.getElementById('deleteModal');
+        const titleSpan  = document.getElementById('eventTitle');
+        const deleteForm = document.getElementById('deleteForm');
+
+        deleteForm.action = `/admin-panel/events/${eventId}/borrar/`;
+        deleteForm.innerHTML = `
+          <input type="hidden" name="csrfmiddlewaretoken" value="${(document.cookie.match(/csrftoken=([^;]+)/)||[])[1]}">
+          <button type="submit" class="action-btn confirm-delete">
+            <i class="fas fa-trash"></i> Sí, eliminar
+          </button>
+        `;
+        titleSpan.textContent = eventTitle;
+        modal.style.display = 'flex';
+      }
+
+      function closeDeleteModal() {
+        document.getElementById('deleteModal').style.display = 'none';
+      }
+      window.onclick = e => {
+        if (e.target.id === 'deleteModal') closeDeleteModal();
+      };
+    </script>
+  {% endif %}
 {% endblock %}

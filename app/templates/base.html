@@ -16,21 +16,58 @@
   {% block extra_css %}{% endblock %}
 </head>
 <body class="{% block body_class %}bg-light{% endblock %}">
-  
-  {% block navigation %}
-  {% endblock %}
 
-  {% block messages %}
-    {% if messages %}
-      <div class="container mt-3">
-        {% for message in messages %}
-          <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-          </div>
-        {% endfor %}
-      </div>
-    {% endif %}
+  {% block navigation %}
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top shadow-sm">
+    <div class="container-fluid px-4">
+      <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
+        <i data-lucide="sparkle" class="me-2"></i> PlanIt
+      </a>
+
+      <ul class="navbar-nav ms-auto d-flex flex-row align-items-center gap-3">
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'event_list' %}"><i data-lucide="chart-bar-stacked"></i></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'category_listar' %}"><i data-lucide="calendar-fold"></i></a>
+        </li>
+
+        {% if request.user.is_authenticated %}
+        <li class="nav-item dropdown">
+          <button class="btn nav-link position-relative" id="notifButton" data-bs-toggle="dropdown" aria-expanded="false">
+            <i data-lucide="bell"></i>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+              <!-- Aquí puedes agregar el contador dinámico si quieres -->
+            </span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end p-2 notif-dropdown" aria-labelledby="notifButton">
+            <strong class="dropdown-header">Notificaciones</strong>
+            <li><a class="dropdown-item small" href="#">🎉 Nuevo evento disponible</a></li>
+            <li><a class="dropdown-item small" href="#">🎫 Tienes un ticket pendiente</a></li>
+            <li><a class="dropdown-item small" href="#">📩 Mensaje de organizador</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a href="{% url 'notificaciones' %}" class="dropdown-item text-center text-primary">Ver todas</a></li>
+          </ul>
+        </li>
+
+        <li class="nav-item dropdown">
+          <button class="btn nav-link d-flex align-items-center gap-2" id="userButton" data-bs-toggle="dropdown" aria-expanded="false">
+            <img src="{{ request.user.profile.avatar.url }}" alt="Avatar" class="navbar-avatar rounded-circle" width="30" height="30">
+            <span>{{ request.user.username }}</span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end p-2" aria-labelledby="userButton">
+            <li><a class="dropdown-item" href="{% url 'user_profile' request.user.username %}">Perfil</a></li>
+            <li><a class="dropdown-item" href="{% url 'logout' %}">Cerrar sesión</a></li>
+          </ul>
+        </li>
+        {% else %}
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'auth' %}">Entrar <i data-lucide="log-in"></i></a>
+        </li>
+        {% endif %}
+      </ul>
+    </div>
+  </nav>
   {% endblock %}
 
   <main>

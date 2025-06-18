@@ -5,6 +5,19 @@ from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.auth import login, logout
+from admin_panel.views import is_admin
+from django.core.exceptions import ValidationError
+from decimal import Decimal, InvalidOperation
+from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views import View
+from .models import Ticket, TicketTier
+from .forms import TicketPurchaseForm
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+from django.views import View
+from .forms import ProfileImageForm
 from django.contrib.auth.models import User
 from datetime import datetime, time
 from django.utils import timezone
@@ -13,6 +26,7 @@ from .forms import (
     SignUpForm,
     CommentForm,
     RatingForm,
+    TicketPurchaseForm,
     TicketModelForm,
     VenueModelForm,
     CategoryModelForm,
@@ -22,6 +36,7 @@ from .models import (
     Event,
     Ticket,
     RefundRequest,
+    TicketTier,
     Comment,
     Profile,
     Notificacion,
@@ -108,11 +123,34 @@ class EventListView(ListView):
             except ValueError:
                 pass
         return queryset
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['es_admin'] = is_admin(self.request.user)
+        context['categorias'] = Category.objects.all()
+        context['categoria_seleccionada'] = self.request.GET.get('categoria', '')
+        context['fecha_desde'] = self.request.GET.get('fecha_desde', '')
+        context['fecha_hasta'] = self.request.GET.get('fecha_hasta', '')
+        return context
 
 class EventDetailView(DetailView):
     model = Event
     template_name = "app/event/event_detail.html"
     context_object_name = "event"
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        tiers_with_availability = []
+        for tier in self.object.ticket_tiers.filter(is_available=True):
+            tier_data = {
+                'tier': tier,
+                'available_quantity': tier.get_available_quantity(),
+                'is_sold_out': tier.get_available_quantity() <= 0
+            }
+            tiers_with_availability.append(tier_data)
+        
+        context['tiers_with_availability'] = tiers_with_availability
+        return context
 
 # ===== 3. COMENTARIOS Y VALORACIONES =====
 class CommentCreateView(LoginRequiredMixin, View):
@@ -144,49 +182,104 @@ class TicketListView(LoginRequiredMixin, ListView):
     model = Ticket
     template_name = "app/tickets.html"
     context_object_name = "tickets"
+    
     def get_queryset(self):
-        return Ticket.objects.filter(user_fk=self.request.user).order_by("-buy_date")
+        return Ticket.objects.filter(user_fk=self.request.user).order_by("-created_at")
+    
     def post(self, request, *args, **kwargs):
         ticket_id = request.POST.get('ticket_id')
         reason = request.POST.get('reason')
+        
         if not reason:
             messages.error(request, "Por favor, proporciona un motivo para el reembolso.")
             return redirect('ticket_list')
-        ticket = get_object_or_404(Ticket, ticket_code=ticket_id, user_fk=request.user)
-        if RefundRequest.objects.filter(ticket_code=ticket.ticket_code).exists():
-            messages.error(request, "Ya solicitaste un reembolso para este ticket.")
-        else:
-            RefundRequest.new(user=request.user, ticket_code=ticket.ticket_code, reason=reason)
-            messages.success(request, "Tu solicitud de reembolso fue enviada con éxito.")
+        
+        try:
+            ticket = get_object_or_404(Ticket, pk=ticket_id, user_fk=request.user)
+            
+            # Verificar si ya existe una solicitud
+            if RefundRequest.objects.filter(ticket_code=str(ticket.pk)).exists():
+                messages.error(request, "Ya solicitaste un reembolso para este ticket.")
+            else:
+                RefundRequest.new(
+                    user=request.user, 
+                    ticket_code=str(ticket.pk), 
+                    reason=reason
+                )
+                messages.success(request, "Tu solicitud de reembolso fue enviada con éxito.")
+        except Exception as e:
+            messages.error(request, "Error al procesar la solicitud de reembolso.")
+            
         return redirect('ticket_list')
+
 
 class TicketDetailView(DetailView):
     model = Ticket
     template_name = "ticket/ticket_detail.html"
     context_object_name = "ticket"
 
-class TicketCreateView(LoginRequiredMixin, CreateView):
-    model = Ticket
-    form_class = TicketModelForm
-    template_name = "ticket/ticket_form.html"
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['evento'] = get_object_or_404(Event, pk=self.kwargs['pk'])
-        return context
-    def form_valid(self, form):
-        ticket = form.save(commit=False)
-        ticket.user_fk = self.request.user
-        ticket.event_fk = get_object_or_404(Event, pk=self.kwargs['pk'])
-        ticket.save()
-        messages.success(self.request, "¡Tu entrada fue comprada con éxito!")
-        return redirect('event_detail', pk=self.kwargs['pk'])
+class TicketCreateView(LoginRequiredMixin, View):
+    template_name = "ticket/ticket_purchase.html"
+
+    def get(self, request, event_pk, tier_id, *args, **kwargs):
+        ticket_tier = get_object_or_404(TicketTier, pk=tier_id)
+        
+        # Verificar disponibilidad antes de mostrar el formulario
+        if not ticket_tier.is_available or ticket_tier.get_available_quantity() <= 0:
+            messages.error(request, "Este tipo de entrada ya no está disponible.")
+            return redirect('event_detail', pk=event_pk)
+        
+        form = TicketPurchaseForm(ticket_tier=ticket_tier)
+        return render(request, self.template_name, {
+            'form': form,
+            'ticket_tier': ticket_tier,
+            'available_quantity': ticket_tier.get_available_quantity()
+        })
+
+    def post(self, request, event_pk, tier_id, *args, **kwargs):
+        ticket_tier = get_object_or_404(TicketTier, pk=tier_id)
+        form = TicketPurchaseForm(request.POST, ticket_tier=ticket_tier)
+        
+        if form.is_valid():
+            quantity = form.cleaned_data['quantity']
+            
+            # Verificación adicional de disponibilidad
+            if not ticket_tier.has_available_quantity(quantity):
+                available = ticket_tier.get_available_quantity()
+                messages.error(
+                    request, 
+                    f"Solo quedan {available} entradas disponibles para esta categoría."
+                )
+                return render(request, self.template_name, {
+                    'form': form,
+                    'ticket_tier': ticket_tier,
+                    'available_quantity': available
+                })
+            
+            try:
+                # Crear el ticket
+                ticket = Ticket.objects.create(
+                    ticket_tier=ticket_tier,
+                    user_fk=request.user,
+                    quantity=quantity
+                )
+                messages.success(request, f"¡Compra de {quantity} entradas realizada con éxito!")
+                return redirect('ticket_detail', pk=ticket.pk)
+                
+            except ValidationError as e:
+                messages.error(request, f"Error al procesar la compra: {e}")
+                return redirect('event_detail', pk=event_pk)
+            except Exception as e:
+                messages.error(request, "Error inesperado al procesar la compra.")
+                return redirect('event_detail', pk=event_pk)
+
+        return render(request, self.template_name, {
+            'form': form,
+            'ticket_tier': ticket_tier,
+            'available_quantity': ticket_tier.get_available_quantity()
+        })
 
 # ===== 5. PERFIL Y NOTIFICACIONES =====
-from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
-from django.views import View
-from .forms import ProfileImageForm
-
 @method_decorator(login_required, name='dispatch')
 class UserProfileView(View):
     def get(self, request, username):
@@ -194,6 +287,20 @@ class UserProfileView(View):
         form = None
         if request.user == profile_user:
             form = ProfileImageForm(instance=profile_user.profile)
+        return render(request, 'users/profile.html', {'profile_user': profile_user, 'form': form})
+
+    def post(self, request, username):
+        profile_user = get_object_or_404(User, username=username)
+        if request.user != profile_user:
+            messages.error(request, "No tienes permiso para modificar este perfil.")
+            return redirect('user_profile', username=username)
+
+        form = ProfileImageForm(request.POST, request.FILES, instance=profile_user.profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Foto de perfil actualizada.")
+            return redirect('user_profile', username=username)
+        messages.error(request, "Hubo un error al subir la imagen.")
         return render(request, 'users/profile.html', {'profile_user': profile_user, 'form': form})
 
     def post(self, request, username):
@@ -250,6 +357,8 @@ class CategoryListView(ListView):
     model = Category
     template_name = "category/category_list.html"
     context_object_name = "categories"
+
+    
 
 class CategoryDetailView(DetailView):
     model = Category

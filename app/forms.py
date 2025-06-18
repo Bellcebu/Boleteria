@@ -1,4 +1,5 @@
 from django import forms
+from django.db import models
 from django.core.exceptions import ValidationError
 from django.forms.models import BaseInlineFormSet, inlineformset_factory
 from django.contrib.auth.models import User
@@ -7,6 +8,7 @@ from django.contrib.auth.forms import UserCreationForm
 from .models import (
     Event,
     TicketTier,
+    Ticket,
     Comment,
     Rating,
     Venue,
@@ -159,6 +161,40 @@ class EventModelForm(forms.ModelForm):
             raise forms.ValidationError("La descripción debe tener al menos 20 caracteres.")
         return description
 
+class TicketPurchaseForm(forms.Form):
+    quantity = forms.IntegerField(
+        min_value=1,
+        label="Cantidad",
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Cantidad de entradas'})
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.ticket_tier = kwargs.pop('ticket_tier', None)
+        super().__init__(*args, **kwargs)
+
+    def clean_quantity(self):
+        qty = self.cleaned_data['quantity']
+        if self.ticket_tier:
+            from django.db.models import Sum
+            from .models import Ticket
+            sold_qty = Ticket.objects.filter(
+                ticket_tier=self.ticket_tier
+            ).aggregate(
+                total=Sum('quantity')
+            )['total'] or 0
+            max_qty = self.ticket_tier.max_quantity or 0
+            available_qty = max_qty - sold_qty
+            print(f"TicketTier: {self.ticket_tier.name}")
+            print(f"Max quantity: {max_qty}")
+            print(f"Sold quantity: {sold_qty}")
+            print(f"Available quantity: {available_qty}")
+            print(f"Requested quantity: {qty}")
+            
+            if available_qty < qty:
+                raise forms.ValidationError(
+                    f"Solo quedan {available_qty} entradas disponibles para esta categoría."
+                )
+        return qty
 
 class TicketModelForm(forms.ModelForm):
     class Meta:

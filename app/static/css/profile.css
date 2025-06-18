@@ -1,5 +1,3 @@
-/* ===== PROFILE STYLES ===== */
-
 .profile-container {
     max-width: 1200px;
     margin: 0 auto;
@@ -9,9 +7,9 @@
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   }
   
-  /* ===== HEADER SECTION ===== */
   .profile-header {
-    position: relative;
+    position: absolute;
+    margin: 150px;
   }
   
   .profile-cover {
@@ -391,7 +389,6 @@
     border-left: 4px solid #ffc107;
   }
   
-  /* ===== RESPONSIVE DESIGN ===== */
   @media (max-width: 768px) {
     .profile-container {
       margin: 0;

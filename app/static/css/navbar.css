@@ -1,14 +1,25 @@
-/* --- NAVBAR GENERAL --- */
 .navbar {
   position: sticky;
   top: 0;
+  min-height: 56px;
   width: 100%;
   background-color: #000000;
   color: #fff;
   z-index: 1000;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.6);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0);
   font-family: 'Segoe UI', sans-serif;
 }
+
+.navbar-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #000000;
+  margin: 0; 
+  padding: 0;
+}
+
 
 .navbar-container {
   max-width: 1200px;
@@ -19,7 +30,6 @@
   align-items: center;
 }
 
-/* --- LOGO --- */
 .navbar-logo {
   display: flex;
   align-items: center;
@@ -29,7 +39,7 @@
   text-decoration: none;
 }
 
-/* --- ENLACES PRINCIPALES --- */
+
 .navbar-links {
   display: flex;
   gap: 1rem;
@@ -38,7 +48,7 @@
 
 .navbar-links a,
 .dropdown-toggle {
-  color: #fff;
+  color: #0000;
   text-decoration: none;
   font-size: 0.95rem;
   display: flex;
@@ -52,10 +62,10 @@
 
 .navbar-links a:hover,
 .dropdown-toggle:hover {
-  color: #1e90ff;
+  color: #0000;
 }
 
-/* --- DROPDOWN GENERAL --- */
+
 .dropdown-menu {
   position: absolute;
   top: 100%;
@@ -75,12 +85,12 @@
   display: flex;
 }
 
-/* Soporte para activación manual con clase "show" */
+
 .dropdown-menu.show {
   display: flex !important;
 }
 
-/* --- NOTIFICACIONES --- */
+
 .dropdown-menu.notifications ul {
   padding: 0;
   margin: 0.5rem 0;
@@ -96,7 +106,6 @@
   text-align: right;
 }
 
-/* --- BADGE de notificaciones --- */
 .notif-badge {
   background-color: red;
   color: white;
@@ -106,14 +115,14 @@
   margin-left: 4px;
 }
 
-/* --- Íconos (Lucide, Feather, etc.) --- */
+
 .navbar i {
   width: 20px;
   height: 20px;
   stroke-width: 2;
 }
 
-/* --- RESPONSIVE (pantallas pequeñas) --- */
+
 @media (max-width: 768px) {
   .navbar-container {
       flex-direction: column;
@@ -125,12 +134,12 @@
       position: absolute;
       top: 100%;
       left: 0;
-      background: #000000; /* fondo negro en mobile */
-      color: #fff;         /* texto blanco */
+      background: #000000; 
+      color: #fff;         
       width: 100%;
       display: none;
       padding: 1rem 0;
-      z-index: 1050;       /* para que quede arriba */
+      z-index: 1050;       
   }
 
   .navbar-links.show {
@@ -148,7 +157,7 @@
 
   .dropdown-menu {
       right: 1rem;
-      background: #000000 !important; /* fondo negro dropdown en mobile */
+      background: #000000 !important; 
       color: #fff;
   }
 

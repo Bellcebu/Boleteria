@@ -28,7 +28,12 @@ urlpatterns = [
     path('events/<int:pk>/', EventDetailView.as_view(), name='event_detail'),
     path('events/<int:pk>/comment/', CommentCreateView.as_view(), name='add_comment'),
     path('events/<int:pk>/rating/', RatingCreateView.as_view(), name='add_rating'),
-    path('events/<int:pk>/comprar/', TicketCreateView.as_view(), name='ticket_comprar'),
+    path(
+  'events/<int:event_pk>/comprar/<int:tier_id>/',
+  TicketCreateView.as_view(),
+  name='ticket_buy'
+),
+
     path('tickets/', TicketListView.as_view(), name='ticket_list'),
     path('tickets/<int:pk>/', TicketDetailView.as_view(), name='ticket_detail'),
     path('notificaciones/', NotificationListView.as_view(), name='notificaciones'),

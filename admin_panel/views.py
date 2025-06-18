@@ -64,7 +64,7 @@ class EventCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
 class EventUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Event
     form_class = EventModelForm
-    template_name = 'app/event/event_form.html'
+    template_name = 'app/event/event_edit.html'
     success_url = reverse_lazy('admin_dashboard')
 
     def test_func(self):
