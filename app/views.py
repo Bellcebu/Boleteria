@@ -205,6 +205,14 @@ class TicketDetailView(DetailView):
     template_name = "ticket/ticket_detail.html"
     context_object_name = "ticket"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        ticket = self.get_object()
+        refund_request = RefundRequest.objects.filter(ticket_code=str(ticket.pk)).first()
+        context['refund_request'] = refund_request
+        return context
+
+
 class TicketCreateView(LoginRequiredMixin, View):
     template_name = "ticket/ticket_purchase.html"
 
@@ -262,22 +270,92 @@ class TicketCreateView(LoginRequiredMixin, View):
 class UserProfileView(View):
     def get(self, request, username):
         profile_user = get_object_or_404(User, username=username)
-        form = ProfileImageForm(instance=profile_user.profile) if request.user == profile_user else None
-        return render(request, 'users/profile.html', {'profile_user': profile_user, 'form': form})
+        context = {
+            'profile_user': profile_user,
+        }
+
+        if request.user == profile_user:
+            context['form'] = ProfileImageForm(instance=profile_user.profile)
+
+            tickets = Ticket.objects.filter(
+                user_fk=profile_user
+            ).select_related(
+                'ticket_tier',
+                'ticket_tier__event',
+                'ticket_tier__event__venue_fk',
+                'promotion_used'
+            ).order_by('-created_at')
+
+            refund_ticket_ids = RefundRequest.objects.filter(
+                ticket_code__in=[str(t.pk) for t in tickets]
+            ).values_list('ticket_code', flat=True)
+
+            context['user_tickets'] = [ticket for ticket in tickets if str(ticket.pk) not in refund_ticket_ids]
+
+            context['refund_requests'] = RefundRequest.objects.filter(
+                user=profile_user
+            ).order_by('-created_at')
+
+            context['now'] = timezone.now()
+
+        return render(request, 'users/profile.html', context)
 
     def post(self, request, username):
         profile_user = get_object_or_404(User, username=username)
+        
         if request.user != profile_user:
             messages.error(request, "No tienes permiso para modificar este perfil.")
             return redirect('user_profile', username=username)
 
-        form = ProfileImageForm(request.POST, request.FILES, instance=profile_user.profile)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Foto de perfil actualizada.")
+        action = request.POST.get('action')
+        
+        if action == 'request_refund':
+            ticket_id = request.POST.get('ticket_id')
+            reason = request.POST.get('reason')
+            
+            if not reason or not reason.strip():
+                messages.error(request, "Por favor, proporciona un motivo para el reembolso.")
+                return redirect('user_profile', username=username)
+            
+            try:
+                ticket = get_object_or_404(Ticket, pk=ticket_id, user_fk=request.user)
+                
+                if ticket.ticket_tier.event.date <= timezone.now():
+                    messages.error(request, "No se pueden solicitar reembolsos para eventos que ya han pasado.")
+                    return redirect('user_profile', username=username)
+                
+                if RefundRequest.objects.filter(ticket_code=str(ticket.pk)).exists():
+                    messages.error(request, "Ya existe una solicitud de reembolso para este ticket.")
+                    return redirect('user_profile', username=username)
+                
+                success, result = RefundRequest.new(
+                    user=request.user,
+                    ticket_code=str(ticket.pk),
+                    reason=reason.strip()
+                )
+                
+                if success:
+                    messages.success(request, "Tu solicitud de reembolso ha sido enviada con éxito. Será revisada por nuestro equipo.")
+                else:
+                    messages.error(request, "Error al procesar la solicitud de reembolso.")
+                    
+            except Exception:
+                messages.error(request, "Error inesperado al procesar la solicitud de reembolso.")
+                
             return redirect('user_profile', username=username)
-        messages.error(request, "Hubo un error al subir la imagen.")
-        return render(request, 'users/profile.html', {'profile_user': profile_user, 'form': form})
+        
+        else:
+            form = ProfileImageForm(request.POST, request.FILES, instance=profile_user.profile)
+            if form.is_valid():
+                form.save()
+                messages.success(request, "Foto de perfil actualizada.")
+                return redirect('user_profile', username=username)
+            messages.error(request, "Hubo un error al subir la imagen.")
+            return render(request, 'users/profile.html', {
+                'profile_user': profile_user,
+                'form': form
+            })
+
 
 class NotificationListView(LoginRequiredMixin, ListView):
     model = Notificacion

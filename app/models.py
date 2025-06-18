@@ -2,6 +2,7 @@ from decimal import Decimal, ROUND_DOWN, InvalidOperation
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.utils.functional import cached_property
 from django.db import models
 from django.db.models import Sum
 
@@ -284,6 +285,10 @@ class Ticket(models.Model):
         except (InvalidOperation, ValueError, TypeError) as e:
             raise ValidationError(f"Error en el cálculo de precios: {e}")
         super().save(*args, **kwargs)
+
+    @cached_property
+    def has_pending_refund(self):
+        return RefundRequest.objects.filter(ticket_code=str(self.pk)).exists()
 
     def __str__(self):
         return f"Ticket {self.pk} - {self.ticket_tier.event.title}"
