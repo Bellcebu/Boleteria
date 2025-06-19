@@ -104,7 +104,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 STATIC_URL = "static/"
-
+BASE_DIR = Path(__file__).resolve().parent.parent
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 AVATAR_UPLOAD_DIR = 'avatars/'

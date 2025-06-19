@@ -3,10 +3,11 @@ html, body {
     padding: 0;
     height: 100vh;
     width: 100vw;
-    overflow-x: hidden;
+    overflow: hidden;
     font-family: "Roboto", sans-serif;
     background: none;
   }
+
 
 #auth-container {
     position: relative;

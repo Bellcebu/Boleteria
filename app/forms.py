@@ -127,6 +127,7 @@ class VenueModelForm(forms.ModelForm):
 
 
 class EventModelForm(forms.ModelForm):
+    date = forms.DateTimeField(widget = forms.DateTimeInput(attrs={'class':'form-control', 'type':'datetime-local'}, format='%Y-%m-%dT%H:%M'),input_formats=['%Y-%m-%dT%H:%M'])
     class Meta:
         model = Event
         fields = ['category', 'venue_fk', 'title', 'description', 'date', 'image']
@@ -135,7 +136,6 @@ class EventModelForm(forms.ModelForm):
             'venue_fk': forms.Select(attrs={'class': 'form-control'}),
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Título del evento'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'Descripción'}),
-            'date': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
             'image': forms.ClearableFileInput(attrs={'class': 'form-control'}),
         }
         labels = {

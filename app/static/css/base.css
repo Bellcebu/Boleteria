@@ -1,0 +1,236 @@
+/* Reset básico */
+* { 
+  margin: 0; 
+  padding: 0; 
+  box-sizing: border-box; 
+}
+
+/* Estilos del body */
+body {
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding-top: 100px; /* Para que el contenido no quede oculto debajo navbar fija */
+}
+
+/* Asegurar que el contenido tenga altura suficiente para scroll */
+.container {
+  min-height: calc(100vh - 100px);
+}
+
+/* Navbar principal */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  width: 100vw;
+  transform: translateX(-50%) scaleX(0.6) scaleY(0.85);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 50px;
+  padding: 8px 16px;
+  transition: transform 0.6s ease, padding 0.6s ease, border-radius 0.6s ease;
+  transform-origin: center top;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+.navbar.expanded {
+  transform: translateX(-50%) scaleX(1) scaleY(1);
+  border-radius: 0;
+  padding: 20px 0;
+}
+
+/* Container del navbar */
+.navbar-container {
+  max-width: 1200px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+}
+
+/* Logo */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
+  text-decoration: none;
+  transition: font-size 0.6s ease;
+  user-select: none;
+}
+
+.navbar.expanded .logo { 
+  font-size: 28px; 
+}
+
+.logo-icon {
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+  transition: width 0.6s ease, height 0.6s ease, border-radius 0.6s ease;
+  user-select: none;
+}
+
+.navbar.expanded .logo-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  font-size: 18px;
+}
+
+/* Menú de navegación */
+.nav-menu {
+  display: flex;
+  list-style: none;
+  gap: 32px;
+  align-items: center;
+  transition: gap 0.6s ease;
+}
+
+.navbar:not(.expanded) .nav-menu { 
+  gap: 20px; 
+}
+
+.navbar.expanded .nav-menu { 
+  gap: 32px; 
+}
+
+/* Enlaces de navegación */
+.nav-link {
+  position: relative;
+  color: #4b5563;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 8px 0;
+  transition: color 0.3s ease;
+  user-select: none;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: #4f46e5;
+  transition: width 0.3s ease, left 0.3s ease;
+}
+
+.nav-link:hover::after {
+  width: 100%;
+  left: 0;
+}
+
+/* Dropdown */
+.dropdown {
+  position: relative;
+}
+
+.dropdown-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  color: #4b5563;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  user-select: none;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  min-width: 180px;
+  display: none;
+  flex-direction: column;
+  padding: 8px 0;
+  z-index: 100000;
+}
+
+.dropdown-menu.show {
+  display: flex;
+}
+
+.dropdown-menu a {
+  padding: 8px 16px;
+  color: #1a1a1a;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.dropdown-menu a:hover {
+  background-color: #f0f0ff;
+}
+
+/* Avatar del navbar */
+.navbar-avatar {
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  object-fit: cover;
+  border: 2px solid transparent;
+  transition: border-color 0.3s ease;
+}
+
+.navbar-avatar:hover {
+  border-color: #4f46e5;
+}
+
+/* Botón CTA */
+.btn-cta {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform 0.3s ease;
+  user-select: none;
+}
+
+.btn-cta:hover {
+  transform: translateY(-2px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .navbar {
+    transform: translateX(-50%) scaleX(1) scaleY(1) !important;
+    border-radius: 0 !important;
+    padding: 16px 0 !important;
+  }
+  
+  .nav-menu {
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .logo {
+    font-size: 16px !important;
+  }
+}

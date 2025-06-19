@@ -72,21 +72,32 @@ class EventUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if self.request.method == 'POST':
-            context['formset'] = TicketTierFormSet(self.request.POST, instance=self.object)
+            context['form'] = self.form_class(self.request.POST, self.request.FILES, instance=self.object)
+            context['formset'] = TicketTierFormSet(self.request.POST, self.request.FILES, instance=self.object)
         else:
+            context['form'] = self.form_class(instance=self.object)
             context['formset'] = TicketTierFormSet(instance=self.object)
+        context['event'] = self.object
         return context
 
-    def form_valid(self, form):
-        context = self.get_context_data()
-        formset = context['formset']
-        if formset.is_valid():
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = self.form_class(request.POST, request.FILES, instance=self.object)
+        formset = TicketTierFormSet(request.POST, request.FILES, instance=self.object)
+        
+        if form.is_valid():
             self.object = form.save()
-            formset.instance = self.object
-            formset.save()
-            messages.success(self.request, f"El evento '{self.object.title}' fue editado con éxito.")
+            print("Imagen guardada en modelo:", self.object.image)
+            if formset.is_valid():
+                formset.instance = self.object
+                formset.save()
+            else:
+                print("No se guardó el formset (errors):", formset.errors)
+
+            messages.success(request, f"El evento '{self.object.title}' fue editado con éxito.")
             return redirect(self.success_url)
-        return self.render_to_response(self.get_context_data(form=form))
+        return self.render_to_response(self.get_context_data(form=form, formset=formset))
+
 
 
 class EventDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):

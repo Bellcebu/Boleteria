@@ -1,18 +1,11 @@
 {% extends 'base.html' %}
 {% load static %}
-
 {% block title %}Inicio - MiEvento{% endblock %}
 
-{% block extra_css %}
-  <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
-{% endblock %}
-
 {% block content %}
-  
-  
-  <div class="container mt-5 pt-5 text-center">
-      <h1 class="mb-4">Bienvenido a MiEvento</h1>
-      <div class="container mt-5">
+<div class="container text-center">
+    <h1 class="mb-4">Bienvenido a MiEvento</h1>
+    <div class="container mt-5">
         <h2 class="text-center mb-4">Próximos eventos</h2>
         <div class="row">
             {% for evento in eventos %}
@@ -28,9 +21,7 @@
                         <p class="card-text">{{ evento.description|truncatewords:15 }}</p>
                         <p class="card-text"><strong>Fecha:</strong> {{ evento.date|date:"d/m/Y H:i" }}</p>
                         <a href="{% url 'event_detail' evento.pk %}" class="btn btn-outline-primary">Ver más</a>
-                        {% if user.is_authenticated %}
-               
-                        {% else %}
+                        {% if not user.is_authenticated %}
                             <a href="{% url 'auth' %}" class="btn btn-secondary mt-2">Iniciar sesión</a>
                         {% endif %}
                     </div>
@@ -41,6 +32,7 @@
             {% endfor %}
         </div>
     </div>
-    
-  
+</div>
+
+<div style="height: 50vh;"></div>
 {% endblock %}
