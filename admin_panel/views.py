@@ -2,12 +2,13 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User, Group
-from django.views.generic import CreateView, UpdateView, DeleteView, ListView
+from django.views.generic import CreateView, UpdateView, DeleteView, ListView, DetailView, View
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy
 from django.forms import inlineformset_factory
+from django.utils.timezone import now
 
-from app.models import Event, Category, Venue, RefundRequest, TicketTier
+from app.models import Event, Category, Venue, RefundRequest, TicketTier, Ticket
 from app.forms import EventModelForm, CategoryModelForm, VenueModelForm, TicketModelForm, TicketTierFormSet
 
 
@@ -256,3 +257,30 @@ def assign_role(request, user_id):
     elif user.groups.filter(name='Vendedor').exists():
         current_role = 'vendedor'
     return render(request, 'assign_role.html', {'user': user, 'current_role': current_role})
+
+    
+
+    
+
+class ApproveRefundView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        ticket_code = request.POST.get("ticket_code")
+        refund = RefundRequest.objects.filter(ticket_code=ticket_code, approved=False).first()
+        if refund:
+            refund.approved = True
+            refund.approval_date = now().date()
+            refund.save()
+            messages.success(request, f"Reembolso aprobado para ticket {ticket_code}")
+        else:
+            messages.error(request, "Solicitud no encontrada o ya aprobada.")
+        return redirect("refund-requests")
+    
+class RefundRequestListView(LoginRequiredMixin, ListView):
+    template_name = "app/refund_requests.html"
+    context_object_name = "refunds"
+
+    def get_queryset(self):
+        return RefundRequest.objects.filter(approved=False)
+    
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
