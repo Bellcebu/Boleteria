@@ -276,7 +276,7 @@ class ApproveRefundView(LoginRequiredMixin, View):
         return redirect("refund-requests")
     
 class RefundRequestListView(LoginRequiredMixin, ListView):
-    template_name = "app/refund_requests.html"
+    template_name = "refund_requests.html"
     context_object_name = "refunds"
 
     def get_queryset(self):

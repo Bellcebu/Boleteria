@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="container mt-4">
+    <h3 class="mb-3">Detalles de la Categoría</h3>
+
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">{{ category.name }}</h5>
+        <h6 class="card-subtitle mb-2 text-muted">Estado: 
+          {% if category.is_active %}
+            <span class="badge bg-success">Activa</span>
+          {% else %}
+            <span class="badge bg-secondary">Inactiva</span>
+          {% endif %}
+        </h6>
+        <p class="card-text">{{ category.description }}</p>
+      </div>
+    </div>
+
+    <div class="mt-3">
+      <a href="{% url 'category_editar' category.pk %}" class="btn btn-warning">Editar</a>
+      <a href="{% url 'category_borrar' category.pk %}" class="btn btn-danger">Eliminar</a>
+      <a href="{% url 'category_listar' %}" class="btn btn-secondary">Volver al listado</a>
+    </div>
+  </div>
+{% endblock %}

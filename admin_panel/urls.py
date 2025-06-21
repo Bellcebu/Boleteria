@@ -3,8 +3,8 @@ from . import views
 from .views import RefundRequestListView, ApproveRefundView
 
 urlpatterns = [
-    path("admin/refunds/", RefundRequestListView.as_view(), name="refund-requests"),
-    path("admin/refund/approve/", ApproveRefundView.as_view(), name="refund-approve"),
+    path("refunds/", RefundRequestListView.as_view(), name="refund-requests"),
+    path("refund/approve/", ApproveRefundView.as_view(), name="refund-approve"),
 
     # --- Dashboard ---
     path('', views.admin_dashboard, name='admin_dashboard'),

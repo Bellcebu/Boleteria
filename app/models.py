@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from django.utils.functional import cached_property
 from django.db import models
 from django.db.models import Sum
+from django.utils import timezone
 
 
 # --- Base ---
@@ -12,228 +13,248 @@ class BaseModel(models.Model):
     class Meta:
         abstract = True
 
-    @classmethod
-    def validate_required_fields(cls, **fields):
-        errors = {}
-        for field_name, value in fields.items():
-            if not value:
-                errors[field_name] = f"El campo {field_name} es obligatorio"
-        return errors
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 
 # --- Categorías y Lugares ---
 class Category(BaseModel):
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, unique=True)
     description = models.TextField()
     is_active = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name_plural = "Categories"
 
     def __str__(self):
         return self.name
 
-    @classmethod
-    def validate(cls, name):
-        return cls.validate_required_fields(name=name)
+    def clean(self):
+        if self.name and len(self.name.strip()) < 3:
+            raise ValidationError({'name': 'El nombre debe tener al menos 3 caracteres.'})
+        
+        if self.description and len(self.description.strip()) < 10:
+            raise ValidationError({'description': 'La descripción debe tener al menos 10 caracteres.'})
 
-    @classmethod
-    def new(cls, name, description='', is_active=True):
-        errors = cls.validate(name)
-        if errors:
-            return False, errors
-        category = cls.objects.create(name=name, description=description, is_active=is_active)
-        return True, category
-
-    def update(self, name=None, description=None, is_active=None):
-        if name is not None:
-            self.name = name
-        if description is not None:
-            self.description = description
-        if is_active is not None:
-            self.is_active = is_active
-        self.save()
+    @property
+    def active_events_count(self):
+        return self.events.filter(date__gte=timezone.now()).count()
 
 
 class Venue(BaseModel):
     name = models.CharField(max_length=100)
     address = models.CharField(max_length=100)
     city = models.CharField(max_length=100)
-    capacity = models.IntegerField()
+    capacity = models.PositiveIntegerField()
     contact = models.CharField(max_length=100)
 
     def __str__(self):
         return f"{self.name} - {self.city}"
 
-    @classmethod
-    def validate(cls, name, address, city, capacity, contact):
-        errors = cls.validate_required_fields(name=name, address=address, city=city, contact=contact)
-        if capacity is None or capacity <= 0:
-            errors["capacity"] = "La capacidad debe ser un número positivo"
-        return errors
+    def clean(self):
+        if self.capacity and self.capacity <= 0:
+            raise ValidationError({'capacity': 'La capacidad debe ser un número positivo.'})
+        
+        if self.city and self.city.isnumeric():
+            raise ValidationError({'city': 'La ciudad no puede ser un número.'})
 
-    @classmethod
-    def new(cls, name, address, city, capacity, contact):
-        errors = cls.validate(name, address, city, capacity, contact)
-        if errors:
-            return False, errors
-        venue = cls.objects.create(
-            name=name,
-            address=address,
-            city=city,
-            capacity=capacity,
-            contact=contact
-        )
-        return True, venue
-
-    def update(self, name=None, address=None, city=None, capacity=None, contact=None):
-        if name is not None:
-            self.name = name
-        if address is not None:
-            self.address = address
-        if city is not None:
-            self.city = city
-        if capacity is not None:
-            self.capacity = capacity
-        if contact is not None:
-            self.contact = contact
-        self.save()
+    @property
+    def upcoming_events_count(self):
+        return self.event_set.filter(date__gte=timezone.now()).count()
 
 
 # --- Eventos ---
 class Event(BaseModel):
     category = models.ForeignKey('Category', on_delete=models.CASCADE, related_name='events')
-    venue_fk = models.ForeignKey("Venue", on_delete=models.CASCADE, default=None)
+    venue_fk = models.ForeignKey("Venue", on_delete=models.CASCADE, related_name='events')
     title = models.CharField(max_length=200)
     description = models.TextField()
     date = models.DateTimeField()
     image = models.ImageField(upload_to='events/', null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.title
 
+    def clean(self):
+        if self.date and self.date <= timezone.now():
+            raise ValidationError({'date': 'La fecha del evento debe ser en el futuro.'})
+
+    @property
+    def is_past(self):
+        return self.date <= timezone.now()
+
+    @property
+    def total_capacity(self):
+        return self.ticket_tiers.aggregate(
+            total=Sum('max_quantity')
+        )['total'] or 0
+
+    @property
+    def available_capacity(self):
+        sold = self.get_sold_tickets_count()
+        return max(0, self.total_capacity - sold)
+
+    def get_sold_tickets_count(self):
+        return Ticket.objects.filter(
+            ticket_tier__event=self
+        ).aggregate(total=Sum('quantity'))['total'] or 0
+
     def get_base_price(self):
         tier = self.ticket_tiers.filter(is_available=True).order_by('price').first()
-        return tier.price if tier else 0
+        return tier.price if tier else Decimal('0.00')
 
-    @classmethod
-    def validate(cls, title, description, date):
-        errors = cls.validate_required_fields(title=title, description=description)
-        if not date:
-            errors["date"] = "La fecha es obligatoria"
-        return errors
+    def get_average_rating(self):
+        from django.db.models import Avg
+        avg = self.rating_set.aggregate(avg_rating=Avg('rating'))['avg_rating']
+        return round(avg, 1) if avg else None
 
-    @classmethod
-    def new(cls, title, description, date, category, venue):
-        errors = cls.validate(title, description, date)
-        if errors:
-            return False, errors
-        event = cls.objects.create(
-            title=title,
-            description=description,
-            date=date,
-            category=category,
-            venue_fk=venue
-        )
-        return True, event
-
-    def update(self, title=None, description=None, date=None):
-        if title is not None:
-            self.title = title
-        if description is not None:
-            self.description = description
-        if date is not None:
-            self.date = date
-        self.save()
+    def can_user_rate(self, user):
+        if not user.is_authenticated:
+            return False
+        has_tickets = Ticket.objects.filter(
+            ticket_tier__event=self,
+            user_fk=user
+        ).exists()
+        return has_tickets and self.is_past
 
 
 # --- Promociones ---
-class Promotion(models.Model):
+class Promotion(BaseModel):
     code = models.CharField(max_length=50, unique=True)
     discount_percentage = models.DecimalField(max_digits=5, decimal_places=2)
     event = models.ForeignKey('Event', on_delete=models.CASCADE, related_name='promotions')
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
-    max_uses = models.IntegerField(null=True, blank=True)
-    current_uses = models.IntegerField(default=0)
+    max_uses = models.PositiveIntegerField(null=True, blank=True)
+    current_uses = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.code} - {self.discount_percentage}% para {self.event.title}"
+
+    def clean(self):
+        if self.start_date and self.end_date and self.start_date >= self.end_date:
+            raise ValidationError('La fecha de inicio debe ser anterior a la fecha de fin.')
+        
+        if self.discount_percentage and not (0 < self.discount_percentage <= 100):
+            raise ValidationError({'discount_percentage': 'El descuento debe estar entre 0.01 y 100.'})
+
+    @property
+    def is_valid_now(self):
+        now = timezone.now()
+        return (
+            self.is_active and
+            self.start_date <= now <= self.end_date and
+            (self.max_uses is None or self.current_uses < self.max_uses)
+        )
+
+    def can_be_used(self):
+        return self.is_valid_now
+
+    def use_promotion(self):
+        if self.can_be_used():
+            self.current_uses += 1
+            self.save(update_fields=['current_uses'])
+            return True
+        return False
 
 
 # --- Comentarios ---
 class Comment(BaseModel):
     title = models.CharField(max_length=100)
     text = models.TextField(max_length=500)
-    created_at = models.DateTimeField(auto_now_add=True)
     user_fk = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    event_fk = models.ForeignKey("Event", on_delete=models.CASCADE, default=None)
+    event_fk = models.ForeignKey("Event", on_delete=models.CASCADE, related_name='comments')
 
-    @classmethod
-    def validate(cls, title, text):
-        return cls.validate_required_fields(title=title, text=text)
+    class Meta:
+        ordering = ['-created_at']
 
-    @classmethod
-    def new(cls, title, text, user, event):
-        errors = cls.validate(title, text)
-        if errors:
-            return False, errors
-        return cls.objects.create(title=title, text=text, user_fk=user, event_fk=event)
+    def __str__(self):
+        return f"Comentario de {self.user_fk.username} en {self.event_fk.title}"
 
-    def update(self, title=None, text=None):
-        if title is not None:
-            self.title = title
-        if text is not None:
-            self.text = text
-        self.save()
+    @property
+    def can_be_edited_by(self, user):
+        return user == self.user_fk
+
+    @property
+    def can_be_deleted_by(self, user):
+        return (
+            user == self.user_fk or 
+            user.groups.filter(name__in=['Admin', 'Vendedor']).exists()
+        )
 
 
 # --- Ratings ---
 class Rating(BaseModel):
     title = models.CharField(max_length=100)
     text = models.TextField(max_length=500)
-    rating = models.IntegerField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    user_fk = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, default=None)
-    event_fk = models.ForeignKey("Event", on_delete=models.CASCADE, default=None)
+    rating = models.PositiveSmallIntegerField(choices=[(i, i) for i in range(1, 6)])
+    user_fk = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    event_fk = models.ForeignKey("Event", on_delete=models.CASCADE, related_name='ratings')
 
-    @classmethod
-    def validate(cls, title, text, rating):
-        errors = cls.validate_required_fields(title=title, text=text)
-        if rating is None or not (1 <= rating <= 5):
-            errors["rating"] = "La calificación debe estar entre 1 y 5"
-        return errors
+    class Meta:
+        unique_together = ['user_fk', 'event_fk']
+        ordering = ['-created_at']
 
-    @classmethod
-    def new(cls, title, text, rating, user, event):
-        errors = cls.validate(title, text, rating)
-        if errors:
-            return False, errors
-        return cls.objects.create(title=title, text=text, rating=rating, user_fk=user, event_fk=event)
+    def __str__(self):
+        return f"Rating {self.rating}/5 de {self.user_fk.username} para {self.event_fk.title}"
 
-    def update(self, title=None, text=None, rating=None):
-        if title is not None:
-            self.title = title
-        if text is not None:
-            self.text = text
-        if rating is not None:
-            self.rating = rating
-        self.save()
+    def clean(self):
+        if self.rating and not (1 <= self.rating <= 5):
+            raise ValidationError({'rating': 'La calificación debe estar entre 1 y 5.'})
+
+        if self.user_fk and self.event_fk:
+            has_tickets = Ticket.objects.filter(
+                ticket_tier__event=self.event_fk,
+                user_fk=self.user_fk
+            ).exists()
+            if not has_tickets:
+                raise ValidationError('Solo puedes calificar eventos para los que compraste entradas.')
 
 
 # --- Entradas (Tickets) ---
-class TicketTier(models.Model):
+class TicketTier(BaseModel):
     event = models.ForeignKey('Event', on_delete=models.CASCADE, related_name='ticket_tiers')
     name = models.CharField(max_length=50)
     price = models.DecimalField(max_digits=8, decimal_places=2)
     description = models.TextField(blank=True)
-    max_quantity = models.IntegerField(null=True, blank=True)
+    max_quantity = models.PositiveIntegerField()
     is_available = models.BooleanField(default=True)
 
     class Meta:
         unique_together = ['event', 'name']
+        ordering = ['price']
+
+    def __str__(self):
+        return f"{self.event.title} - {self.name} (${self.price})"
+
+    def clean(self):
+        if self.event and self.max_quantity:
+            total_capacity = self.event.venue_fk.capacity
+            other_tiers_qty = self.event.ticket_tiers.exclude(pk=self.pk).aggregate(
+                total=Sum('max_quantity')
+            )['total'] or 0
+            
+            if (other_tiers_qty + self.max_quantity) > total_capacity:
+                raise ValidationError({
+                    'max_quantity': f'La capacidad total excede la del venue ({total_capacity})'
+                })
+
+    @property
+    def sold_quantity(self):
+        return self.ticket_set.aggregate(total=Sum('quantity'))['total'] or 0
+
+    @property
+    def available_quantity(self):
+        return max(0, self.max_quantity - self.sold_quantity)
+
+    @property
+    def is_sold_out(self):
+        return self.available_quantity <= 0
+
+    def has_available_quantity(self, requested_qty):
+        return self.available_quantity >= requested_qty
 
     def get_available_quantity(self):
         if not self.max_quantity:
@@ -241,21 +262,63 @@ class TicketTier(models.Model):
         sold_qty = self.ticket_set.aggregate(total=Sum('quantity'))['total'] or 0
         return max(0, self.max_quantity - sold_qty)
 
-    def has_available_quantity(self, requested_qty):
-        return self.get_available_quantity() >= requested_qty
 
-    def __str__(self):
-        return f"{self.event.title} - {self.name} (${self.price})"
-
-
-class Ticket(models.Model):
+class Ticket(BaseModel):
     ticket_tier = models.ForeignKey(TicketTier, on_delete=models.CASCADE)
     promotion_used = models.ForeignKey('Promotion', on_delete=models.SET_NULL, null=True, blank=True)
     original_price = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
     final_price = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
-    user_fk = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    quantity = models.IntegerField(default=1)
-    created_at = models.DateTimeField(auto_now_add=True)
+    user_fk = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='tickets')
+    quantity = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Ticket {self.pk} - {self.ticket_tier.event.title}"
+
+    def clean(self):
+        if self.quantity < 1:
+            raise ValidationError({'quantity': 'La cantidad debe ser al menos 1.'})
+        
+        if self.ticket_tier and not self.ticket_tier.has_available_quantity(self.quantity):
+            raise ValidationError({
+                'quantity': f'Solo quedan {self.ticket_tier.available_quantity} entradas disponibles.'
+            })
+
+    def save(self, *args, **kwargs):
+        if self.ticket_tier:
+            self.original_price = (
+                Decimal(str(self.ticket_tier.price)) * self.quantity
+            ).quantize(Decimal('0.01'), rounding=ROUND_DOWN)
+            
+            if self.promotion_used and self.promotion_used.is_valid_now:
+                discount = self.original_price * (
+                    Decimal(str(self.promotion_used.discount_percentage)) / 100
+                )
+                self.final_price = (self.original_price - discount).quantize(
+                    Decimal('0.01'), rounding=ROUND_DOWN
+                )
+                if not self.pk:
+                    self.promotion_used.use_promotion()
+            else:
+                self.final_price = self.original_price
+                
+        super().save(*args, **kwargs)
+
+    @cached_property
+    def has_pending_refund(self):
+        return RefundRequest.objects.filter(
+            ticket_code=str(self.pk), 
+            approved=False
+        ).exists()
+
+    @property
+    def can_request_refund(self):
+        return (
+            not self.has_pending_refund and
+            not self.ticket_tier.event.is_past
+        )
 
     def calculate_final_price(self):
         try:
@@ -272,33 +335,11 @@ class Ticket(models.Model):
             print(f"Error calculando precio: {e}")
             return Decimal('0.00')
 
-    def save(self, *args, **kwargs):
-        if self.quantity < 1:
-            raise ValidationError("La cantidad debe ser al menos 1.")
-        try:
-            self.original_price = (Decimal(str(self.ticket_tier.price)) * self.quantity).quantize(Decimal('0.01'), rounding=ROUND_DOWN)
-            if self.promotion_used:
-                discount = self.original_price * (Decimal(str(self.promotion_used.discount_percentage)) / 100)
-                self.final_price = (self.original_price - discount).quantize(Decimal('0.01'), rounding=ROUND_DOWN)
-            else:
-                self.final_price = self.original_price
-        except (InvalidOperation, ValueError, TypeError) as e:
-            raise ValidationError(f"Error en el cálculo de precios: {e}")
-        super().save(*args, **kwargs)
-
-    @cached_property
-    def has_pending_refund(self):
-        return RefundRequest.objects.filter(ticket_code=str(self.pk)).exists()
-
-    def __str__(self):
-        return f"Ticket {self.pk} - {self.ticket_tier.event.title}"
-
 
 # --- Notificaciones ---
 class Notificacion(BaseModel):
     title = models.CharField(max_length=50)
     message = models.TextField()
-    created_at = models.DateField(auto_now_add=True)
     priority = models.CharField(
         max_length=10,
         choices=[('alta', 'Alta'), ('media', 'Media'), ('baja', 'Baja')],
@@ -307,72 +348,82 @@ class Notificacion(BaseModel):
     is_read = models.BooleanField(default=False)
     users = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='notificaciones')
 
-    @classmethod
-    def validate(cls, title, message, priority):
-        errors = cls.validate_required_fields(title=title, message=message)
-        if priority not in ['alta', 'media', 'baja']:
-            errors["priority"] = "Prioridad inválida"
-        return errors
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.title
 
     @classmethod
-    def new(cls, title, message, priority='media', users=None):
-        errors = cls.validate(title, message, priority)
-        if errors:
-            return False, errors
-        notificacion = cls.objects.create(title=title, message=message, priority=priority)
-        if users:
-            notificacion.users.set(users)
-        return True, notificacion
-
-    def update(self, title=None, message=None, priority=None, is_read=None, users=None):
-        if title is not None:
-            self.title = title
-        if message is not None:
-            self.message = message
-        if priority is not None:
-            self.priority = priority
-        if is_read is not None:
-            self.is_read = is_read
-        self.save()
-        if users is not None:
-            self.users.set(users)
+    def send_to_all_users(cls, title, message, priority='media'):
+        notification = cls.objects.create(
+            title=title,
+            message=message,
+            priority=priority
+        )
+        notification.users.set(User.objects.all())
+        return notification
 
 
 # --- Solicitudes de Reembolso ---
 class RefundRequest(BaseModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='refund_requests')
+    ticket_code = models.CharField(max_length=50, unique=True)
+    reason = models.TextField()
     approved = models.BooleanField(default=False)
     approval_date = models.DateField(null=True, blank=True)
-    ticket_code = models.CharField(max_length=50)
-    reason = models.TextField()
-    created_at = models.DateField(auto_now_add=True)
+    processed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        related_name='processed_refunds'
+    )
 
-    @classmethod
-    def validate(cls, ticket_code, reason):
-        return cls.validate_required_fields(ticket_code=ticket_code, reason=reason)
+    class Meta:
+        ordering = ['-created_at']
 
-    @classmethod
-    def new(cls, user, ticket_code, reason):
-        errors = cls.validate(ticket_code, reason)
-        if errors:
-            return False, errors
-        refund_request = cls.objects.create(user=user, ticket_code=ticket_code, reason=reason)
-        return True, refund_request
+    def __str__(self):
+        return f"Reembolso de {self.user.username} - Ticket {self.ticket_code}"
 
-    def update(self, ticket_code=None, reason=None, approved=None):
-        if ticket_code is not None:
-            self.ticket_code = ticket_code
-        if reason is not None:
-            self.reason = reason
-        if approved is not None:
-            self.approved = approved
+    def clean(self):
+        try:
+            ticket = Ticket.objects.get(pk=self.ticket_code, user_fk=self.user)
+            if ticket.ticket_tier.event.is_past:
+                raise ValidationError('No se pueden solicitar reembolsos para eventos que ya han pasado.')
+        except Ticket.DoesNotExist:
+            raise ValidationError('El ticket especificado no existe o no te pertenece.')
+
+    def approve(self, processed_by=None):
+        self.approved = True
+        self.approval_date = timezone.now().date()
+        if processed_by:
+            self.processed_by = processed_by
         self.save()
+
+    @property
+    def ticket(self):
+        try:
+            return Ticket.objects.get(pk=self.ticket_code)
+        except Ticket.DoesNotExist:
+            return None
 
 
 # --- Perfil de Usuario ---
-class Profile(models.Model):
+class Profile(BaseModel):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     avatar = models.ImageField(upload_to='avatars/', default='avatars/default.png', blank=True)
+    points = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return f"Perfil de {self.user.username}"
+
+    def add_points(self, amount):
+        self.points += amount
+        self.save(update_fields=['points'])
+
+    @property
+    def total_spent(self):
+        return self.user.tickets.aggregate(
+            total=Sum('final_price')
+        )['total'] or Decimal('0.00')

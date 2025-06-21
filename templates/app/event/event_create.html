@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}Crear Evento - Admin{% endblock %}
+
+{% block navigation %}
+<nav class="navbar navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{% url 'admin_dashboard' %}">
+            <i class="fas fa-arrow-left me-2"></i>Volver al Dashboard
+        </a>
+        <span class="navbar-text">
+            <i class="fas fa-plus-circle me-2"></i>Crear Evento
+        </span>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-calendar-plus me-2"></i>Crear Nuevo Evento
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" id="event-form">
+                        {% csrf_token %}
+
+                        {# ========== Campos del evento ========== #}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.title.label_tag }}
+                                {{ form.title }}
+                                {% if form.title.errors %}<div class="text-danger small">{{ form.title.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.date.label_tag }}
+                                {{ form.date }}
+                                {% if form.date.errors %}<div class="text-danger small">{{ form.date.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.category.label_tag }}
+                                {{ form.category }}
+                                {% if form.category.errors %}<div class="text-danger small">{{ form.category.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.venue_fk.label_tag }}
+                                {{ form.venue_fk }}
+                                {% if form.venue_fk.errors %}<div class="text-danger small">{{ form.venue_fk.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            {{ form.description.label_tag }}
+                            {{ form.description }}
+                            {% if form.description.errors %}<div class="text-danger small">{{ form.description.errors }}</div>{% endif %}
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.image.label_tag }}
+                                {{ form.image }}
+                                {% if form.image.errors %}<div class="text-danger small">{{ form.image.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0">
+                                <i class="fas fa-ticket-alt me-2"></i>Configuración de Tickets
+                            </h5>
+                            <button type="button" id="add-ticket-btn" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-plus me-1"></i>Agregar Ticket
+                            </button>
+                        </div>
+
+                        {{ formset.management_form }}
+                        <div id="tickets-container">
+                            {% for ticket_form in formset.forms %}
+                                <div class="ticket-form border rounded p-3 mb-3" data-form-index="{{ forloop.counter0 }}">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h6 class="mb-0 text-muted"><i class="fas fa-ticket-alt me-1"></i>Ticket #{{ forloop.counter }}</h6>
+                                        {% if not forloop.first %}
+                                            <button type="button" class="btn btn-outline-danger btn-sm remove-ticket-btn">
+                                                <i class="fas fa-trash me-1"></i>Eliminar
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                    {% for hidden in ticket_form.hidden_fields %}{{ hidden }}{% endfor %}
+                                    <div class="row">
+                                        <div class="col-md-4 mb-2">{{ ticket_form.name.label_tag }}{{ ticket_form.name }}{% if ticket_form.name.errors %}<div class="text-danger small">{{ ticket_form.name.errors }}</div>{% endif %}</div>
+                                        <div class="col-md-3 mb-2">{{ ticket_form.price.label_tag }}{{ ticket_form.price }}{% if ticket_form.price.errors %}<div class="text-danger small">{{ ticket_form.price.errors }}</div>{% endif %}</div>
+                                        <div class="col-md-3 mb-2">{{ ticket_form.max_quantity.label_tag }}{{ ticket_form.max_quantity }}{% if ticket_form.max_quantity.errors %}<div class="text-danger small">{{ ticket_form.max_quantity.errors }}</div>{% endif %}</div>
+                                        <div class="col-md-2 mb-2 d-flex align-items-end"><div class="form-check">{{ ticket_form.is_available }}{{ ticket_form.is_available.label_tag }}</div></div>
+                                    </div>
+                                    <div class="mb-2">{{ ticket_form.description.label_tag }}{{ ticket_form.description }}{% if ticket_form.description.errors %}<div class="text-danger small">{{ ticket_form.description.errors }}</div>{% endif %}</div>
+                                    {% if ticket_form.DELETE %}{{ ticket_form.DELETE }}{% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary"><i class="fas fa-times me-2"></i>Cancelar</a>
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Crear Evento</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/event_create.js' %}"></script>
+{% endblock %}
