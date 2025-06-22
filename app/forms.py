@@ -142,11 +142,22 @@ class EventModelForm(forms.ModelForm):
         model = Event
         fields = ['category', 'venue_fk', 'title', 'description', 'date', 'image']
         widgets = {
-            'category': forms.Select(attrs={'class': 'form-control'}),
-            'venue_fk': forms.Select(attrs={'class': 'form-control'}),
-            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Título del evento'}),
-            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'Descripción'}),
-            'image': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+            'category': forms.Select(attrs={
+                'class': 'form-control'
+                }),
+            'venue_fk': forms.Select(attrs={
+                'class': 'form-control'
+                }),
+            'title': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Título del evento'
+                }),
+            'description': forms.Textarea(attrs={
+                'class': 'form-control', 'rows': 5, 'placeholder': 'Descripción'
+                }),
+            'image': forms.ClearableFileInput(attrs={
+                'class': 'form-control'
+                }),
         }
         labels = {
             'category': 'Categoría',
@@ -219,11 +230,26 @@ class TicketModelForm(forms.ModelForm):
         model = TicketTier
         fields = ['name', 'price', 'description', 'max_quantity', 'is_available']
         widgets = {
-            'name': forms.TextInput(attrs={'class':'form-control','placeholder':'Nombre del ticket'}),
-            'price': forms.NumberInput(attrs={'class':'form-control','min':'0','step':'0.01'}),
-            'description': forms.Textarea(attrs={'class':'form-control','rows':2,'placeholder':'Descripción opcional'}),
-            'max_quantity': forms.NumberInput(attrs={'class':'form-control','min':'1'}),
-            'is_available': forms.CheckboxInput(attrs={'class':'form-check-input'}),
+            'name': forms.TextInput(attrs={
+                'class':'form-control',
+                'placeholder':'Nombre del ticket',
+                }),
+            'price': forms.NumberInput(attrs={
+                'class':'form-control',
+                'min':'0','step':'0.01'
+                }),
+            'description': forms.Textarea(attrs={
+                'class':'form-control',
+                'rows':2,
+                'placeholder':'Descripción opcional'
+                }),
+            'max_quantity': forms.NumberInput(attrs={
+                'class':'form-control',
+                'min':'1'
+                }),
+            'is_available': forms.CheckboxInput(attrs={
+                'class':'form-check-input'
+                }),
         }
         labels = {
             'name': 'Nombre de la entrada',
@@ -282,7 +308,10 @@ TicketTierFormSet = inlineformset_factory(
 # --- Promociones ---
 class PromotionForm(forms.ModelForm):
     start_date = forms.DateTimeField(
-        widget=forms.DateTimeInput(attrs={'class':'form-control', 'type':'datetime-local'}),
+        widget=forms.DateTimeInput(attrs={
+            'class':'form-control',
+            'type':'datetime-local',
+            }),
         input_formats=['%Y-%m-%dT%H:%M']
     )
     end_date = forms.DateTimeField(
@@ -294,9 +323,19 @@ class PromotionForm(forms.ModelForm):
         model = Promotion
         fields = ['code', 'discount_percentage', 'start_date', 'end_date', 'max_uses']
         widgets = {
-            'code': forms.TextInput(attrs={'class':'form-control', 'placeholder':'Código promocional'}),
-            'discount_percentage': forms.NumberInput(attrs={'class':'form-control', 'min':'0', 'max':'100'}),
-            'max_uses': forms.NumberInput(attrs={'class':'form-control', 'min':'1'}),
+            'code': forms.TextInput(attrs={
+                'class':'form-control',
+                'placeholder':'Código promocional',
+                }),
+            'discount_percentage': forms.NumberInput(attrs={
+                'class':'form-control',
+                'min':'0',
+                'max':'100',
+                }),
+            'max_uses': forms.NumberInput(attrs={
+                'class':'form-control',
+                'min':'1'
+                }),
         }
         labels = {
             'code': 'Código',
@@ -338,9 +377,20 @@ class RatingForm(forms.ModelForm):
         model = Rating
         fields = ['title', 'text', 'rating']
         widgets = {
-            'title': forms.TextInput(attrs={'class':'form-control', 'placeholder':'Título de tu calificación'}),
-            'text': forms.Textarea(attrs={'class':'form-control', 'rows':3, 'placeholder':'Comparte tu experiencia'}),
-            'rating': forms.NumberInput(attrs={'class':'form-control', 'min':'1', 'max':'5'}),
+            'title': forms.TextInput(attrs={
+                'class':'form-control',
+                'placeholder':'Título de tu calificación'
+                }),
+            'text': forms.Textarea(attrs={
+                'class':'form-control',
+                'rows':3,
+                'placeholder':'Comparte tu experiencia',
+                }),
+            'rating': forms.NumberInput(attrs={
+                'class':'form-control',
+                'min':'1',
+                'max':'5',
+                }),
         }
         labels = {
             'title': 'Título',
@@ -375,8 +425,15 @@ class CommentForm(forms.ModelForm):
         model = Comment
         fields = ['title', 'text']
         widgets = {
-            'title': forms.TextInput(attrs={'class':'form-control', 'placeholder':'Título del comentario'}),
-            'text': forms.Textarea(attrs={'class':'form-control', 'rows':3, 'placeholder':'Escribe tu comentario'}),
+            'title': forms.TextInput(attrs={
+                'class':'form-control',
+                'placeholder':'Título del comentario'
+                }),
+            'text': forms.Textarea(attrs={
+                'class':'form-control',
+                'rows':3,
+                'placeholder':'Escribe tu comentario'
+                }),
         }
         labels = {
             'title': 'Título',
@@ -404,8 +461,15 @@ class RefundRequestForm(forms.ModelForm):
         model = RefundRequest
         fields = ['ticket_code', 'reason']
         widgets = {
-            'ticket_code': forms.TextInput(attrs={'class':'form-control', 'placeholder':'Código del ticket'}),
-            'reason': forms.Textarea(attrs={'class':'form-control', 'rows':3, 'placeholder':'Motivo del reembolso'}),
+            'ticket_code': forms.TextInput(attrs={
+                'class':'form-control',
+                'placeholder':'Código del ticket',
+                }),
+            'reason': forms.Textarea(attrs={
+                'class':'form-control',
+                'rows':3,
+                'placeholder':'Motivo del reembolso',
+                }),
         }
         labels = {
             'ticket_code': 'Código del ticket',

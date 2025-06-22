@@ -13,6 +13,7 @@ from django.utils.decorators import method_decorator
 from django.contrib.auth.models import User
 from datetime import datetime, time
 from django.utils import timezone
+from django.urls import reverse_lazy
 
 from .forms import (
     SignUpForm,
@@ -174,17 +175,63 @@ class EventDetailView(DetailView):
         context['tiers_with_availability'] = tiers_with_availability
         return context
 
-class CommentCreateView(LoginRequiredMixin, View):
-    def post(self, request, pk):
-        event = get_object_or_404(Event, pk=pk)
-        form = CommentForm(request.POST)
-        if form.is_valid():
-            comment = form.save(commit=False)
-            comment.event = event
-            comment.user = request.user
-            comment.save()
-            return redirect('event_detail', pk=pk)
-        return render(request, 'app/event/event_detail.html', {'event': event, 'form': form})
+class CommentCreateView(LoginRequiredMixin, CreateView):
+    model=Comment
+    form_class = CommentForm
+    template_name = 'comment/comment_form.html'
+
+    def get_success_url(self):
+        return reverse_lazy('comentario_listar', kwargs={'pk': self.kwargs['pk_event']})
+
+    def form_valid(self,form):
+        comment = form.save(commit=False)
+        comment.event_fk = self.kwargs.get('pk_event')
+        comment.user = self.request.user
+        comment.save()
+        messages.success(self.request, f"El comentario '{comment.title}' fue creado con exito.")
+        return super().form_valid(form)
+    
+class CommentUpdateView(LoginRequiredMixin,UpdateView):
+    model=Comment
+    form_class = CommentForm
+    template_name = 'comment/comment_form.html'
+
+    def get_success_url(self):
+        return reverse_lazy('comentario_listar', kwargs={'pk': self.kwargs['pk_event']})
+
+    def get_queryset(self):
+        return Comment.objects.filter(user_fk=self.request.user)
+    
+    def form_valid(self, form):
+        comment = form.save(commit=False)
+        comment.save()
+        messages.success(self.request, f"el comentario {comment.title} fue actualizado correctamente.")
+        return super().form_valid(form)
+    
+class CommentDeleteView(LoginRequiredMixin,DeleteView):
+    model=Comment
+    template_name = 'comment/comment_form.html'
+    
+    def get_success_url(self):
+        return reverse_lazy('comentario_listar', kwargs={'pk': self.kwargs['pk_event']})
+
+    def get_queryset(self):
+        return Comment.objects.filter(user_fk=self.request.user)
+
+class CommentListView(LoginRequiredMixin,ListView):
+    model=Comment
+    template_name="comment/comment_list.html"
+    context_object_name="comentarios"
+
+    def get_queryset(self):
+        pk=self.kwargs.get('pk')
+        queryset=Comment.objects.filter(event_fk=pk).order_by("-created_at")
+
+class CommentDetailView(LoginRequiredMixin,DetailView):
+    model = Comment
+    template_name = "comment/comment_detail.html"
+    context_object_name = "comentario"
+
 
 class RatingCreateView(LoginRequiredMixin, View):
     def post(self, request, pk):

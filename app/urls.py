@@ -19,6 +19,10 @@ from .views import (
     VenueDetailView,
     CategoryListView,
     CategoryDetailView,
+    CommentListView,
+    CommentDeleteView,
+    CommentDetailView,
+    CommentUpdateView,
 )
 
 urlpatterns = [
@@ -31,7 +35,6 @@ urlpatterns = [
     # --- Eventos ---
     path('events/', EventListView.as_view(), name='event_list'),
     path('events/<int:pk>/', EventDetailView.as_view(), name='event_detail'),
-    path('events/<int:pk>/comment/', CommentCreateView.as_view(), name='add_comment'),
     path('events/<int:pk>/rating/', RatingCreateView.as_view(), name='add_rating'),
     path('events/<int:event_pk>/comprar/<int:tier_id>/', TicketCreateView.as_view(), name='ticket_buy'),
 
@@ -59,5 +62,12 @@ urlpatterns = [
     # --- Categorías ---
     path('categories/', CategoryListView.as_view(), name='category_listar'),
     path('categories/<int:pk>/', CategoryDetailView.as_view(), name='category_detalle'),
+
+    #comentarios
+    path('eventos/<int:pk>/comentarios/', CommentListView.as_view(), name='comentario_listar'),
+    path('eventos/<int:pk_event>/comentarios/<int:pk/>', CommentDetailView.as_view(), name='comentario_detalle'),
+    path('events/<int:pk_event>/comentarios/crear/', CommentCreateView.as_view(), name='comentario_crear'),
+    path('events/<int:pk_event>/comentarios/<int:pk>/editar/', CommentUpdateView.as_view(), name='comentario_editar'),
+    path('events/<int:pk_event>/comentarios/<int:pk>/borrar/', CommentDeleteView.as_view(), name='comentario_borrar'),
 ]
 
