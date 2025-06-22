@@ -337,7 +337,7 @@ class Ticket(BaseModel):
 
 
 # --- Notificaciones ---
-class Notificacion(BaseModel):
+class Notification(BaseModel):
     title = models.CharField(max_length=50)
     message = models.TextField()
     priority = models.CharField(

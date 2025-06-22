@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h3>Notifications</h3>
+      <a href="{% url 'notification_create' %}" class="btn btn-primary">+ New Notification</a>
+    </div>
+
+    {% if notifications %}
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Priority</th>
+            <th>Read</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for notification in notifications %}
+            <tr>
+              <td>{{ notification.title }}</td>
+              <td>{{ notification.priority|title }}</td>
+              <td>{{ notification.is_read|yesno:"Yes,No" }}</td>
+              <td>
+                <a href="{% url 'notification_detail' notification.pk %}" class="btn btn-sm btn-info">View</a>
+                <a href="{% url 'notification_edit' notification.pk %}" class="btn btn-sm btn-warning">Edit</a>
+                <a href="{% url 'notification_delete' notification.pk %}" class="btn btn-sm btn-danger">Delete</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="text-muted">No notifications found.</p>
+    {% endif %}
+  </div>
+{% endblock %}

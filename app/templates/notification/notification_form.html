@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="container mt-4">
+    {% if form.instance.pk %}
+      <h3 class="mb-3">Edit Notification: {{ form.instance.title }}</h3>
+    {% else %}
+      <h3 class="mb-3">Create New Notification</h3>
+    {% endif %}
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+          {% for error in form.non_field_errors %}
+            <div>{{ error }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% for field in form %}
+        <div class="mb-3">
+          <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+          {{ field }}
+          {% if field.help_text %}
+            <div class="form-text">{{ field.help_text }}</div>
+          {% endif %}
+          {% for error in field.errors %}
+            <div class="text-danger small">{{ error }}</div>
+          {% endfor %}
+        </div>
+      {% endfor %}
+
+      <button type="submit" class="btn btn-primary">
+        {% if form.instance.pk %}Update{% else %}Create{% endif %}
+      </button>
+      <a href="{% url 'notification_list' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+  </div>
+{% endblock %}
