@@ -1,29 +1,39 @@
-from django.contrib.auth.models import User, Group, Permission
+import django
+from django.contrib.auth.models import Group, Permission
+from django.contrib.contenttypes.models import ContentType
+from app.models import Event, Category, Venue, RefundRequest, Promotion, Comment, Ticket
 
-admin = Group.objects.create(name='Administradores')
-vendedor = Group.objects.create(name='Vendedor')
-cliente = Group.objects.create(name='Cliente')
+# Define utility to get permissions for a model
+def get_perms(model, actions):
+    ct = ContentType.objects.get_for_model(model)
+    return Permission.objects.filter(
+        content_type=ct,
+        codename__in=[f"{action}_{model._meta.model_name}" for action in actions]
+    )
 
+# Create groups if they don’t exist
+admin_group, _ = Group.objects.get_or_create(name='Admin')
+vendedor_group, _ = Group.objects.get_or_create(name='Vendedor')
 
-permission = Permission.objects.get(codename='can_create_category')
-admin.permissions.add(permission)
+# Assign permissions to Admin
+admin_perms = (
+    get_perms(Event, ['add', 'change', 'delete', 'view']) |
+    get_perms(Category, ['add', 'change', 'delete', 'view']) |
+    get_perms(Venue, ['add', 'change', 'delete', 'view']) |
+    get_perms(RefundRequest, ['view'])
+)
+admin_group.permissions.set(admin_perms)
 
-permission = Permission.objects.get(codename='can_view_refund_request')
-admin.permissions.add(permission)
+# Assign permissions to Vendedor
+vendedor_perms = (
+    get_perms(Event, ['view']) |
+    get_perms(Category, ['view']) |
+    get_perms(Venue, ['view']) |
+    get_perms(Promotion, ['add', 'change', 'delete', 'view']) |
+    get_perms(RefundRequest, ['change', 'view']) |
+    get_perms(Comment, ['delete', 'view']) |
+    get_perms(Ticket, ['change', 'view'])
+)
+vendedor_group.permissions.set(vendedor_perms)
 
-permission = Permission.objects.get(codename='can_update_category')
-admin.permissions.add(permission)
-
-permission = Permission.objects.get(codename='can_delete_category')
-admin.permissions.add(permission)
-
-permission = Permission.objects.get(codename='can_create_venue')
-admin.permissions.add(permission)
-
-permission = Permission.objects.get(codename='can_update_venue')
-admin.permissions.add(permission)
-
-permission = Permission.objects.get(codename='can_delete_venue')
-admin.permissions.add(permission)
-
-
+print("✅ Grupos y permisos configurados correctamente.")
