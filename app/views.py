@@ -33,7 +33,7 @@ from .models import (
     TicketTier,
     Comment,
     Profile,
-    Notificacion,
+    Notification,
     Venue,
     Category,
 )
@@ -436,17 +436,17 @@ class UserProfileView(View):
 
 
 class NotificationListView(LoginRequiredMixin, ListView):
-    model = Notificacion
+    model = Notification
     template_name = 'app/notificacion/notificaciones.html'
     context_object_name = 'notificaciones'
 
     def get_queryset(self):
-        return Notificacion.objects.filter(users=self.request.user).order_by('-created_at')
+        return Notification.objects.filter(users=self.request.user).order_by('-created_at')
 
     def post(self, request, *args, **kwargs):
         notification_id = request.POST.get('notification_id')
         if notification_id:
-            notification = get_object_or_404(Notificacion, pk=notification_id, users=request.user)
+            notification = get_object_or_404(Notification, pk=notification_id, users=request.user)
             notification.is_read = True
             notification.save()
             messages.success(request, 'Notificación marcada como leída.')
@@ -455,7 +455,7 @@ class NotificationListView(LoginRequiredMixin, ListView):
         return redirect('notificaciones')
 
 class NotificationDetailView(DetailView):
-    model = Notificacion
+    model = Notification
     template_name = "app/notificacion/notification_detail.html"
     context_object_name = "notificacion"
 
