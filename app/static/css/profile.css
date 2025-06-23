@@ -5,7 +5,7 @@
 .profile-container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 40px 20px; 
+  padding: 40px 20px;
 }
 
 .profile-widget {
@@ -21,9 +21,13 @@
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
-
-.profile-photo-widget {
-  text-align: center;
+.profile-nav-btn, .upload-btn, .btn-ver-mas {
+  border: none;
+  border-radius: 25px !important;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  cursor: pointer;
 }
 
 .profile-nav-buttons {
@@ -35,23 +39,34 @@
 
 .profile-nav-btn {
   background: linear-gradient(45deg, #23f9fb, #3b82f6) !important;
-  color: #666; 
+  color: #666;
   padding: 10px 16px;
-  border-radius: 25px !important;
-  text-decoration: none;
-  font-weight: 500;
   font-size: 14px;
-  transition: all 0.3s ease;
   flex: 1;
   text-align: center;
 }
 
-.profile-nav-btn:hover {
+.profile-nav-btn:hover, .upload-btn:hover {
   background: linear-gradient(45deg, #fb24bb, #d946ef) !important;
   color: white;
-  border-color: #fb24bb;
   transform: translateY(-1px);
-  text-decoration: none;
+}
+
+.upload-btn {
+  background: linear-gradient(45deg, #23f9fb, #3b82f6) !important;
+  color: white !important;
+  padding: 12px 24px;
+  font-size: 15px;
+  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3) !important;
+}
+
+.upload-btn:hover {
+  transform: translateY(-2px) scale(1.05) !important;
+  box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4) !important;
+}
+
+.profile-photo-widget {
+  text-align: center;
 }
 
 .profile-photo {
@@ -59,7 +74,7 @@
   height: 160px;
   border-radius: 50%;
   object-fit: cover;
-  border: 4px solid #fb24bb ;
+  border: 4px solid #fb24bb;
   margin-bottom: 36px;
 }
 
@@ -68,25 +83,6 @@
   flex-direction: column;
   align-items: center;
   gap: 10px;
-}
-
-.upload-btn {
-  background: linear-gradient(45deg, #23f9fb, #3b82f6) !important;
-  color: white !important;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 25px !important; 
-  font-weight: 600 !important;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 15px;
-  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3) !important;
-}
-
-.upload-btn:hover {
-  background: linear-gradient(45deg, #fb24bb, #d946ef) !important;
-  transform: translateY(-2px) scale(1.05) !important;
-  box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4) !important;
 }
 
 .widget-title {
@@ -110,19 +106,21 @@
   border-bottom: none;
 }
 
-.info-label {
-  font-weight: 500;
+.info-label, .info-value {
   color: #ffffff;
+  font-weight: 500;
+}
+
+.info-label {
   flex: 1;
 }
 
 .info-value {
-  color: #ffffff;
   flex: 2;
   text-align: right;
 }
 
-.status-badge {
+.status-badge, .refund-status {
   padding: 4px 12px;
   border-radius: 20px;
   font-size: 12px;
@@ -137,26 +135,6 @@
 .status-inactive {
   background: #ef4444;
   color: white;
-}
-
-@media (max-width: 768px) {
-  .profile-container {
-      padding: 100px 15px 40px;
-  }
-
-  .profile-nav-buttons {
-      flex-direction: column;
-      gap: 8px;
-  }
-
-  .profile-nav-btn {
-      padding: 10px;
-      font-size: 13px;
-  }
-
-  .profile-widget {
-      padding: 20px;
-  }
 }
 
 .scroll-widget {
@@ -183,64 +161,89 @@
   background: #5a6fd8;
 }
 
-.ticket-card {
-  padding: 20px;
-  background: linear-gradient(135deg, #fb24bb, #23f9fb) !important;
+.ticket-card, .refund-item {
+  position: relative;
   border-radius: 12px;
   margin-bottom: 15px;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  position: relative;
   min-height: 130px;
 }
 
-.ticket-card:hover {
-  background: linear-gradient(135deg, #d91a9a, #1ee0e3) !important;
+.ticket-card:hover, .refund-item:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.ticket-header {
-  margin-bottom: 15px;
+.ticket-card {
+  padding: 20px;
+  background: linear-gradient(135deg, #fb24bb, #23f9fb) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.ticket-title {
-  font-weight: 600;
+.ticket-card:hover {
+  background: linear-gradient(135deg, #d91a9a, #1ee0e3) !important;
+}
+
+.refund-item {
+  padding: 15px;
+  background: linear-gradient(135deg, rgba(251, 36, 187, 0.4), rgba(35, 249, 251, 0.4)) !important;
+}
+
+.refund-item:hover {
+  background: linear-gradient(135deg, rgba(217, 26, 154, 0.5), rgba(30, 224, 227, 0.5)) !important;
+}
+
+.ticket-title, .item-title, .ticket-date, .item-subtitle {
   color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.ticket-title, .item-title {
+  font-weight: 600;
   margin-bottom: 8px;
   font-size: 15px;
   line-height: 1.3;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.item-title {
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+
+.ticket-date, .item-subtitle {
+  color: #f0f0f0;
+  font-size: 13px;
 }
 
 .ticket-date {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #f0f0f0;
-  font-size: 13px;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-.date-icon {
-  font-size: 14px;
+.item-subtitle {
+  margin-bottom: 8px;
 }
 
-.ticket-actions {
+.item-meta {
+  display: flex;
+  color: #ffffff;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+
+.ticket-actions, .refund-status {
   position: absolute;
   bottom: 15px;
   right: 15px;
 }
 
 .btn-ver-mas {
-  background: linear-gradient(45deg, #ff6b6b, #ffa726) !important; 
+  background: linear-gradient(45deg, #ff6b6b, #ffa726) !important;
   color: white;
   padding: 8px 16px;
-  border-radius: 25px !important; 
-  text-decoration: none;
   font-size: 12px;
-  font-weight: 500;
-  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -248,58 +251,13 @@
 }
 
 .btn-ver-mas:hover {
-  background: linear-gradient(45deg, #ff6b6b, #ffa726) !important; 
   transform: translateY(-2px) scale(1.05) !important;
   box-shadow: 0 6px 20px rgba(251, 36, 187, 0.4) !important;
   color: white !important;
   text-decoration: none !important;
 }
 
-.refund-item {
-  position: relative;
-  padding: 15px;
-  background: linear-gradient(135deg, rgba(251, 36, 187, 0.4), rgba(35, 249, 251, 0.4)) !important;
-  border-radius: 8px;
-  min-height: 130px;
-  margin-bottom: 12px;
-  transition: all 0.2s ease;
-}
-
-.refund-item:hover {
-  background: linear-gradient(135deg, rgba(217, 26, 154, 0.5), rgba(30, 224, 227, 0.5)) !important;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.item-title {
-  font-weight: 600;
-  color: #ffffff;
-  margin-bottom: 5px;
-  font-size: 14px;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-.item-subtitle {
-  color: #f0f0f0;
-  font-size: 13px;
-  margin-bottom: 8px;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-.item-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 12px;
-}
-
 .refund-status {
-  position: absolute;
-  bottom: 15px;
-  right: 15px;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-weight: 500;
   font-size: 11px;
 }
 
@@ -337,4 +295,24 @@
 .btn-link:hover {
   color: #5a6fd8;
   text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .profile-container {
+    padding: 100px 15px 40px;
+  }
+
+  .profile-nav-buttons {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .profile-nav-btn {
+    padding: 10px;
+    font-size: 13px;
+  }
+
+  .profile-widget {
+    padding: 20px;
+  }
 }
