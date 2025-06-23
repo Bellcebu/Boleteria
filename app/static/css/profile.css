@@ -35,9 +35,9 @@
 
 .profile-nav-btn {
   background: linear-gradient(45deg, #23f9fb, #3b82f6) !important;
-  color: #666; /* Color gris para texto */
+  color: #666; 
   padding: 10px 16px;
-  border-radius: 25px !important; /* Más redondeado */
+  border-radius: 25px !important;
   text-decoration: none;
   font-weight: 500;
   font-size: 14px;
@@ -139,7 +139,6 @@
   color: white;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .profile-container {
       padding: 100px 15px 40px;
@@ -186,10 +185,7 @@
 
 .ticket-card {
   padding: 20px;
-  background-image: url('/static/images/ticket.jpg') !important;
-  background-size: 107% 115%;
-  background-position: center;
-  background-repeat: no-repeat;
+  background: linear-gradient(135deg, #fb24bb, #23f9fb) !important;
   border-radius: 12px;
   margin-bottom: 15px;
   transition: all 0.3s ease;
@@ -199,10 +195,7 @@
 }
 
 .ticket-card:hover {
-  background-image: url('/static/images/ticket.jpg') !important; 
-  background-size: 107% 115%;
-  background-position: center;
-  background-repeat: no-repeat;
+  background: linear-gradient(135deg, #d91a9a, #1ee0e3) !important;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
@@ -213,18 +206,20 @@
 
 .ticket-title {
   font-weight: 600;
-  color: #333;
+  color: #ffffff;
   margin-bottom: 8px;
   font-size: 15px;
   line-height: 1.3;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .ticket-date {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #666;
+  color: #f0f0f0;
   font-size: 13px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .date-icon {
@@ -238,7 +233,7 @@
 }
 
 .btn-ver-mas {
-  background: linear-gradient(45deg, #ff6b6b, #ffa726) !important; /* Gradiente punk */
+  background: linear-gradient(45deg, #ff6b6b, #ffa726) !important; 
   color: white;
   padding: 8px 16px;
   border-radius: 25px !important; 
@@ -260,14 +255,10 @@
   text-decoration: none !important;
 }
 
-/* Cards de Reembolsos */
 .refund-item {
   position: relative;
   padding: 15px;
-  background-image: url('/static/images/ticket2.png') !important;
-  background-size: 107% 115%;
-  background-position: center;
-  background-repeat: no-repeat;
+  background: linear-gradient(135deg, rgba(251, 36, 187, 0.4), rgba(35, 249, 251, 0.4)) !important;
   border-radius: 8px;
   min-height: 130px;
   margin-bottom: 12px;
@@ -275,22 +266,24 @@
 }
 
 .refund-item:hover {
-  background-image: url('/static/images/ticket2.png') !important;
+  background: linear-gradient(135deg, rgba(217, 26, 154, 0.5), rgba(30, 224, 227, 0.5)) !important;
   transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .item-title {
   font-weight: 600;
-  color: #333;
+  color: #ffffff;
   margin-bottom: 5px;
   font-size: 14px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .item-subtitle {
-  color: #666;
+  color: #f0f0f0;
   font-size: 13px;
   margin-bottom: 8px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .item-meta {
@@ -303,7 +296,7 @@
 .refund-status {
   position: absolute;
   bottom: 38px;
-  right: 180px; /* O left: 15px para el lado izquierdo */
+  right: 180px; 
   padding: 2px 8px;
   border-radius: 12px;
   font-weight: 500;
@@ -325,7 +318,6 @@
   color: #991b1b;
 }
 
-/* Estados vacíos */
 .empty-state {
   text-align: center;
   padding: 40px 20px;

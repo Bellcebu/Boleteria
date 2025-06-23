@@ -10,16 +10,13 @@
 {% block content %}
 <div class="profile-container">
     <div class="row">
-        <!-- Widget Foto de Perfil -->
         <div class="col-md-6">
             <div class="profile-widget profile-photo-widget">
-                <!-- Botones de navegación -->
                 <div class="profile-nav-buttons">
                     <a href="{% url 'user_profile' user.username %}" class="profile-nav-btn active">🏠 Home</a>
                     <a href="#" class="profile-nav-btn">⭐ Favoritos</a>
                 </div>
                 
-                <!-- Foto de perfil -->
                 {% if profile_user.profile.avatar %}
                     <img src="{{ profile_user.profile.avatar.url }}" 
                          alt="Foto de perfil de {{ profile_user.username }}" 
@@ -30,7 +27,6 @@
                          class="profile-photo">
                 {% endif %}
                 
-                <!-- Botón subir foto -->
                 {% if user == profile_user %}
                     <form method="post" enctype="multipart/form-data" class="upload-form" id="avatarForm">
                         {% csrf_token %}
@@ -44,7 +40,6 @@
             </div>
         </div>
         
-        <!-- Widget Información Personal -->
         <div class="col-md-6">
             <div class="profile-widget">
                 <div class="widget-title">Información Personal</div>
@@ -81,9 +76,7 @@
     </div>
     
     {% if user == profile_user %}
-    <!-- Segunda fila: Tickets y Reembolsos -->
     <div class="row">
-        <!-- Widget Tickets -->
         <div class="col-md-6">
           <div class="profile-widget">
               <div class="widget-title">Mis Tickets ({{ user_tickets|length }})</div>
@@ -113,7 +106,6 @@
           </div>
         </div>
         
-        <!-- Widget Reembolsos -->
         <div class="col-md-6">
             <div class="profile-widget">
                 <div class="widget-title">Solicitudes de Reembolso ({{ refund_requests|length }})</div>
@@ -151,19 +143,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const avatarInput = document.getElementById('avatarInput');
-    const avatarForm = document.getElementById('avatarForm');
-    
-    if (avatarInput && avatarForm) {
-        avatarInput.addEventListener('change', function() {
-            if (this.files && this.files[0]) {
-                // Auto-submit cuando se selecciona una imagen
-                avatarForm.submit();
-            }
-        });
-    }
-});
-</script>
+<script src="{% static 'js/profile.js' %}"></script>
 {% endblock %}
