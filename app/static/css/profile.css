@@ -228,8 +228,8 @@
 
 .ticket-actions {
   position: absolute;
-  bottom: 20px;
-  right: 490px;
+  bottom: 15px;
+  right: 15px;
 }
 
 .btn-ver-mas {
@@ -295,8 +295,8 @@
 
 .refund-status {
   position: absolute;
-  bottom: 38px;
-  right: 180px; 
+  bottom: 15px;
+  right: 15px;
   padding: 2px 8px;
   border-radius: 12px;
   font-weight: 500;
