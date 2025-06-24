@@ -23,12 +23,12 @@
             <a href="{% url 'home' %}" class="logo">EventApp</a>
             
             <div class="nav-links">
-                <a href="{% url 'event_list' %}">Eventos</a>
-                <a href="{% url 'category_listar' %}">Categorías</a>
-                <a href="{% url 'venue_listar' %}">Venues</a>
+                <a >Eventos</a>
+                <a >Categorías</a>
+                <a >Venues</a>
                 
                 {% if user.is_staff %}
-                    <a href="{% url 'admin_dashboard' %}">Admin</a>
+                    <a href="{% url 'admin_home' %}">Admin</a>
                 {% endif %}
             </div>
 

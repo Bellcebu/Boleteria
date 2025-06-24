@@ -1,0 +1,56 @@
+body {
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+}
+
+.sidebar-static {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+.main-content-static {
+    margin-left: 280px;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+.sidebar-static .nav-link {
+    color: #dee2e6;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.25rem;
+    transition: all 0.3s ease;
+}
+
+.sidebar-static .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.sidebar-static .nav-link.active {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.messages-container {
+    margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+    .sidebar-static {
+        width: 100%;
+        height: auto;
+        position: relative;
+    }
+    
+    .main-content-static {
+        margin-left: 0;
+    }
+}

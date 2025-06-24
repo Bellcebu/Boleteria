@@ -13,6 +13,7 @@ urlpatterns = [
 
     # --- Herramientas ---
     path('eventos/', views.AdminEventView.as_view(), name='admin_event'),
+    path('eventos/<int:event_id>/tickets/', views.AdminEventTicketsView.as_view(), name='admin_event_tickets'),
     path('categories/', views.AdminCategoriesView.as_view(), name='admin_categories'),
     path('venues/', views.AdminVenueView.as_view(), name='admin_venue'),
     path('refund-requests/', views.AdminRefundRequesView.as_view(), name='admin_refund_request'),

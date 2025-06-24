@@ -1,0 +1,163 @@
+{% extends 'base/base_admin.html' %}
+{% load static %}
+
+{% block title %}Admin Roles - EventApp{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin_css/admin_rols.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person-gear me-2"></i>Buscar Usuario y Asignar Rol
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-search"></i>
+                                </span>
+                                <input type="text" class="form-control" id="userSearch" placeholder="Buscar usuario por nombre o email...">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="button" class="btn btn-outline-secondary w-100" id="clearSearch">
+                                <i class="bi bi-x-circle me-2"></i>Limpiar búsqueda
+                            </button>
+                        </div>
+                    </div>
+                    <form method="post" id="roleForm" style="display: none;">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="assign_role">
+                        <input type="hidden" name="user_id" id="selectedUserId"> 
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="roleSelect" class="form-label">Nuevo Rol</label>
+                                    <select class="form-select" name="role" id="roleSelect" required>
+                                        <option value="">Seleccionar rol...</option>
+                                        <option value="admin">👑 Administrador</option>
+                                        <option value="vendedor">💼 Vendedor</option>
+                                        <option value="usuario">👤 Usuario Normal</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Usuario Seleccionado</label>
+                                    <p class="form-control-plaintext">
+                                        <strong id="selectedUserName"></strong> - <span id="currentRoleBadge"></span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save me-2"></i>Asignar Rol
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="cancelAssign">
+                                <i class="bi bi-x-circle me-2"></i>Cancelar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-people me-2"></i>Lista de Usuarios
+                    </h5>
+                    <div class="btn-group" role="group">
+                        <input type="radio" class="btn-check" name="roleFilter" id="filterAll" value="all" checked>
+                        <label class="btn btn-outline-secondary" for="filterAll">
+                            Todos
+                        </label>
+
+                        <input type="radio" class="btn-check" name="roleFilter" id="filterAdmin" value="admin">
+                        <label class="btn btn-outline-primary" for="filterAdmin">
+                            Admins
+                        </label>
+
+                        <input type="radio" class="btn-check" name="roleFilter" id="filterVendedor" value="vendedor">
+                        <label class="btn btn-outline-info" for="filterVendedor">
+                            Vendedores
+                        </label>
+
+                        <input type="radio" class="btn-check" name="roleFilter" id="filterUsuario" value="usuario">
+                        <label class="btn btn-outline-success" for="filterUsuario">
+                            Usuarios
+                        </label>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Usuario</th>
+                                    <th>Email</th>
+                                    <th>Rol</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                                {% for user_info in users_with_roles %}
+                                <tr class="user-row" data-role="{{ user_info.current_role }}">
+                                    <td>
+                                        <strong>{{ user_info.user.username }}</strong>
+                                        {% if user_info.user.first_name or user_info.user.last_name %}
+                                            <br><small class="text-muted">{{ user_info.user.first_name }} {{ user_info.user.last_name }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ user_info.user.email }}</td>
+                                    <td>
+                                        {% if user_info.current_role == 'admin' %}
+                                            <span class="badge bg-primary">👑 Administrador</span>
+                                        {% elif user_info.current_role == 'vendedor' %}
+                                            <span class="badge bg-info">💼 Vendedor</span>
+                                        {% else %}
+                                            <span class="badge bg-success">👤 Usuario</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-outline-warning assign-role-btn" 
+                                                data-user-id="{{ user_info.user.id }}"
+                                                data-username="{{ user_info.user.username }}"
+                                                data-current-role="{{ user_info.current_role }}"
+                                                {% if user_info.user == request.user %}disabled{% endif %}>
+                                            <i class="bi bi-gear"></i> Cambiar Rol
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-4">
+                                        <i class="bi bi-people fs-1 mb-2 d-block"></i>
+                                        No hay usuarios registrados
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/admin_js/admin_rols.js' %}"></script>
+{% endblock %}

@@ -27,6 +27,7 @@ def admin_home(request):
         'total_events': Event.objects.count(),
         'total_categories': Category.objects.count(),
         'total_users': User.objects.count(),
+        'total_venues': Venue.objects.count(),
     }
     return render(request, 'admin_template/admin_home.html', context)
 
@@ -79,8 +80,66 @@ class AdminEventView(LoginRequiredMixin, UserPassesTestMixin, View):
             event.delete()
             messages.success(request, f"Evento '{event_title}' eliminado con éxito.")
         
-        return redirect('admin_evento')
+        return redirect('admin_event')
+    
 
+# --- Ticket CRUD ---
+
+class AdminEventTicketsView(LoginRequiredMixin, UserPassesTestMixin, View):
+    template_name = 'admin_template/admin_tickets.html'
+    
+    def test_func(self):
+        return is_admin(self.request.user)
+    
+    def get(self, request, event_id):
+        event = get_object_or_404(Event, id=event_id)
+        tickets = TicketTier.objects.filter(event=event).order_by('price')
+        
+        context = {
+            'event': event,
+            'tickets': tickets,
+        }
+        return render(request, self.template_name, context)
+    
+    def post(self, request, event_id):
+        event = get_object_or_404(Event, id=event_id)
+        action = request.POST.get('action')
+        
+        if action == 'create':
+            ticket = TicketTier(event=event)
+            form = TicketModelForm(request.POST, instance=ticket)
+            if form.is_valid():
+                form.save()
+                messages.success(request, f"Ticket '{ticket.name}' creado con éxito.")
+            else:
+                for field, errors in form.errors.items():
+                    for error in errors:
+                        messages.error(request, f"{form.fields[field].label}: {error}")
+        
+        elif action == 'edit':
+            ticket_id = request.POST.get('ticket_id')
+            ticket = get_object_or_404(TicketTier, pk=ticket_id, event=event)
+            form = TicketModelForm(request.POST, instance=ticket)
+            if form.is_valid():
+                ticket = form.save()
+                messages.success(request, f"Ticket '{ticket.name}' actualizado con éxito.")
+            else:
+                for field, errors in form.errors.items():
+                    for error in errors:
+                        messages.error(request, f"{form.fields[field].label}: {error}")
+        
+        elif action == 'delete':
+            ticket_id = request.POST.get('ticket_id')
+            ticket = get_object_or_404(TicketTier, pk=ticket_id, event=event)
+            
+            if ticket.sold_quantity > 0:
+                messages.error(request, f"No se puede eliminar '{ticket.name}' porque ya hay {ticket.sold_quantity} entradas vendidas.")
+            else:
+                ticket_name = ticket.name
+                ticket.delete()
+                messages.success(request, f"Ticket '{ticket_name}' eliminado con éxito.")
+        
+        return redirect('admin_event_tickets', event_id=event_id)
 
 # --- Categorías CRUD ---
 
@@ -128,7 +187,7 @@ class AdminCategoriesView(LoginRequiredMixin, UserPassesTestMixin, View):
             category.delete()
             messages.success(request, f"Categoría '{category_name}' eliminada con éxito.")
         
-        return redirect('admin_categoria')
+        return redirect('admin_categories')
 
 # --- Venues CRUD ---
 
@@ -176,7 +235,7 @@ class AdminVenueView(LoginRequiredMixin, UserPassesTestMixin, View):
             venue.delete()
             messages.success(request, f"Lugar '{venue_name}' eliminado con éxito.")
         
-        return redirect('admin_lugar')
+        return redirect('admin_venue')
 
 
 # --- Refund Requests CRUD ---
@@ -229,14 +288,13 @@ class AdminRefundRequesView(LoginRequiredMixin, UserPassesTestMixin, View):
 
 class AdminRolsView(LoginRequiredMixin, UserPassesTestMixin, View):
     template_name = 'admin_template/admin_rols.html'
-    
+   
     def test_func(self):
         return is_admin(self.request.user)
-
+        
     def get(self, request):
         users = User.objects.all().order_by('username')
         users_with_roles = []
-
         for user in users:
             if user.is_superuser:
                 current_role = 'admin'
@@ -246,28 +304,22 @@ class AdminRolsView(LoginRequiredMixin, UserPassesTestMixin, View):
                 current_role = 'vendedor'
             else:
                 current_role = 'usuario'
-
             users_with_roles.append({
                 'user': user,
                 'current_role': current_role,
             })
-
         return render(request, self.template_name, {'users_with_roles': users_with_roles})
-
+        
     def post(self, request):
         action = request.POST.get('action')
-
         if action == 'assign_role':
             user_id = request.POST.get('user_id')
             role = request.POST.get('role')
             user = get_object_or_404(User, id=user_id)
-
             if user == request.user and role != 'admin':
                 messages.error(request, "No puedes quitarte permisos de administrador a ti mismo.")
-                return redirect('user_roles')
-
+                return redirect('admin_rols')
             user.groups.clear()
-
             if role == 'admin':
                 admin_group, _ = Group.objects.get_or_create(name='Admin')
                 user.groups.add(admin_group)
@@ -284,19 +336,8 @@ class AdminRolsView(LoginRequiredMixin, UserPassesTestMixin, View):
                 user.is_staff = False
                 user.save()
                 messages.success(request, f"Usuario '{user.username}' asignado como Usuario normal.")
-
-        elif action == 'toggle_status':
-            user_id = request.POST.get('user_id')
-            user = get_object_or_404(User, id=user_id)
-
-            if user != request.user:
-                user.is_active = not user.is_active
-                user.save()
-                status_text = "activado" if user.is_active else "desactivado"
-                messages.success(request, f"Usuario '{user.username}' {status_text} exitosamente.")
-
-        return redirect('user_roles')
-    
+        return redirect('admin_rols')
+        
 # List View
 class NotificationListView(LoginRequiredMixin, ListView):
     model = Notification

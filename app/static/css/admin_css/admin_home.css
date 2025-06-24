@@ -1,0 +1,41 @@
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: 1px solid rgba(0, 0, 0, 0.125);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.stats-icon {
+    font-size: 3rem;
+    opacity: 0.8;
+}
+
+.stats-card {
+    background: linear-gradient(135deg, var(--card-gradient-start), var(--card-gradient-end));
+    color: white;
+    border: none;
+}
+
+.stats-card-primary {
+    --card-gradient-start: #667eea;
+    --card-gradient-end: #764ba2;
+}
+
+.stats-card-success {
+    --card-gradient-start: #11998e;
+    --card-gradient-end: #38ef7d;
+}
+
+.stats-card-info {
+    --card-gradient-start: #3b82f6;
+    --card-gradient-end: #1d4ed8;
+}
+
+.stats-card-warning {
+    --card-gradient-start: #f093fb;
+    --card-gradient-end: #f5576c;
+}

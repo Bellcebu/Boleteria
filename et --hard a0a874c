@@ -1,0 +1,60 @@
+[33m3b055c8[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{0}: reset: moving to HEAD~1
+[33me4059b9[m HEAD@{1}: reset: moving to HEAD~1
+[33m66ab3e2[m HEAD@{2}: reset: moving to HEAD~1
+[33ma0a874c[m HEAD@{3}: commit: fix merge fallido se duplicaron archivos
+[33m66ab3e2[m HEAD@{4}: commit: panel admin casi al 100% template y views
+[33me4059b9[m HEAD@{5}: pull: Merge made by the 'ort' strategy.
+[33m3b055c8[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{6}: reset: moving to HEAD
+[33m3b055c8[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{7}: reset: moving to HEAD
+[33m3b055c8[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{8}: reset: moving to HEAD
+[33m3b055c8[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{9}: pull: updating HEAD
+[33m3b055c8[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{10}: commit: from django.views.generic import TemplateView, ListView, DetailView, View
+[33mc81edcf[m HEAD@{11}: pull: Fast-forward
+[33mab1ccbf[m HEAD@{12}: commit: fix
+[33mb4919a2[m HEAD@{13}: commit: ordene un poco el css
+[33mcb65980[m HEAD@{14}: commit: borradas por alguna razo se duplicaron unas carpetas en algun pull
+[33m84272cf[m HEAD@{15}: commit: bug en setting
+[33m568b10a[m HEAD@{16}: commit: fixture de grupos echo
+[33m7d1dab4[m HEAD@{17}: reset: moving to HEAD~1
+[33md407480[m HEAD@{18}: commit: fixture de grupos
+[33m7d1dab4[m HEAD@{19}: pull: Fast-forward
+[33md75587c[m HEAD@{20}: commit: views actualizadas y template Home, profile echos
+[33mcab7b94[m HEAD@{21}: pull: Fast-forward
+[33m7db7d6b[m HEAD@{22}: pull: Fast-forward
+[33m2bc5bb7[m HEAD@{23}: commit: auth
+[33mbf114b7[m HEAD@{24}: commit: act
+[33m18e29eb[m HEAD@{25}: commit: correciones
+[33m0a78d7b[m HEAD@{26}: commit: perfil echo con reembolso, puede comprar ticket, ver el detalle de ticket (template a mejorar solo funcionalidad)
+[33m42ca679[m HEAD@{27}: commit: fallo de template event detail
+[33m90fa27e[m HEAD@{28}: commit: revision ordenamiento
+[33m24e5cf2[m HEAD@{29}: commit: usuario ya puede comprar entradas y correcion admin puede borrar evento control sobre cantidad de entradas echo (falta añadir tickets cantidad que tenes y reenbolsar que esta añadido profile el listado pero aun no se ha probado reenbolsar)
+[33m5dff543[m HEAD@{30}: commit: re organice todo admin anda por completo hay que mejorar template, se mejoro user para tener foto de perfil, detalle evento esta con sus entradas, se añadio entradas dinamicas (motivo me parecia bueno al compara con una pagina de evento)
+[33m8ac6504[m HEAD@{31}: commit: nuva base de dato admin casi terminado grupo/roles echos hay que mejorar home (ya se puede crear categoriass eventos y venues) falta implementar funcioness de vendedor y de usser aun en preparacion
+[33m4214879[m HEAD@{32}: commit: pago de evento falta mejorar mucho
+[33m5fa27ef[m HEAD@{33}: commit: creacion de eventoss
+[33m3aeca6f[m HEAD@{34}: pull: Fast-forward
+[33maf970d2[m HEAD@{35}: pull: Fast-forward
+[33m7820d65[m HEAD@{36}: pull: Fast-forward
+[33m52c6dd1[m HEAD@{37}: commit: v2
+[33m10b7930[m HEAD@{38}: commit: app admin funciones algunas en proceso aun
+[33m3058519[m HEAD@{39}: commit: cammbios de la barra de paso separe basehtml y navbar y use extend e include
+[33m10a0f02[m HEAD@{40}: commit: arreglo
+[33mca7e033[m HEAD@{41}: commit (merge): Merge branch 'main' of https://github.com/Bellcebu/Boleteria
+[33m1a9ebcd[m HEAD@{42}: commit: class nueva auth (fuciona login y singup) y login difinitivo template
+[33medfb1f2[m HEAD@{43}: checkout: moving from main to main
+[33medfb1f2[m HEAD@{44}: commit (merge): Merge branch 'main' of https://github.com/Bellcebu/Boleteria
+[33mf293e70[m HEAD@{45}: commit: cosas
+[33mcd191e1[m HEAD@{46}: commit: template provisorio solo funcionalidad falta css y js
+[33md6cfb86[m HEAD@{47}: pull: Fast-forward
+[33m4d03cf6[m HEAD@{48}: pull: Fast-forward
+[33mfb64834[m HEAD@{49}: commit: html y funcionalidades falta aun
+[33mf4d9892[m HEAD@{50}: pull: Fast-forward
+[33m30ec176[m HEAD@{51}: reset: moving to HEAD
+[33m30ec176[m HEAD@{52}: pull: Fast-forward
+[33mc3ecc3d[m HEAD@{53}: pull: Fast-forward
+[33m8cacb53[m HEAD@{54}: pull: Fast-forward
+[33mb790bd9[m HEAD@{55}: commit: migracion creadas
+[33m2ab3695[m HEAD@{56}: commit: A y B combinados
+[33m8bf0517[m HEAD@{57}: commit (merge): Resuelto conflicto en models.py combinando modelos
+[33me83270b[m HEAD@{58}: commit: Primer commit agrego modelos user, notification, refundrequest, category
+[33m5bd3c99[m HEAD@{59}: clone: from https://github.com/Bellcebu/Boleteria

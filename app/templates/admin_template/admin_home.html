@@ -1,0 +1,59 @@
+{% extends 'base/base_admin.html' %}
+{% load static %}
+
+{% block title %}Admin Home - EventApp{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin_css/admin_home.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="row mb-4">
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card stats-card stats-card-primary h-100">
+                        <div class="card-body text-center">
+                            <i class="bi bi-calendar-event stats-icon mb-3"></i>
+                            <h2 class="mb-1">{{ total_events }}</h2>
+                            <p class="mb-0">Eventos Totales</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card stats-card stats-card-success h-100">
+                        <div class="card-body text-center">
+                            <i class="bi bi-people stats-icon mb-3"></i>
+                            <h2 class="mb-1">{{ total_users }}</h2>
+                            <p class="mb-0">Usuarios Registrados</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card stats-card stats-card-info h-100">
+                        <div class="card-body text-center">
+                            <i class="bi bi-tags stats-icon mb-3"></i>
+                            <h2 class="mb-1">{{ total_categories }}</h2>
+                            <p class="mb-0">Categorías</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card stats-card stats-card-warning h-100">
+                        <div class="card-body text-center">
+                            <i class="bi bi-geo-alt stats-icon mb-3"></i>
+                            <h2 class="mb-1">{{ total_venues|default:0 }}</h2>
+                            <p class="mb-0">Lugares</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/admin_js/admin_home.js' %}"></script>
+{% endblock %}

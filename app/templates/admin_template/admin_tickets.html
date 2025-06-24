@@ -1,0 +1,215 @@
+{% extends 'base/base_admin.html' %}
+{% load static %}
+
+{% block title %}Admin Tickets - {{ event.title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin_css/admin_tickets.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <!-- Header con info del evento -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0">
+                            <i class="bi bi-ticket me-2"></i>Gestionar Tickets - {{ event.title }}
+                        </h5>
+                        <small class="text-muted">{{ event.venue_fk.name }} | {{ event.date|date:"d/m/Y H:i" }}</small>
+                    </div>
+                    <a href="{% url 'admin_event' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Volver a Eventos
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel Superior: Crear Ticket -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-plus-circle me-2"></i>Crear Nuevo Ticket
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="ticketForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="create" id="formAction">
+                        <input type="hidden" name="ticket_id" value="" id="ticketId">
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="id_name" class="form-label">Nombre del Ticket</label>
+                                    <input type="text" class="form-control" name="name" id="id_name" placeholder="Ej: General, VIP, Palco" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="id_price" class="form-label">Precio</label>
+                                    <input type="number" class="form-control" name="price" id="id_price" step="0.01" min="0" placeholder="0.00" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="id_max_quantity" class="form-label">Cantidad Máxima</label>
+                                    <input type="number" class="form-control" name="max_quantity" id="id_max_quantity" min="1" placeholder="100" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="id_is_available" class="form-label">Estado</label>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="is_available" id="id_is_available" checked>
+                                        <label class="form-check-label" for="id_is_available">
+                                            Disponible
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_description" class="form-label">Descripción</label>
+                            <textarea class="form-control" name="description" id="id_description" rows="3" placeholder="Descripción opcional del ticket"></textarea>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
+                                <i class="bi bi-save me-2"></i>Crear Ticket
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="cancelBtn" style="display: none;">
+                                <i class="bi bi-x-circle me-2"></i>Cancelar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel Inferior: Lista de Tickets -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list me-2"></i>Lista de Tickets
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Precio</th>
+                                    <th>Cantidad</th>
+                                    <th>Vendidos</th>
+                                    <th>Disponibles</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ticket in tickets %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ ticket.name }}</strong>
+                                        {% if ticket.description %}
+                                            <br><small class="text-muted">{{ ticket.description|truncatechars:50 }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success">${{ ticket.price }}</span>
+                                    </td>
+                                    <td>
+                                        {{ ticket.max_quantity }}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ ticket.sold_quantity }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ ticket.available_quantity }}</span>
+                                    </td>
+                                    <td>
+                                        {% if ticket.is_available %}
+                                            <span class="badge bg-success">Disponible</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">No disponible</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-sm btn-outline-warning edit-btn" 
+                                                    data-ticket-id="{{ ticket.id }}"
+                                                    data-name="{{ ticket.name }}"
+                                                    data-price="{{ ticket.price }}"
+                                                    data-max-quantity="{{ ticket.max_quantity }}"
+                                                    data-description="{{ ticket.description }}"
+                                                    data-is-available="{{ ticket.is_available }}">
+                                                <i class="bi bi-pencil"></i> Editar
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-danger delete-btn" 
+                                                    data-ticket-id="{{ ticket.id }}"
+                                                    data-name="{{ ticket.name }}">
+                                                <i class="bi bi-trash"></i> Borrar
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted py-4">
+                                        <i class="bi bi-ticket fs-1 mb-2 d-block"></i>
+                                        No hay tickets creados para este evento
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmación para Borrar -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que quieres eliminar el ticket <strong id="ticketToDelete"></strong>?</p>
+                <p class="text-muted">Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="delete">
+                    <input type="hidden" name="ticket_id" id="deleteTicketId">
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/admin_js/admin_tickets.js' %}"></script>
+{% endblock %}
