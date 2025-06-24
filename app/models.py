@@ -60,7 +60,7 @@ class Venue(BaseModel):
 
     @property
     def upcoming_events_count(self):
-        return self.event_set.filter(date__gte=timezone.now()).count()
+        return self.events.filter(date__gte=timezone.now()).count()
 
 
 # --- Eventos ---
