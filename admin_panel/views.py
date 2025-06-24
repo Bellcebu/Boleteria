@@ -20,38 +20,66 @@ def is_vendedor(user):
     return user.groups.filter(name='Vendedor').exists() 
 
 
-@login_required
-@user_passes_test(is_admin)
-def admin_home(request):
-    context = {
-        'total_events': Event.objects.count(),
-        'total_categories': Category.objects.count(),
-        'total_users': User.objects.count(),
-        'total_venues': Venue.objects.count(),
-    }
-    return render(request, 'admin_template/admin_home.html', context)
-
-
-# --- Eventos CRUD ---
-
-class AdminEventView(LoginRequiredMixin, UserPassesTestMixin, View):
-    template_name = 'admin_template/admin_event.html'
+class AdminHomeView(LoginRequiredMixin, UserPassesTestMixin, View):
+    template_name = 'admin_template/admin_home.html'
     
     def test_func(self):
         return is_admin(self.request.user)
     
     def get(self, request):
         context = {
+            'total_events': Event.objects.count(),
+            'total_categories': Category.objects.count(),
+            'total_users': User.objects.count(),
+            'total_venues': Venue.objects.count(),
+        }
+        return render(request, self.template_name, context)
+
+
+class VendedorHomeView(LoginRequiredMixin, UserPassesTestMixin, View):
+    template_name = 'vendedor_template/vendedor_home.html'
+    
+    def test_func(self):
+        return is_vendedor(self.request.user)
+    
+    def get(self, request):
+        context = {
+            'total_events': Event.objects.count(),
+            'total_users': User.objects.count(),
+            'pending_refunds': RefundRequest.objects.filter(approved=False).count(),
+            'total_comments': Comment.objects.count(),
+        }
+        return render(request, self.template_name, context)
+
+
+# --- Eventos CRUD ---
+
+class AdminEventView(LoginRequiredMixin, UserPassesTestMixin, View):
+    template_name = 'admin_template/admin_event.html'
+   
+    def test_func(self):
+        return is_admin(self.request.user) or is_vendedor(self.request.user)
+   
+    def get(self, request):
+        if is_vendedor(request.user):
+            self.template_name = 'vendedor_template/vendedor_event.html'
+        else:
+            self.template_name = 'admin_template/admin_event.html'   
+        context = {
             'events': Event.objects.all().order_by('-created_at'),
             'categories': Category.objects.all(),
             'venues': Venue.objects.all(),
+            'is_vendedor': is_vendedor(self.request.user),
         }
         return render(request, self.template_name, context)
-    
+   
     def post(self, request):
         action = request.POST.get('action')
-        
         if action == 'create':
+            if is_vendedor(request.user):
+                messages.error(request, "No tienes permisos para crear eventos.")
+                return redirect('admin_event')
+               
             form = EventModelForm(request.POST, request.FILES)
             if form.is_valid():
                 event = form.save()
@@ -60,7 +88,7 @@ class AdminEventView(LoginRequiredMixin, UserPassesTestMixin, View):
                 for field, errors in form.errors.items():
                     for error in errors:
                         messages.error(request, f"{form.fields[field].label}: {error}")
-        
+       
         elif action == 'edit':
             event_id = request.POST.get('event_id')
             event = get_object_or_404(Event, pk=event_id)
@@ -72,16 +100,19 @@ class AdminEventView(LoginRequiredMixin, UserPassesTestMixin, View):
                 for field, errors in form.errors.items():
                     for error in errors:
                         messages.error(request, f"{form.fields[field].label}: {error}")
-        
+       
         elif action == 'delete':
+            if is_vendedor(request.user):
+                messages.error(request, "No tienes permisos para eliminar eventos.")
+                return redirect('admin_event')
+               
             event_id = request.POST.get('event_id')
             event = get_object_or_404(Event, pk=event_id)
             event_title = event.title
             event.delete()
             messages.success(request, f"Evento '{event_title}' eliminado con éxito.")
-        
+       
         return redirect('admin_event')
-    
 
 # --- Ticket CRUD ---
 

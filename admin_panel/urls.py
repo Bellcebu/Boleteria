@@ -9,15 +9,16 @@ from .views import(
 )
 
 urlpatterns = [
-    path('', views.admin_home, name='admin_home'),
+    path('', views.AdminHomeView.as_view(), name='admin_home'),
+    path('vendedor/', views.VendedorHomeView.as_view(), name='vendedor_home'),
 
     # --- Herramientas ---
-    path('eventos/', views.AdminEventView.as_view(), name='admin_event'),
-    path('eventos/<int:event_id>/tickets/', views.AdminEventTicketsView.as_view(), name='admin_event_tickets'),
-    path('categories/', views.AdminCategoriesView.as_view(), name='admin_categories'),
-    path('venues/', views.AdminVenueView.as_view(), name='admin_venue'),
-    path('refund-requests/', views.AdminRefundRequesView.as_view(), name='admin_refund_request'),
-    path('rols/', views.AdminRolsView.as_view(), name='admin_rols'),
+    path('eventos/', views.AdminEventView.as_view(), name='event'),
+    path('eventos/<int:event_id>/tickets/', views.AdminEventTicketsView.as_view(), name='event_tickets'),
+    path('categories/', views.AdminCategoriesView.as_view(), name='categories'),
+    path('venues/', views.AdminVenueView.as_view(), name='venue'),
+    path('refund-requests/', views.AdminRefundRequesView.as_view(), name='refund_request'),
+    path('rols/', views.AdminRolsView.as_view(), name='rols'),
 
   # --- notification ---
     path('notifications/', NotificationListView.as_view(), name='notification_list'),
@@ -26,6 +27,9 @@ urlpatterns = [
     path('notifications/<int:pk>/edit/', NotificationUpdateView.as_view(), name='notification_edit'),
     path('notifications/<int:pk>/delete/', NotificationDeleteView.as_view(), name='notification_delete'),
 
+    # --- Vendedor ---
+
+    
     
 
 ]

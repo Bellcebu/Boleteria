@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.auth import login, logout
-from admin_panel.views import is_admin
+from admin_panel.views import is_admin, is_vendedor
 from django.core.exceptions import ValidationError
 from decimal import Decimal, InvalidOperation
 from django.contrib.auth.decorators import login_required
@@ -79,9 +79,13 @@ class LoginView(View):
         if login_form.is_valid():
             user = login_form.get_user()
             login(request, user)
-            if user.is_staff:
+            
+            if is_admin(user):
                 return redirect('admin_home')
-            return redirect('home')
+            elif is_vendedor(user):
+                return redirect('vendedor_home')
+            else:
+                return redirect('home')
         messages.error(request, "Credenciales inválidas. Intenta nuevamente.")
         return render(request, 'auth.html', {
             'login_form': login_form,

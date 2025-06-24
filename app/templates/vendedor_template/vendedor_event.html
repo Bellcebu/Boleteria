@@ -1,0 +1,189 @@
+{% extends 'base/base_vendedor.html' %}
+{% load static %}
+
+{% block title %}Vendedor Eventos - EventApp{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/vendedor_css/vendedor_event.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-pencil me-2"></i>Editar Evento
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" id="eventForm" style="display: none;">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="edit" id="formAction">
+                        <input type="hidden" name="event_id" value="" id="eventId">
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="id_title" class="form-label">Título del Evento</label>
+                                    <input type="text" class="form-control" name="title" id="id_title" placeholder="Título del evento" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="id_date" class="form-label">Fecha y Hora</label>
+                                    <input type="datetime-local" class="form-control" name="date" id="id_date" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="id_category" class="form-label">Categoría</label>
+                                    <select class="form-control" name="category" id="id_category" required>
+                                        <option value="">Seleccionar categoría</option>
+                                        {% for category in categories %}
+                                            <option value="{{ category.id }}">{{ category.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="id_venue_fk" class="form-label">Lugar</label>
+                                    <select class="form-control" name="venue_fk" id="id_venue_fk" required>
+                                        <option value="">Seleccionar lugar</option>
+                                        {% for venue in venues %}
+                                            <option value="{{ venue.id }}">{{ venue.name }} - {{ venue.city }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_description" class="form-label">Descripción</label>
+                            <textarea class="form-control" name="description" id="id_description" rows="4" placeholder="Descripción del evento" required></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_image" class="form-label">Imagen del Evento</label>
+                            <input type="file" class="form-control" name="image" id="id_image" accept="image/*">
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
+                                <i class="bi bi-save me-2"></i>Actualizar Evento
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="cancelBtn">
+                                <i class="bi bi-x-circle me-2"></i>Cancelar
+                            </button>
+                        </div>
+                    </form>
+                    <div id="noEditMessage">
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-info-circle fs-1 mb-2 d-block"></i>
+                            <p class="mb-0">Selecciona un evento de la lista para editarlo</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list me-2"></i>Lista de Eventos
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Imagen</th>
+                                    <th>Título</th>
+                                    <th>Categoría</th>
+                                    <th>Lugar</th>
+                                    <th>Fecha</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for event in events %}
+                                <tr>
+                                    <td>
+                                        {% if event.image %}
+                                            <img src="{{ event.image.url }}" alt="{{ event.title }}" class="event-image">
+                                        {% else %}
+                                            <div class="no-image">
+                                                <i class="bi bi-image"></i>
+                                            </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <strong>{{ event.title }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ event.description|truncatechars:50 }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ event.category.name }}</span>
+                                    </td>
+                                    <td>
+                                        {{ event.venue_fk.name }}
+                                        <br>
+                                        <small class="text-muted">{{ event.venue_fk.city }}</small>
+                                    </td>
+                                    <td>
+                                        {{ event.date|date:"d/m/Y H:i" }}
+                                    </td>
+                                    <td>
+                                        {% if event.is_past %}
+                                            <span class="badge bg-secondary">Finalizado</span>
+                                        {% else %}
+                                            <span class="badge bg-success">Activo</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-sm btn-outline-info manage-tickets-btn"
+                                                    data-event-id="{{ event.id }}"
+                                                    data-event-title="{{ event.title }}">
+                                                <i class="bi bi-ticket"></i> Tickets
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-warning edit-btn" 
+                                                    data-event-id="{{ event.id }}"
+                                                    data-title="{{ event.title }}"
+                                                    data-description="{{ event.description }}"
+                                                    data-date="{{ event.date|date:'Y-m-d\TH:i' }}"
+                                                    data-category="{{ event.category.id }}"
+                                                    data-venue="{{ event.venue_fk.id }}">
+                                                <i class="bi bi-pencil"></i> Editar
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted py-4">
+                                        <i class="bi bi-calendar-x fs-1 mb-2 d-block"></i>
+                                        No hay eventos creados aún
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/vendedor_js/vendedor_event.js' %}"></script>
+{% endblock %}
