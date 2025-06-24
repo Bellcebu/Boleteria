@@ -1,6 +1,12 @@
 from django.urls import path
 from . import views
-from .views import RefundRequestListView, ApproveRefundView
+from .views import(
+    RefundRequestListView, ApproveRefundView,NotificationListView,
+    NotificationCreateView,
+    NotificationUpdateView,
+    NotificationDeleteView,
+    NotificationDetailView,
+)
 
 urlpatterns = [
     path("refunds/", RefundRequestListView.as_view(), name="refund-requests"),
@@ -13,6 +19,14 @@ urlpatterns = [
     path('events/crear/', views.EventCreateView.as_view(), name='event_create'),
     path('events/<int:pk>/editar/', views.EventUpdateView.as_view(), name='event_edit'),
     path('events/<int:pk>/borrar/', views.EventDeleteView.as_view(), name='event_delete'),
+
+  # --- notification ---
+    path('notifications/', NotificationListView.as_view(), name='notification_list'),
+    path('notifications/create/', NotificationCreateView.as_view(), name='notification_create'),
+    path('notifications/<int:pk>/', NotificationDetailView.as_view(), name='notification_detail'),
+    path('notifications/<int:pk>/edit/', NotificationUpdateView.as_view(), name='notification_edit'),
+    path('notifications/<int:pk>/delete/', NotificationDeleteView.as_view(), name='notification_delete'),
+   
 
     # --- Categorías ---
     path('categories/crear/', views.CategoryCreateView.as_view(), name='category_create'),
