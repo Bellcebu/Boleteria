@@ -373,7 +373,7 @@ class PromotionForm(forms.ModelForm):
 
 
 # --- Ratings ---
-class RatingForm(forms.ModelForm):
+class RatingModelForm(forms.ModelForm):
     class Meta:
         model = Rating
         fields = ['title', 'text', 'rating']

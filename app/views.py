@@ -18,7 +18,7 @@ from django.urls import reverse_lazy
 from .forms import (
     SignUpForm,
     CommentForm,
-    RatingForm,
+    RatingModelForm,
     TicketPurchaseForm,
     TicketModelForm,
     VenueModelForm,
@@ -37,6 +37,7 @@ from .models import (
     Notification,
     Venue,
     Category,
+    Rating,
 )
 
 class HomeView(TemplateView):
@@ -234,17 +235,6 @@ class CommentDetailView(LoginRequiredMixin,DetailView):
     context_object_name = "comentario"
 
 
-class RatingCreateView(LoginRequiredMixin, View):
-    def post(self, request, pk):
-        event = get_object_or_404(Event, pk=pk)
-        form = RatingForm(request.POST)
-        if form.is_valid():
-            rating = form.save(commit=False)
-            rating.user_fk = request.user
-            rating.event = event
-            rating.save()
-            return redirect('event_detail', pk=pk)
-        return render(request, 'app/event/event_detail.html', {'event': event, 'form': form})
 
 class TicketListView(LoginRequiredMixin, ListView):
     model = Ticket
@@ -478,3 +468,45 @@ class CategoryDetailView(DetailView):
     model = Category
     template_name = "category/category_detail.html"
     context_object_name = "category"
+
+class RatingCreateView(LoginRequiredMixin, CreateView):
+    model = Rating
+    form_class = RatingModelForm
+    template_name = "rating/rating_form.html"
+
+    def form_valid(self, form):
+        event = get_object_or_404(Event, pk=self.kwargs.get('pk_event'))
+        form.instance.user_fk = self.request.user
+        form.instance.event_fk = event
+        messages.success(self.request, "Tu calificación fue enviada.")
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy("event_detail", kwargs={'pk': self.kwargs.get('pk_event')})
+
+# UpdateView
+class RatingUpdateView(LoginRequiredMixin, UpdateView):
+    model = Rating
+    form_class = RatingModelForm
+    template_name = "rating/rating_form.html"
+
+    def get_queryset(self):
+        return Rating.objects.filter(user_fk=self.request.user)
+
+    def form_valid(self, form):
+        messages.success(self.request, "Tu calificación fue actualizada.")
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy("event_detail", kwargs={'pk': self.object.event_fk.pk})
+
+# DeleteView
+class RatingDeleteView(LoginRequiredMixin, DeleteView):
+    model = Rating
+    template_name = "rating/rating_confirm_delete.html"
+
+    def get_queryset(self):
+        return Rating.objects.filter(user_fk=self.request.user)
+
+    def get_success_url(self):
+        return reverse_lazy("event_detail", kwargs={'pk': self.object.event_fk.pk})
