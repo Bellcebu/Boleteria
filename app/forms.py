@@ -143,9 +143,7 @@ class EventModelForm(forms.ModelForm):
         model = Event
         fields = ['category', 'venue_fk', 'title', 'description', 'date', 'image']
         widgets = {
-            'category': forms.Select(attrs={
-                'class': 'form-control'
-                }),
+            'category':forms.CheckboxSelectMultiple(),
             'venue_fk': forms.Select(attrs={
                 'class': 'form-control'
                 }),
@@ -373,7 +371,7 @@ class PromotionForm(forms.ModelForm):
 
 
 # --- Ratings ---
-class RatingForm(forms.ModelForm):
+class RatingModelForm(forms.ModelForm):
     class Meta:
         model = Rating
         fields = ['title', 'text', 'rating']

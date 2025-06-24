@@ -30,6 +30,15 @@
             </div>
         </div>
 
+        <form method="post" style="display:inline;">
+            {% csrf_token %}
+            {% if is_favorito %}
+                <button type="submit" class="btn btn-outline-danger">❤️ Quitar de favoritos</button>
+            {% else %}
+                <button type="submit" class="btn btn-outline-primary">🤍 Agregar a favoritos</button>
+            {% endif %}
+        </form>
+
         <div class="col-md-4">
             <h4>Entradas</h4>
             {% if tiers_with_availability %}
