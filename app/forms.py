@@ -143,9 +143,7 @@ class EventModelForm(forms.ModelForm):
         model = Event
         fields = ['category', 'venue_fk', 'title', 'description', 'date', 'image']
         widgets = {
-            'category': forms.Select(attrs={
-                'class': 'form-control'
-                }),
+            'category':forms.CheckboxSelectMultiple(),
             'venue_fk': forms.Select(attrs={
                 'class': 'form-control'
                 }),

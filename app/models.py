@@ -65,7 +65,7 @@ class Venue(BaseModel):
 
 # --- Eventos ---
 class Event(BaseModel):
-    category = models.ForeignKey('Category', on_delete=models.CASCADE, related_name='events')
+    category = models.ManyToManyField('Category', related_name='events')
     venue_fk = models.ForeignKey("Venue", on_delete=models.CASCADE, related_name='events')
     title = models.CharField(max_length=200)
     description = models.TextField()
@@ -427,3 +427,12 @@ class Profile(BaseModel):
         return self.user.tickets.aggregate(
             total=Sum('final_price')
         )['total'] or Decimal('0.00')
+    
+class Favorito(models.Model):
+    user_fk=models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='favoritos')
+    event_fk=models.ForeignKey(Event, on_delete=models.CASCADE)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user_fk', 'event_fk'], name='unique_favorite')
+        ]

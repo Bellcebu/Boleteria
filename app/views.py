@@ -14,6 +14,7 @@ from django.contrib.auth.models import User
 from datetime import datetime, time
 from django.utils import timezone
 from django.urls import reverse_lazy
+from django.db.models import BooleanField, ExpressionWrapper, Q, Value
 
 from .forms import (
     SignUpForm,
@@ -38,6 +39,7 @@ from .models import (
     Venue,
     Category,
     Rating,
+    Favorito,
 )
 
 class HomeView(TemplateView):
@@ -128,10 +130,24 @@ class EventListView(ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        queryset = Event.objects.all().order_by("date")
+        queryset = Event.objects.all()
+
+        if self.request.user.is_authenticated:
+            queryset = queryset.annotate(
+                is_favorito=ExpressionWrapper(
+                    Q(favorito__user_fk=self.request.user),
+                    output_field=BooleanField()
+                )
+            )
+        else:
+            queryset = queryset.annotate(
+                is_favorito=Value(False, output_field=BooleanField())
+            )
+
         categoria_id = self.request.GET.get('categoria')
         fecha_desde = self.request.GET.get('fecha_desde')
         fecha_hasta = self.request.GET.get('fecha_hasta')
+
         if categoria_id:
             queryset = queryset.filter(category_id=categoria_id)
         if fecha_desde:
@@ -148,7 +164,8 @@ class EventListView(ListView):
                 queryset = queryset.filter(date__lte=dt)
             except ValueError:
                 pass
-        return queryset
+
+        return queryset.order_by('-is_favorito', 'date')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -175,7 +192,33 @@ class EventDetailView(DetailView):
             }
             tiers_with_availability.append(tier_data)
         context['tiers_with_availability'] = tiers_with_availability
+
+        if self.request.user.is_authenticated:
+            context['is_favorito'] = Favorito.objects.filter(
+                user_fk=self.request.user,
+                event_fk=self.object
+            ).exists()
         return context
+    
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        event = self.object
+        user = request.user
+
+        if not user.is_authenticated:
+            messages.error(request, "Debes iniciar sesión para marcar favoritos.")
+            return redirect('login')
+
+        favorito, created = Favorito.objects.get_or_create(user_fk=user, event_fk=event)
+        if not created:
+            favorito.delete()
+            messages.info(request, "Evento removido de favoritos.")
+        else:
+            messages.success(request, "Evento agregado a tus favoritos.")
+
+        return redirect('event_detail', pk=event.pk)
+    
+    
 
 class CommentCreateView(LoginRequiredMixin, CreateView):
     model=Comment
