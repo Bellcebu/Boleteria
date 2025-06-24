@@ -284,3 +284,50 @@ class RefundRequestListView(LoginRequiredMixin, ListView):
     
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
+
+# List View
+class NotificationListView(LoginRequiredMixin, ListView):
+    model = Notification
+    template_name = "notification/notification_list.html"
+    context_object_name = "notifications"
+
+# Create View
+class NotificationCreateView(LoginRequiredMixin, CreateView):
+    model = Notification
+    form_class = NotificationModelForm
+    template_name = "notification/notification_form.html"
+
+    def form_valid(self, form):
+        messages.success(self.request, "Notification created successfully.")
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy("notification_list")
+
+# Update View
+class NotificationUpdateView(LoginRequiredMixin, UpdateView):
+    model = Notification
+    form_class = NotificationModelForm
+    template_name = "notification/notification_form.html"
+
+    def form_valid(self, form):
+        messages.success(self.request, f"Notification '{form.instance.title}' updated.")
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy("notification_list")
+
+# Delete View
+class NotificationDeleteView(LoginRequiredMixin, DeleteView):
+    model = Notification
+    template_name = "notification/notification_confirm_delete.html"
+
+    def get_success_url(self):
+        messages.success(self.request, "Notification deleted.")
+        return reverse_lazy("notification_list")
+
+# Detail View
+class NotificationDetailView(LoginRequiredMixin, DetailView):
+    model = Notification
+    template_name = "notification/notification_detail.html"
+    context_object_name = "notification"

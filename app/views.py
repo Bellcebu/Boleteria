@@ -252,31 +252,29 @@ class TicketListView(LoginRequiredMixin, ListView):
     context_object_name = "tickets"
 
     def get_queryset(self):
-        return Ticket.objects.filter(user_fk=self.request.user).order_by("-created_at")
+        return Ticket.objects.filter(user_fk=self.request.user).order_by("-buy_date")
 
     def post(self, request, *args, **kwargs):
-        ticket_id = request.POST.get('ticket_id')
-        reason = request.POST.get('reason')
+        form = RefundRequestForm(request.POST)
+        if form.is_valid():
+            ticket_code = form.cleaned_data['ticket_code']
+            reason = form.cleaned_data['reason']
 
-        if not reason:
-            messages.error(request, "Por favor, proporciona un motivo para el reembolso.")
-            return redirect('ticket_list')
+            ticket = get_object_or_404(Ticket, ticket_code=ticket_code, user_fk=request.user)
 
-        try:
-            ticket = get_object_or_404(Ticket, pk=ticket_id, user_fk=request.user)
-
-            if RefundRequest.objects.filter(ticket_code=str(ticket.pk)).exists():
+            if RefundRequest.objects.filter(ticket_code=ticket.ticket_code).exists():
                 messages.error(request, "Ya solicitaste un reembolso para este ticket.")
             else:
-                RefundRequest.new(
+                RefundRequest.objects.create(
                     user=request.user,
-                    ticket_code=str(ticket.pk),
+                    ticket_code=ticket.ticket_code,
                     reason=reason
                 )
                 messages.success(request, "Tu solicitud de reembolso fue enviada con éxito.")
-        except Exception:
-            messages.error(request, "Error al procesar la solicitud de reembolso.")
-
+        else:
+            # show first error (optional: list all errors if you prefer)
+            for field, errors in form.errors.items():
+                messages.error(request, f"{form.fields[field].label}: {errors[0]}")
         return redirect('ticket_list')
 
 class TicketDetailView(DetailView):

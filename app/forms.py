@@ -456,6 +456,61 @@ class CommentForm(forms.ModelForm):
         return text
 
 
+class NotificationModelForm(forms.ModelForm):
+    class Meta:
+        model = Notification
+        fields = ['title', 'message', 'priority', 'is_read', 'users']
+
+        widgets = {
+            'title': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Título de la notificación',
+            }),
+            'message': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Mensaje de la notificación',
+            }),
+            'priority': forms.Select(attrs={
+                'class': 'form-control',
+            }),
+            'is_read': forms.CheckboxInput(attrs={
+                'class': 'form-check-input',
+            }),
+            'users': forms.SelectMultiple(attrs={
+                'class': 'form-select',
+            }),
+        }
+
+        labels = {
+            'title': 'Título',
+            'message': 'Mensaje',
+            'priority': 'Prioridad',
+            'is_read': '¿Leída?',
+            'users': 'Usuarios destinatarios',
+        }
+
+    def clean_title(self):
+        title = self.cleaned_data.get('title', '').strip()
+        if not title:
+            raise forms.ValidationError("El título no puede estar vacío.")
+        if len(title) < 3:
+            raise forms.ValidationError("El título debe tener al menos 3 caracteres.")
+        return title
+
+    def clean_message(self):
+        message = self.cleaned_data.get('message', '').strip()
+        if not message:
+            raise forms.ValidationError("El mensaje no puede estar vacío.")
+        return message
+
+    def clean_priority(self):
+        priority = self.cleaned_data.get('priority')
+        valid_choices = ['alta', 'media', 'baja']
+        if priority not in valid_choices:
+            raise forms.ValidationError("Prioridad no válida.")
+        return priority
+
 # --- Reembolsos ---
 class RefundRequestForm(forms.ModelForm):
     class Meta:
