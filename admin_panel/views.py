@@ -8,8 +8,8 @@ from django.urls import reverse_lazy
 from django.forms import inlineformset_factory
 from django.utils.timezone import now
 
-from app.models import Event, Category, Venue, RefundRequest, TicketTier, Ticket
-from app.forms import EventModelForm, CategoryModelForm, VenueModelForm, TicketModelForm, TicketTierFormSet
+from app.models import Event, Category, Venue, RefundRequest, TicketTier, Ticket,Comment, Notification
+from app.forms import EventModelForm, CategoryModelForm, VenueModelForm, TicketModelForm, TicketTierFormSet,CommentForm,NotificationModelForm
 
 
 def is_admin(user):

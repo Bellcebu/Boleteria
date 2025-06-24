@@ -16,6 +16,7 @@ from .models import (
     Profile,
     Promotion,
     RefundRequest,
+    Notification,
 )
 
 

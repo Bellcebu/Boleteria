@@ -25,6 +25,7 @@ from .forms import (
     CategoryModelForm,
     EventModelForm,
     ProfileImageForm,
+    RefundRequestForm,
 )
 from .models import (
     Event,
