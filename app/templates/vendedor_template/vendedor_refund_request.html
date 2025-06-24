@@ -1,0 +1,251 @@
+{% extends 'base/base_vendedor.html' %}
+{% load static %}
+
+{% block title %}Vendedor Reembolsos - EventApp{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin_css/admin_refund_request.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock me-2"></i>Solicitudes Pendientes de Reembolso
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Usuario</th>
+                                    <th>Ticket</th>
+                                    <th>Evento</th>
+                                    <th>Fecha Solicitud</th>
+                                    <th>Motivo</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for refund in pending_refunds %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ refund.user.username }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ refund.user.email }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">#{{ refund.ticket_code }}</span>
+                                    </td>
+                                    <td>
+                                        {% if refund.ticket %}
+                                            <strong>{{ refund.ticket.ticket_tier.event.title }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ refund.ticket.ticket_tier.event.date|date:"d/m/Y H:i" }}</small>
+                                        {% else %}
+                                            <span class="text-danger">Ticket no encontrado</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ refund.created_at|date:"d/m/Y H:i" }}
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-outline-info view-reason-btn" 
+                                                data-reason="{{ refund.reason }}"
+                                                data-user="{{ refund.user.username }}">
+                                            <i class="bi bi-eye"></i> Ver Motivo
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-sm btn-success approve-btn" 
+                                                    data-refund-id="{{ refund.id }}"
+                                                    data-user="{{ refund.user.username }}"
+                                                    data-ticket="{{ refund.ticket_code }}">
+                                                <i class="bi bi-check-circle"></i> Aceptar
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-danger reject-btn" 
+                                                    data-refund-id="{{ refund.id }}"
+                                                    data-user="{{ refund.user.username }}"
+                                                    data-ticket="{{ refund.ticket_code }}">
+                                                <i class="bi bi-x-circle"></i> Rechazar
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">
+                                        <i class="bi bi-check-circle fs-1 mb-2 d-block text-success"></i>
+                                        No hay solicitudes pendientes
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list-check me-2"></i>Reembolsos Procesados
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Usuario</th>
+                                    <th>Ticket</th>
+                                    <th>Evento</th>
+                                    <th>Fecha Solicitud</th>
+                                    <th>Fecha Procesado</th>
+                                    <th>Estado</th>
+                                    <th>Procesado Por</th>
+                                    <th>Motivo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for refund in processed_refunds %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ refund.user.username }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ refund.user.email }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">#{{ refund.ticket_code }}</span>
+                                    </td>
+                                    <td>
+                                        {% if refund.ticket %}
+                                            <strong>{{ refund.ticket.ticket_tier.event.title|truncatechars:30 }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ refund.ticket.ticket_tier.event.date|date:"d/m/Y" }}</small>
+                                        {% else %}
+                                            <span class="text-danger">Ticket no encontrado</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ refund.created_at|date:"d/m/Y" }}
+                                    </td>
+                                    <td>
+                                        {{ refund.approval_date|date:"d/m/Y" }}
+                                    </td>
+                                    <td>
+                                        {% if refund.approved %}
+                                            <span class="badge bg-success">Aprobado</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Rechazado</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if refund.processed_by %}
+                                            {{ refund.processed_by.username }}
+                                        {% else %}
+                                            <span class="text-muted">Sin asignar</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-outline-info view-reason-btn" 
+                                                data-reason="{{ refund.reason }}"
+                                                data-user="{{ refund.user.username }}">
+                                            <i class="bi bi-eye"></i> Ver
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted py-4">
+                                        <i class="bi bi-archive fs-1 mb-2 d-block"></i>
+                                        No hay reembolsos procesados
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="reasonModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Motivo del Reembolso</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Usuario:</strong> <span id="reasonUser"></span></p>
+                <p><strong>Motivo:</strong></p>
+                <div class="alert alert-light">
+                    <p id="reasonText"></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="approveModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Aprobar Reembolso</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que quieres <strong>aprobar</strong> el reembolso del ticket <span id="approveTicket"></span> del usuario <strong id="approveUser"></strong>?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="approve">
+                    <input type="hidden" name="refund_id" id="approveRefundId">
+                    <button type="submit" class="btn btn-success">Aprobar Reembolso</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Rechazar Reembolso</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="reject">
+                    <input type="hidden" name="refund_id" id="rejectRefundId">
+                    <button type="submit" class="btn btn-danger">Rechazar Reembolso</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/admin_js/admin_refund_request.js' %}"></script>
+{% endblock %}

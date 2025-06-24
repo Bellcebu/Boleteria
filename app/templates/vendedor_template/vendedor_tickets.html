@@ -1,10 +1,10 @@
-{% extends 'base/base_admin.html' %}
+{% extends 'base/base_vendedor.html' %}
 {% load static %}
 
 {% block title %}Admin Tickets - {{ event.title }}{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/admin_css/admin_tickets.css' %}">
+<link rel="stylesheet" href="{% static 'css/admin_css/vendedor_tickets.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -204,5 +204,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/admin_js/admin_tickets.js' %}"></script>
+<script src="{% static 'js/admin_js/vendedor_tickets.js' %}"></script>
 {% endblock %}

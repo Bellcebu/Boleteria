@@ -117,25 +117,29 @@ class AdminEventView(LoginRequiredMixin, UserPassesTestMixin, View):
 # --- Ticket CRUD ---
 
 class AdminEventTicketsView(LoginRequiredMixin, UserPassesTestMixin, View):
-    template_name = 'admin_template/admin_tickets.html'
-    
+   
     def test_func(self):
-        return is_admin(self.request.user)
-    
+        return is_admin(self.request.user) or is_vendedor(self.request.user)
+   
     def get(self, request, event_id):
+        if is_admin(self.request.user):
+            template_name = 'admin_template/admin_tickets.html'
+        else:
+            template_name = 'vendedor_template/vendedor_tickets.html'
+   
         event = get_object_or_404(Event, id=event_id)
         tickets = TicketTier.objects.filter(event=event).order_by('price')
-        
+       
         context = {
             'event': event,
             'tickets': tickets,
         }
-        return render(request, self.template_name, context)
-    
+        return render(request, template_name, context)
+   
     def post(self, request, event_id):
         event = get_object_or_404(Event, id=event_id)
         action = request.POST.get('action')
-        
+       
         if action == 'create':
             ticket = TicketTier(event=event)
             form = TicketModelForm(request.POST, instance=ticket)
@@ -146,7 +150,7 @@ class AdminEventTicketsView(LoginRequiredMixin, UserPassesTestMixin, View):
                 for field, errors in form.errors.items():
                     for error in errors:
                         messages.error(request, f"{form.fields[field].label}: {error}")
-        
+       
         elif action == 'edit':
             ticket_id = request.POST.get('ticket_id')
             ticket = get_object_or_404(TicketTier, pk=ticket_id, event=event)
@@ -158,19 +162,19 @@ class AdminEventTicketsView(LoginRequiredMixin, UserPassesTestMixin, View):
                 for field, errors in form.errors.items():
                     for error in errors:
                         messages.error(request, f"{form.fields[field].label}: {error}")
-        
+       
         elif action == 'delete':
             ticket_id = request.POST.get('ticket_id')
             ticket = get_object_or_404(TicketTier, pk=ticket_id, event=event)
-            
+           
             if ticket.sold_quantity > 0:
                 messages.error(request, f"No se puede eliminar '{ticket.name}' porque ya hay {ticket.sold_quantity} entradas vendidas.")
             else:
                 ticket_name = ticket.name
                 ticket.delete()
                 messages.success(request, f"Ticket '{ticket_name}' eliminado con éxito.")
-        
-        return redirect('admin_event_tickets', event_id=event_id)
+       
+        return redirect('event_tickets', event_id=event_id)
 
 # --- Categorías CRUD ---
 
@@ -272,12 +276,15 @@ class AdminVenueView(LoginRequiredMixin, UserPassesTestMixin, View):
 # --- Refund Requests CRUD ---
 
 class AdminRefundRequesView(LoginRequiredMixin, UserPassesTestMixin, View):
-    template_name = 'admin_template/admin_refund_request.html'
-    
     def test_func(self):
-        return is_admin(self.request.user)
-    
+        return is_admin(self.request.user) or is_vendedor(self.request.user)
+   
     def get(self, request):
+        if is_admin(self.request.user):
+            template_name = 'admin_template/admin_refund_request.html'
+        else: 
+            template_name = 'vendedor_template/vendedor_refund_request.html'
+        
         context = {
             'pending_refunds': RefundRequest.objects.filter(
                 approved=False,
@@ -287,7 +294,7 @@ class AdminRefundRequesView(LoginRequiredMixin, UserPassesTestMixin, View):
                 processed_by__isnull=False
             ).order_by('-approval_date'),
         }
-        return render(request, self.template_name, context)
+        return render(request, template_name, context)
     
     def post(self, request):
         action = request.POST.get('action')
