@@ -112,7 +112,7 @@ class AdminEventView(LoginRequiredMixin, UserPassesTestMixin, View):
             event.delete()
             messages.success(request, f"Evento '{event_title}' eliminado con éxito.")
        
-        return redirect('admin_event')
+        return redirect('event')
 
 # --- Ticket CRUD ---
 
@@ -320,7 +320,7 @@ class AdminRefundRequesView(LoginRequiredMixin, UserPassesTestMixin, View):
         except Exception as e:
             messages.error(request, f"Error al procesar el reembolso: {str(e)}")
         
-        return redirect('admin_refund_request')
+        return redirect('refund_request')
 
 # --- Roles ---
 
@@ -374,7 +374,7 @@ class AdminRolsView(LoginRequiredMixin, UserPassesTestMixin, View):
                 user.is_staff = False
                 user.save()
                 messages.success(request, f"Usuario '{user.username}' asignado como Usuario normal.")
-        return redirect('admin_rols')
+        return redirect('rols')
         
 # List View
 class NotificationListView(LoginRequiredMixin, ListView):

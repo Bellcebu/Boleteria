@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h3 class="mb-3">Comentarios del Evento</h3>
+
+  {% if comentario_listar %}
+    {% for comment in comentario_listar %}
+      <div class="card mb-3">
+        <div class="card-header">
+          <strong>{{ comment.title }}</strong> — por {{ comment.user_fk.username }}
+        </div>
+        <div class="card-body">
+          <p class="card-text">{{ comment.text }}</p>
+          <small class="text-muted">Publicado el {{ comment.created_at|date:"d M Y H:i" }}</small>
+        </div>
+        {% if request.user == comment.user_fk %}
+          <div class="card-footer">
+            <a href="{% url 'comentario_editar' pk_event=comment.event_fk.pk pk=comment.pk %}" class="btn btn-sm btn-warning">Editar</a>
+            <a href="{% url 'comentario_borrar' pk_event=comment.event_fk.pk pk=comment.pk %}" class="btn btn-sm btn-danger">Borrar</a>
+          </div>
+        {% endif %}
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>No hay comentarios para este evento.</p>
+  {% endif %}
+</div>
+{% endblock %}

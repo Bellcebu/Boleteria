@@ -67,14 +67,14 @@ urlpatterns = [
     path('categories/<int:pk>/', CategoryDetailView.as_view(), name='category_detalle'),
 
     #comentarios
-    path('eventos/<int:pk>/comentarios/', CommentListView.as_view(), name='comentario_listar'),
-    path('eventos/<int:pk_event>/comentarios/<int:pk>/', CommentDetailView.as_view(), name='comentario_detalle'),
+    path('events/<int:pk>/comentarios/', CommentListView.as_view(), name='comentario_listar'),
+    path('events/<int:pk_event>/comentarios/<int:pk>/', CommentDetailView.as_view(), name='comentario_detalle'),
     path('events/<int:pk_event>/comentarios/crear/', CommentCreateView.as_view(), name='comentario_crear'),
     path('events/<int:pk_event>/comentarios/<int:pk>/editar/', CommentUpdateView.as_view(), name='comentario_editar'),
     path('events/<int:pk_event>/comentarios/<int:pk>/borrar/', CommentDeleteView.as_view(), name='comentario_borrar'),
 
 
-    path('eventos/<int:pk_event>/rating/crear/', RatingCreateView.as_view(), name='rating_crear'),
+    path('events/<int:pk_event>/rating/crear/', RatingCreateView.as_view(), name='rating_crear'),
     path('rating/<int:pk>/editar/', RatingUpdateView.as_view(), name='rating_editar'),
     path('rating/<int:pk>/borrar/', RatingDeleteView.as_view(), name='rating_borrar'),
 
