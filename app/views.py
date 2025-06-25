@@ -80,7 +80,7 @@ class LoginView(View):
             user = login_form.get_user()
             login(request, user)
             if user.is_staff:
-                return redirect('admin_dashboard')
+                return redirect('admin_home')
             return redirect('home')
         messages.error(request, "Credenciales inválidas. Intenta nuevamente.")
         return render(request, 'auth.html', {
@@ -285,7 +285,7 @@ class TicketListView(LoginRequiredMixin, ListView):
     context_object_name = "tickets"
 
     def get_queryset(self):
-        return Ticket.objects.filter(user_fk=self.request.user).order_by("-buy_date")
+        return Ticket.objects.filter(user_fk=self.request.user).order_by("-created_at")
 
     def post(self, request, *args, **kwargs):
         form = RefundRequestForm(request.POST)
@@ -293,7 +293,11 @@ class TicketListView(LoginRequiredMixin, ListView):
             ticket_code = form.cleaned_data['ticket_code']
             reason = form.cleaned_data['reason']
 
-            ticket = get_object_or_404(Ticket, ticket_code=ticket_code, user_fk=request.user)
+            try:
+                ticket = get_object_or_404(Ticket, pk=ticket_code, user_fk=request.user)
+            except:
+                messages.error(request, "Ticket no encontrado o no te pertenece.")
+                return redirect('ticket_list')
 
             if RefundRequest.objects.filter(ticket_code=ticket.ticket_code).exists():
                 messages.error(request, "Ya solicitaste un reembolso para este ticket.")

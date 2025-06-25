@@ -21,7 +21,7 @@
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
-.profile-nav-btn, .upload-btn, .btn-ver-mas {
+.profile-nav-btn, .upload-btn, .btn-ver-mas, .btn-reembolso {
   border: none;
   border-radius: 25px !important;
   font-weight: 600;
