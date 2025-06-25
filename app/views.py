@@ -229,15 +229,19 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
     form_class = CommentForm
     template_name = 'comment/comment_form.html'
 
-    def get_success_url(self):
-        return reverse_lazy('comentario_listar', kwargs={'pk': self.kwargs['pk_event']})
+    def get_success_url(self):    
+        return reverse_lazy('event_detail', kwargs={'pk': self.kwargs['pk_event']})
 
-    def form_valid(self,form):
+    def form_valid(self, form):
+        event_pk = self.kwargs.get('pk_event')
+        event = get_object_or_404(Event, pk=event_pk)
+        
         comment = form.save(commit=False)
-        comment.event_fk = self.kwargs.get('pk_event')
-        comment.user = self.request.user
+        comment.event_fk = event 
+        comment.user_fk = self.request.user 
         comment.save()
-        messages.success(self.request, f"El comentario '{comment.title}' fue creado con exito.")
+        
+        messages.success(self.request, f"El comentario '{comment.title}' fue creado con éxito.")
         return super().form_valid(form)
     
 class CommentUpdateView(LoginRequiredMixin,UpdateView):

@@ -105,7 +105,7 @@ class Event(BaseModel):
 
     def get_average_rating(self):
         from django.db.models import Avg
-        avg = self.rating_set.aggregate(avg_rating=Avg('rating'))['avg_rating']
+        avg = self.ratings.aggregate(avg_rating=Avg('rating'))['avg_rating']
         return round(avg, 1) if avg else None
 
     def can_user_rate(self, user):
@@ -115,7 +115,8 @@ class Event(BaseModel):
             ticket_tier__event=self,
             user_fk=user
         ).exists()
-        return has_tickets and self.is_past
+        has_already_rated = self.ratings.filter(user_fk=user).exists()
+        return has_tickets and self.is_past and not has_already_rated
 
 
 # --- Promociones ---
