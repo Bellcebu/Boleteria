@@ -175,18 +175,6 @@ class Comment(BaseModel):
     def __str__(self):
         return f"Comentario de {self.user_fk.username} en {self.event_fk.title}"
 
-    @property
-    def can_be_edited_by(self, user):
-        return user == self.user_fk
-
-    @property
-    def can_be_deleted_by(self, user):
-        return (
-            user == self.user_fk or 
-            user.groups.filter(name__in=['Admin', 'Vendedor']).exists()
-        )
-
-
 # --- Ratings ---
 class Rating(BaseModel):
     title = models.CharField(max_length=100)

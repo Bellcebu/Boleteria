@@ -13,8 +13,7 @@
         <div class="col-md-6">
             <div class="profile-widget profile-photo-widget">
                 <div class="profile-nav-buttons">
-                    <a href="{% url 'user_profile' user.username %}" class="profile-nav-btn active">🏠 Home</a>
-                    <a href="#" class="profile-nav-btn">⭐ Favoritos</a>
+                    <a href="{% url 'favorite_list' %}" class="profile-nav-btn">⭐ Favoritos</a>
                 </div>
                 
                 {% if profile_user.profile.avatar %}
@@ -59,7 +58,6 @@
                     <span class="info-value">{{ profile_user.date_joined|date:"d \d\e F, Y" }}</span>
                 </div>
                 
-                
                 <div class="info-row">
                     <span class="info-label">Puntos Acumulados</span>
                     <span class="info-value">{{ profile_user.profile.points|default:0 }} pts</span>
@@ -89,11 +87,27 @@
                                   <i class="date-icon">📅</i>
                                   {{ ticket.ticket_tier.event.date|date:"d M" }}
                               </div>
+                              <div class="ticket-price">
+                                  💰 ${{ ticket.final_price }}
+                              </div>
                           </div>
+                          
                           <div class="ticket-actions">
                               <a href="{% url 'ticket_detail' ticket.pk %}" class="btn-ver-mas">
                                   👁️ Ver más
                               </a>
+                              
+                              {% comment %} Solo mostrar botón de reembolso si el evento no ha pasado y no tiene reembolso pendiente {% endcomment %}
+                              {% if ticket.ticket_tier.event.date > now and not ticket.has_pending_refund %}
+                                  <button type="button" class="btn-reembolso" 
+                                          onclick="openRefundModal('{{ ticket.pk }}', '{{ ticket.ticket_tier.event.title|escapejs }}')">
+                                      💸 Reembolso
+                                  </button>
+                              {% elif ticket.has_pending_refund %}
+                                  <span class="refund-status refund-pending">Reembolso Pendiente</span>
+                              {% elif ticket.ticket_tier.event.date <= now %}
+                                  <span class="event-status event-past">Evento Pasado</span>
+                              {% endif %}
                           </div>
                       </div>
                   {% empty %}
@@ -139,6 +153,45 @@
         </div>
     </div>
     {% endif %}
+</div>
+
+<div class="modal fade" id="refundModal" tabindex="-1" aria-labelledby="refundModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="refundModalLabel">Solicitar Reembolso</h5>
+            </div>
+            <form method="post" id="refundForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <input type="hidden" name="action" value="request_refund">
+                    <input type="hidden" name="ticket_id" id="refundTicketId">
+                    
+                    <div class="mb-3">
+                        <label for="eventTitle" class="form-label">Evento:</label>
+                        <input type="text" class="form-control" id="eventTitle" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="refundReason" class="form-label">Motivo del reembolso: <span class="text-danger">*</span></label>
+                        <textarea class="form-control" name="reason" id="refundReason" 
+                                  rows="4" placeholder="Explica el motivo de tu solicitud de reembolso..." 
+                                  required minlength="10"></textarea>
+                        <div class="form-text">Mínimo 10 caracteres</div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <strong>Importante:</strong> Las solicitudes de reembolso serán revisadas por nuestro equipo. 
+                        El proceso puede tomar entre 3-5 días hábiles.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Solicitar Reembolso</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 {% endblock %}
 

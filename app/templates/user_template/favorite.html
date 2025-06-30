@@ -1,10 +1,10 @@
 {% extends 'base/base.html' %}
 {% load static %}
 
-{% block title %}Eventos - EventApp{% endblock %}
+{% block title %}Mis Favoritos - EventApp{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/user_css/event_list.css' %}">
+<link rel="stylesheet" href="{% static 'css/user_css/favorite.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -13,18 +13,8 @@
         <div class="sticky-header">
             <div class="row justify-content-center">
                 <div class="col-12 text-center">
-                    <h1 class="page-title">Todos los Eventos</h1>
-                    <div class="d-flex justify-content-center mb-3">
-                        <select id="category-select" class="form-select category-select w-auto">
-                            <option value="">Todas las categorías</option>
-                            {% for categoria in categorias %}
-                                <option value="{{ categoria.id }}" 
-                                        {% if categoria_seleccionada == categoria.id|stringformat:'s' %}selected{% endif %}>
-                                    {{ categoria.name }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
+                    <h1 class="page-title">❤️ Mis Eventos Favoritos</h1>
+                    <p class="subtitle">Eventos que has marcado como favoritos</p>
                 </div>
             </div>
         </div>
@@ -33,12 +23,13 @@
 
 <section class="events-scroll-section">
     <div class="container-fluid" style="padding: 0;">
-        {% if eventos %}
+        {% if favoritos %}
             <div class="events-scroll-container">
                 <div class="row g-4 justify-content-center p-3">
-                    {% for evento in eventos %}
+                    {% for favorito in favoritos %}
+                        {% with evento=favorito.event_fk %}
                         <div class="col-xl-4 col-lg-4 col-md-6 col-12">
-                            <div class="event-card">
+                            <div class="event-card favorite-card">
                                 <div class="card-inner">
                                     <div class="card-front">
                                         {% if evento.image %}
@@ -59,27 +50,38 @@
                                         </div>
                                     </div>
                                     <div class="card-back">
-                                        <div class="text-center">   
-                                            <a href="{% url 'event_detail' evento.pk %}" class="btn btn-ver-mas">Ver Detalles</a>
+                                        <div class="text-center">
+                                            <div class="card-actions">
+                                                <a href="{% url 'event_detail' evento.pk %}" class="btn btn-ver-mas">Ver Detalles</a>
+                                                <form method="post" style="display: inline;" class="mt-2">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="event_id" value="{{ evento.pk }}">
+                                                    <button type="submit" class="btn btn-remove-favorite">
+                                                        <i class="fas fa-heart-broken me-1"></i>
+                                                        Quitar
+                                                    </button>
+                                                </form>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        {% endwith %}
                     {% endfor %}
                 </div>
             </div>
         {% else %}
             <div class="no-events">
-                <div class="no-events-icon">🎭</div>
-                <h3>No hay eventos disponibles</h3>
-                <p>No se encontraron eventos{% if categoria_seleccionada %} en esta categoría{% endif %}.</p>
+                <div class="no-events-icon">💔</div>
+                <h3>No tienes eventos favoritos</h3>
+                <p>Explora eventos y marca tus favoritos para verlos aquí.</p>
+                <a href="{% url 'event_list' %}" class="btn btn-explore">
+                    <i class="fas fa-search me-2"></i>
+                    Explorar Eventos
+                </a>
             </div>
         {% endif %}
     </div>
 </section>
-{% endblock %}
-
-{% block extra_js %}
-<script src =  "{% static 'js/user_js/event_list.js' %}"></script>
 {% endblock %}

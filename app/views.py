@@ -145,49 +145,66 @@ class EventListView(ListView):
         return context
 
 
-class EventDetailView(DetailView):
-    model = Event
-    template_name = "user_template/event_detail.html"
-    context_object_name = "event"
+class EventDetailView(View):
+    def get(self, request, pk):
+        event = get_object_or_404(Event, pk=pk)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        
-        tiers_with_availability = []
-        for tier in self.object.ticket_tiers.filter(is_available=True):
-            tier_data = {
+        tiers_with_availability = [
+            {
                 'tier': tier,
                 'available_quantity': tier.get_available_quantity(),
                 'is_sold_out': tier.get_available_quantity() <= 0
             }
-            tiers_with_availability.append(tier_data)
-        context['tiers_with_availability'] = tiers_with_availability
+            for tier in event.ticket_tiers.filter(is_available=True)
+        ]
 
-        if self.request.user.is_authenticated:
+        context = {
+            'event': event,
+            'tiers_with_availability': tiers_with_availability,
+            'is_favorito': False,
+        }
+
+        if request.user.is_authenticated:
             context['is_favorito'] = Favorito.objects.filter(
-                user_fk=self.request.user,
-                event_fk=self.object
+                user_fk=request.user,
+                event_fk=event
             ).exists()
-        return context
-    
-    def post(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        event = self.object
-        user = request.user
 
-        if not user.is_authenticated:
-            messages.error(request, "Debes iniciar sesión para marcar favoritos.")
+        return render(request, 'user_template/event_detail.html', context)
+
+    def post(self, request, pk):
+        event = get_object_or_404(Event, pk=pk)
+
+        if not request.user.is_authenticated:
+            messages.error(request, "Debes iniciar sesión para realizar esta acción.")
             return redirect('login')
 
-        favorito, created = Favorito.objects.get_or_create(user_fk=user, event_fk=event)
-        if not created:
-            favorito.delete()
-            messages.info(request, "Evento removido de favoritos.")
+        action = request.POST.get("action")
+        comment_id = request.POST.get("comment_id")
+
+        if action == "edit":
+            comment = get_object_or_404(Comment, pk=comment_id, user_fk=request.user)
+            form = CommentForm(request.POST, instance=comment)
+            if form.is_valid():
+                form.save()
+                messages.success(request, "Comentario actualizado con éxito.")
+            else:
+                messages.error(request, "Error al editar el comentario.")
+
+        elif action == "delete":
+            comment = get_object_or_404(Comment, pk=comment_id, user_fk=request.user)
+            comment.delete()
+            messages.success(request, "Comentario eliminado con éxito.")
+
         else:
-            messages.success(request, "Evento agregado a tus favoritos.")
+            favorito, created = Favorito.objects.get_or_create(user_fk=request.user, event_fk=event)
+            if not created:
+                favorito.delete()
+                messages.info(request, "Evento removido de favoritos.")
+            else:
+                messages.success(request, "Evento agregado a tus favoritos.")
 
-        return redirect('event_detail', pk=event.pk)
-
+        return redirect('event_detail', pk=pk)
 
 class CommentCreateView(LoginRequiredMixin, CreateView):
     model = Comment
@@ -207,34 +224,6 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
         
         messages.success(self.request, f"El comentario '{comment.title}' fue creado con éxito.")
         return super().form_valid(form)
-
-
-class CommentUpdateView(LoginRequiredMixin, UpdateView):
-    model = Comment
-    form_class = CommentForm
-
-    def get_success_url(self):
-        return reverse_lazy('comentario_listar', kwargs={'pk': self.kwargs['pk_event']})
-
-    def get_queryset(self):
-        return Comment.objects.filter(user_fk=self.request.user)
-    
-    def form_valid(self, form):
-        comment = form.save(commit=False)
-        comment.save()
-        messages.success(self.request, f"El comentario {comment.title} fue actualizado correctamente.")
-        return super().form_valid(form)
-
-
-class CommentDeleteView(LoginRequiredMixin, DeleteView):
-    model = Comment
-    
-    def get_success_url(self):
-        return reverse_lazy('comentario_listar', kwargs={'pk': self.kwargs['pk_event']})
-
-    def get_queryset(self):
-        return Comment.objects.filter(user_fk=self.request.user)
-
 
 class CommentListView(LoginRequiredMixin, ListView):
     model = Comment
@@ -521,3 +510,30 @@ class RatingDeleteView(LoginRequiredMixin, DeleteView):
 
     def get_success_url(self):
         return reverse_lazy("event_detail", kwargs={'pk': self.object.event_fk.pk})
+    
+class FavoriteListView(LoginRequiredMixin, ListView):
+    model = Favorito
+    template_name = "user_template/favorite.html"
+    context_object_name = "favoritos"
+    paginate_by = 12
+
+    def get_queryset(self):
+        return Favorito.objects.filter(
+            user_fk=self.request.user,
+            event_fk__date__gte=timezone.now()
+        ).select_related('event_fk', 'event_fk__venue_fk').prefetch_related('event_fk__category')
+
+    def post(self, request, *args, **kwargs):
+        event_id = request.POST.get('event_id')
+        if event_id:
+            try:
+                favorito = Favorito.objects.get(
+                    user_fk=request.user,
+                    event_fk_id=event_id
+                )
+                favorito.delete()
+                messages.success(request, "Evento removido de favoritos.")
+            except Favorito.DoesNotExist:
+                messages.error(request, "El evento no estaba en favoritos.")
+        
+        return redirect('favoritos')

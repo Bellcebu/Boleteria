@@ -1,10 +1,7 @@
-.navbar {
-  display: none !important;
-}
-
 .profile-container {
   max-width: 1400px;
   margin: 0 auto;
+  padding-top: 130px !important;
   padding: 40px 20px;
 }
 
@@ -22,12 +19,38 @@
 }
 
 .profile-nav-btn, .upload-btn, .btn-ver-mas, .btn-reembolso {
-  border: none;
-  border-radius: 25px !important;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  text-decoration: none;
+  border: none !important;
+  border-radius: 50px !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+  text-decoration: none !important;
   cursor: pointer;
+  padding: 12px 24px !important;
+  font-size: 14px !important;
+}
+
+.profile-nav-btn {
+  background: linear-gradient(135deg, #667eea, #764ba2) !important;
+  color: white !important;
+  flex: 1;
+  text-align: center;
+}
+
+.profile-nav-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4) !important;
+  color: white !important;
+}
+
+.upload-btn {
+  background: linear-gradient(45deg, #ff6b6b, #ffa726) !important;
+  color: white !important;
+  box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3) !important;
+}
+
+.upload-btn:hover {
+  transform: translateY(-2px) scale(1.05) !important;
+  box-shadow: 0 12px 35px rgba(255, 107, 107, 0.4) !important;
 }
 
 .profile-nav-buttons {
@@ -35,34 +58,6 @@
   gap: 10px;
   margin-bottom: 25px;
   justify-content: center;
-}
-
-.profile-nav-btn {
-  background: linear-gradient(45deg, #23f9fb, #3b82f6) !important;
-  color: #666;
-  padding: 10px 16px;
-  font-size: 14px;
-  flex: 1;
-  text-align: center;
-}
-
-.profile-nav-btn:hover, .upload-btn:hover {
-  background: linear-gradient(45deg, #fb24bb, #d946ef) !important;
-  color: white;
-  transform: translateY(-1px);
-}
-
-.upload-btn {
-  background: linear-gradient(45deg, #23f9fb, #3b82f6) !important;
-  color: white !important;
-  padding: 12px 24px;
-  font-size: 15px;
-  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3) !important;
-}
-
-.upload-btn:hover {
-  transform: translateY(-2px) scale(1.05) !important;
-  box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4) !important;
 }
 
 .profile-photo-widget {
@@ -74,24 +69,17 @@
   height: 160px;
   border-radius: 50%;
   object-fit: cover;
-  border: 4px solid #fb24bb;
+  border: 4px solid #667eea;
   margin-bottom: 36px;
-}
-
-.upload-form {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
 }
 
 .widget-title {
   font-size: 18px;
   font-weight: 600;
-  color: #23f9fb;
+  color: #667eea;
   margin-bottom: 20px;
   padding-bottom: 10px;
-  border-bottom: 2px solid #23f9fb;
+  border-bottom: 2px solid #667eea;
 }
 
 .info-row {
@@ -99,7 +87,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px 0;
-  border-bottom: 1px solid #23f9fb;
+  border-bottom: 1px solid rgba(102, 126, 234, 0.2);
 }
 
 .info-row:last-child {
@@ -118,23 +106,6 @@
 .info-value {
   flex: 2;
   text-align: right;
-}
-
-.status-badge, .refund-status {
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.status-active {
-  background: #10b981;
-  color: white;
-}
-
-.status-inactive {
-  background: #ef4444;
-  color: white;
 }
 
 .scroll-widget {
@@ -157,43 +128,29 @@
   border-radius: 3px;
 }
 
-.scroll-widget::-webkit-scrollbar-thumb:hover {
-  background: #5a6fd8;
-}
-
 .ticket-card, .refund-item {
-  position: relative;
-  border-radius: 12px;
+  border-radius: 20px;
   margin-bottom: 15px;
   transition: all 0.3s ease;
-  min-height: 130px;
+  min-height: 150px;
+  position: relative;
+  padding: 20px;
 }
 
 .ticket-card:hover, .refund-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(255, 255, 255, 0.1);
 }
 
 .ticket-card {
-  padding: 20px;
-  background: linear-gradient(135deg, #fb24bb, #23f9fb) !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.ticket-card:hover {
-  background: linear-gradient(135deg, #d91a9a, #1ee0e3) !important;
+  background: linear-gradient(135deg, #667eea, #764ba2) !important;
 }
 
 .refund-item {
-  padding: 15px;
-  background: linear-gradient(135deg, rgba(251, 36, 187, 0.4), rgba(35, 249, 251, 0.4)) !important;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.4), rgba(118, 75, 162, 0.4)) !important;
 }
 
-.refund-item:hover {
-  background: linear-gradient(135deg, rgba(217, 26, 154, 0.5), rgba(30, 224, 227, 0.5)) !important;
-}
-
-.ticket-title, .item-title, .ticket-date, .item-subtitle {
+.ticket-title, .item-title, .ticket-date, .item-subtitle, .ticket-price {
   color: #ffffff;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
@@ -205,24 +162,77 @@
   line-height: 1.3;
 }
 
-.item-title {
-  font-size: 14px;
-  margin-bottom: 5px;
-}
-
-.ticket-date, .item-subtitle {
-  color: #f0f0f0;
-  font-size: 13px;
-}
-
-.ticket-date {
+.ticket-date, .ticket-price {
   display: flex;
   align-items: center;
   gap: 8px;
+  font-size: 13px;
+  margin-bottom: 5px;
 }
 
-.item-subtitle {
-  margin-bottom: 8px;
+.ticket-price {
+  font-weight: 600;
+}
+
+.ticket-actions {
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  display: flex;
+  gap: 8px;
+  flex-direction: column;
+}
+
+.btn-ver-mas {
+  background: rgba(102, 126, 234, 0.9) !important;
+  color: white !important;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3) !important;
+  backdrop-filter: blur(10px);
+}
+
+.btn-ver-mas:hover {
+  background: rgba(90, 103, 216, 0.95) !important;
+  transform: translateY(-2px) scale(1.05) !important;
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4) !important;
+  color: white !important;
+}
+
+.btn-reembolso {
+  background: linear-gradient(45deg, #ff6b6b, #ffa726) !important;
+  color: white !important;
+  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3) !important;
+  margin-top: 5px;
+}
+
+.btn-reembolso:hover {
+  transform: translateY(-2px) scale(1.05) !important;
+  box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4) !important;
+}
+
+.refund-status, .event-status {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+  margin-top: 5px;
+}
+
+.refund-pending {
+  background: rgba(255, 167, 38, 0.2);
+  color: #ffa726;
+  border: 1px solid #ffa726;
+}
+
+.refund-approved {
+  background: rgba(102, 126, 234, 0.2);
+  color: #667eea;
+  border: 1px solid #667eea;
+}
+
+.event-past {
+  background: rgba(118, 75, 162, 0.2);
+  color: #764ba2;
+  border: 1px solid #764ba2;
 }
 
 .item-meta {
@@ -233,57 +243,10 @@
   font-size: 12px;
 }
 
-.ticket-actions, .refund-status {
-  position: absolute;
-  bottom: 15px;
-  right: 15px;
-}
-
-.btn-ver-mas {
-  background: linear-gradient(45deg, #ff6b6b, #ffa726) !important;
-  color: white;
-  padding: 8px 16px;
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  box-shadow: 0 4px 15px rgba(35, 249, 251, 0.3) !important;
-}
-
-.btn-ver-mas:hover {
-  transform: translateY(-2px) scale(1.05) !important;
-  box-shadow: 0 6px 20px rgba(251, 36, 187, 0.4) !important;
-  color: white !important;
-  text-decoration: none !important;
-}
-
-.refund-status {
-  font-size: 11px;
-}
-
-.refund-pending {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.refund-approved {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.refund-rejected {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
 .empty-state {
   text-align: center;
   padding: 40px 20px;
   color: #666;
-}
-
-.empty-state p {
-  margin-bottom: 15px;
 }
 
 .btn-link {
@@ -297,6 +260,59 @@
   text-decoration: underline;
 }
 
+.modal-content {
+  border-radius: 20px;
+  border: none;
+}
+
+.modal-header {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+}
+
+.modal-title {
+  font-weight: 600;
+}
+
+.form-label {
+  font-weight: 600;
+  color: #333;
+}
+
+.form-control:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.btn-primary {
+  background: linear-gradient(45deg, #ff6b6b, #ffa726) !important;
+  border: none !important;
+  border-radius: 50px !important;
+  padding: 12px 24px !important;
+  font-weight: 600 !important;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4) !important;
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, #667eea, #764ba2) !important;
+  border: none !important;
+  border-radius: 50px !important;
+  padding: 12px 24px !important;
+  font-weight: 600 !important;
+  color: white !important;
+}
+
+.btn-secondary:hover {
+  transform: translateY(-2px) !important;
+  color: white !important;
+}
+
 @media (max-width: 768px) {
   .profile-container {
     padding: 100px 15px 40px;
@@ -307,12 +323,19 @@
     gap: 8px;
   }
 
-  .profile-nav-btn {
-    padding: 10px;
-    font-size: 13px;
-  }
-
   .profile-widget {
     padding: 20px;
+  }
+
+  .ticket-actions {
+    position: static;
+    margin-top: 15px;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .btn-ver-mas, .btn-reembolso {
+    flex: 1;
+    margin: 0 5px;
   }
 }

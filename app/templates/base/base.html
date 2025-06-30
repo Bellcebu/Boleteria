@@ -24,7 +24,7 @@
             
             <div class="nav-links">
                 <a href="{% url 'event_list' %}">Shows</a>
-                <a href="{% url 'category_listar' %}">Categorías</a>
+                <a href="{% url 'favorite_list' %}">Favoritos</a>
                 <a href="{% url 'venue_listar' %}">Venues</a>
             </div>
 
@@ -42,8 +42,6 @@
                         </button>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="{% url 'user_profile' user.username %}">Mi Perfil</a></li>
-                            <li><a class="dropdown-item" href="{% url 'ticket_list' %}">Mis Tickets</a></li>
-                            <li><a class="dropdown-item" href="#">Notificaciones</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{% url 'logout' %}">Cerrar Sesión</a></li>
                         </ul>

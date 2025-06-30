@@ -102,6 +102,7 @@
                 </div>
             </div>
         </div>
+
         <div class="col-lg-4">
             <div class="card shadow-sm">
                 <div class="card-header">
@@ -205,9 +206,25 @@
                     </div>
                     {% endif %}
 
-                    {% if event.comments.all %}
-                        {% for comment in event.comments.all|slice:":5" %}
-                        <div class="border-bottom pb-3 mb-3">
+                    {% for comment in event.comments.all|slice:":5" %}
+                    <div class="border-bottom pb-3 mb-3" id="comment-{{ comment.pk }}">
+                        {% if user == comment.user_fk and request.GET.edit_comment == comment.pk|stringformat:"s" %}
+                            <form method="post" action="{% url 'event_detail' event.pk %}#comment-{{ comment.pk }}">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="edit">
+                                <input type="hidden" name="comment_id" value="{{ comment.pk }}">
+                                <div class="mb-2">
+                                    <input type="text" name="title" class="form-control" value="{{ comment.title }}" required>
+                                </div>
+                                <div class="mb-2">
+                                    <textarea name="text" class="form-control" rows="3" required>{{ comment.text }}</textarea>
+                                </div>
+                                <div>
+                                    <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+                                    <a href="{% url 'event_detail' event.pk %}#comment-{{ comment.pk }}" class="btn btn-secondary btn-sm">Cancelar</a>
+                                </div>
+                            </form>
+                        {% else %}
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
                                     <h6 class="mb-1 text-primary">{{ comment.title }}</h6>
@@ -216,35 +233,43 @@
                                         Por {{ comment.user_fk.username }} • {{ comment.created_at|date:"d/m/Y H:i" }}
                                     </small>
                                 </div>
-                                {% if comment.user_fk == user %}
+                                {% if user == comment.user_fk %}
                                 <div class="dropdown">
                                     <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
                                         <i class="fas fa-ellipsis-v"></i>
                                     </button>
                                     <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="{% url 'comentary_edit' event.pk comment.pk %}">Editar</a></li>
-                                        <li><a class="dropdown-item text-danger" href="{% url 'comentary_delete' event.pk comment.pk %}">Eliminar</a></li>
+                                        <li>
+                                            <a class="dropdown-item" href="?edit_comment={{ comment.pk }}#comment-{{ comment.pk }}">Editar</a>
+                                        </li>
+                                        <li>
+                                            <form method="post" action="{% url 'event_detail' event.pk %}" onsubmit="return confirm('¿Eliminar este comentario?');">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="delete">
+                                                <input type="hidden" name="comment_id" value="{{ comment.pk }}">
+                                                <button type="submit" class="dropdown-item text-danger">Eliminar</button>
+                                            </form>
+                                        </li>
                                     </ul>
                                 </div>
                                 {% endif %}
                             </div>
-                        </div>
-                        {% endfor %}
-                        {% if event.comments.count > 5 %}
-                        <div class="text-center">
-                            <a href="{% url 'comentary_list' event.pk %}" class="btn btn-outline-primary">
-                                Ver todos ({{ event.comments.count }})
-                            </a>
-                        </div>
                         {% endif %}
-                    {% else %}
+                    </div>
+                    {% endfor %}
+
+                    {% if event.comments.count > 5 %}
+                    <div class="text-center">
+                        <a href="{% url 'comentary_list' event.pk %}" class="btn btn-outline-primary">
+                            Ver todos ({{ event.comments.count }})
+                        </a>
+                    </div>
+                    {% elif not event.comments.all %}
                     <div class="text-center text-muted py-4">
                         <i class="fas fa-comments fa-3x mb-3 opacity-50"></i>
                         <p>Sin comentarios aún</p>
                         {% if user.is_authenticated %}
-                        <button type="button" class="btn btn-primary" onclick="toggleForm()">
-                            Sé el primero en comentar
-                        </button>
+                        <button type="button" class="btn btn-primary" onclick="toggleForm()">Sé el primero en comentar</button>
                         {% endif %}
                     </div>
                     {% endif %}
