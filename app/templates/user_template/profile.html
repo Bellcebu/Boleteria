@@ -1,0 +1,147 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Perfil de {{ profile_user.username }} - EventApp{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/user_css/profile.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="profile-widget profile-photo-widget">
+                <div class="profile-nav-buttons">
+                    <a href="{% url 'user_profile' user.username %}" class="profile-nav-btn active">🏠 Home</a>
+                    <a href="#" class="profile-nav-btn">⭐ Favoritos</a>
+                </div>
+                
+                {% if profile_user.profile.avatar %}
+                    <img src="{{ profile_user.profile.avatar.url }}" 
+                         alt="Foto de perfil de {{ profile_user.username }}" 
+                         class="profile-photo">
+                {% else %}
+                    <img src="https://via.placeholder.com/140x140/667eea/ffffff?text=User" 
+                         alt="Foto de perfil por defecto" 
+                         class="profile-photo">
+                {% endif %}
+                
+                {% if user == profile_user %}
+                    <form method="post" enctype="multipart/form-data" class="upload-form" id="avatarForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="upload_avatar">
+                        <input type="file" name="avatar" id="avatarInput" accept="image/*" style="display: none;">
+                        <button type="button" class="upload-btn" onclick="document.getElementById('avatarInput').click();">
+                            📁 Subir/Cargar Foto
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="profile-widget">
+                <div class="widget-title">Información Personal</div>
+                
+                <div class="info-row">
+                    <span class="info-label">Nombre de Usuario</span>
+                    <span class="info-value">{{ profile_user.username }}</span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">Email</span>
+                    <span class="info-value">{{ profile_user.email|default:"No especificado" }}</span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">Fecha de Registro</span>
+                    <span class="info-value">{{ profile_user.date_joined|date:"d \d\e F, Y" }}</span>
+                </div>
+                
+                
+                <div class="info-row">
+                    <span class="info-label">Puntos Acumulados</span>
+                    <span class="info-value">{{ profile_user.profile.points|default:0 }} pts</span>
+                </div>
+                
+                {% if profile_user.profile.total_spent %}
+                <div class="info-row">
+                    <span class="info-label">Total Gastado</span>
+                    <span class="info-value">${{ profile_user.profile.total_spent }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    {% if user == profile_user %}
+    <div class="row">
+        <div class="col-md-6">
+          <div class="profile-widget">
+              <div class="widget-title">Mis Tickets ({{ user_tickets|length }})</div>
+              <div class="scroll-widget">
+                  {% for ticket in user_tickets %}
+                      <div class="ticket-card">
+                          <div class="ticket-header">
+                              <h6 class="ticket-title">{{ ticket.ticket_tier.event.title }}</h6>
+                              <div class="ticket-date">
+                                  <i class="date-icon">📅</i>
+                                  {{ ticket.ticket_tier.event.date|date:"d M" }}
+                              </div>
+                          </div>
+                          <div class="ticket-actions">
+                              <a href="{% url 'ticket_detail' ticket.pk %}" class="btn-ver-mas">
+                                  👁️ Ver más
+                              </a>
+                          </div>
+                      </div>
+                  {% empty %}
+                      <div class="empty-state">
+                          <p>No tienes tickets aún</p>
+                          <a href="{% url 'event_list' %}" class="btn-link">Ver Eventos</a>
+                      </div>
+                  {% endfor %}
+              </div>
+          </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="profile-widget">
+                <div class="widget-title">Solicitudes de Reembolso ({{ refund_requests|length }})</div>
+                <div class="scroll-widget">
+                    {% for refund in refund_requests %}
+                        <div class="refund-item">
+                            <div class="item-title">
+                                {% if refund.ticket %}
+                                    {{ refund.ticket.ticket_tier.event.title }}
+                                {% else %}
+                                    Ticket #{{ refund.ticket_code }}
+                                {% endif %}
+                            </div>
+                            <div class="item-subtitle">Motivo: {{ refund.reason|truncatechars:50 }}</div>
+                            <div class="item-meta">
+                                <span>{{ refund.created_at|date:"d M Y" }}</span>
+                                {% if refund.approved %}
+                                    <span class="refund-status refund-approved">Aprobado</span>
+                                {% else %}
+                                    <span class="refund-status refund-pending">Pendiente</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="empty-state">
+                            <p>No tienes solicitudes de reembolso</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/user_js/profile.js' %}"></script>
+{% endblock %}

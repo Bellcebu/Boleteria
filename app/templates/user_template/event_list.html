@@ -1,0 +1,97 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Eventos - EventApp{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/user_css/event_list.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="header-section">
+    <div class="container-fluid">
+        <div class="sticky-header">
+            <div class="row justify-content-center">
+                <div class="col-12 text-center">
+                    <h1 class="page-title">Todos los Eventos</h1>
+                    <div class="d-flex justify-content-center mb-3">
+                        <select id="category-select" class="form-select category-select w-auto">
+                            <option value="">Todas las categorías</option>
+                            {% for categoria in categorias %}
+                                <option value="{{ categoria.id }}" 
+                                        {% if categoria_seleccionada == categoria.id|stringformat:'s' %}selected{% endif %}>
+                                    {{ categoria.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="events-scroll-section">
+    <div class="container-fluid" style="padding: 0;">
+        {% if eventos %}
+            <div class="events-scroll-container">
+                <div class="row g-4 justify-content-center p-3">
+                    {% for evento in eventos %}
+                        <div class="col-xl-4 col-lg-4 col-md-6 col-12">
+                            <div class="event-card">
+                                <div class="card-inner">
+                                    <div class="card-front">
+                                        {% if evento.image %}
+                                            <img src="{{ evento.image.url }}" alt="{{ evento.title }}" class="card-image">
+                                        {% else %}
+                                            <div class="card-placeholder">
+                                                <span class="placeholder-icon">🎪</span>
+                                            </div>
+                                        {% endif %}
+                                        <div class="card-overlay">
+                                            <h3 class="card-title">{{ evento.title }}</h3>
+                                            <div class="card-meta">
+                                                <span class="badge card-date">{{ evento.date|date:"d M Y" }}</span>
+                                                {% for categoria in evento.category.all %}
+                                                    <span class="badge card-category">{{ categoria.name }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-back">
+                                        <div class="text-center">
+                                            <p class="event-description">{{ evento.description|truncatewords:15 }}</p>
+                                            <a href="{% url 'event_detail' evento.pk %}" class="btn btn-ver-mas">Ver Detalles</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% else %}
+            <div class="no-events">
+                <div class="no-events-icon">🎭</div>
+                <h3>No hay eventos disponibles</h3>
+                <p>No se encontraron eventos{% if categoria_seleccionada %} en esta categoría{% endif %}.</p>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('category-select').addEventListener('change', function() {
+    const categoryId = this.value;
+    const url = new URL(window.location);
+    if (categoryId) {
+        url.searchParams.set('categoria', categoryId);
+    } else {
+        url.searchParams.delete('categoria');
+    }
+    window.location.href = url.toString();
+});
+</script>
+{% endblock %}

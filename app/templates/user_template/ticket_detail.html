@@ -1,0 +1,115 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Ticket #{{ ticket.id }} - EventApp{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/user_css/ticket_detail.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="ticket-detail-container">
+    <div class="container" style="max-width: 800px;">
+        <div class="ticket-card">
+            <div class="ticket-header">
+                <h4>
+                    <i class="fas fa-ticket-alt me-2"></i>
+                    Ticket #{{ ticket.id }}
+                </h4>
+            </div>
+            <div class="ticket-body">
+                <div class="row mb-4">
+                    <div class="col-md-8">
+                        <h5 class="event-title">{{ ticket.ticket_tier.event.title }}</h5>
+                        <p class="event-info">
+                            <i class="fas fa-calendar me-2"></i>
+                            {{ ticket.ticket_tier.event.date|date:"d/m/Y H:i" }}
+                        </p>
+                        <p class="event-info">
+                            <i class="fas fa-map-marker-alt me-2"></i>
+                            {{ ticket.ticket_tier.event.venue_fk.name }}
+                        </p>
+                        <p class="event-info">
+                            <i class="fas fa-city me-2"></i>
+                            {{ ticket.ticket_tier.event.venue_fk.city }}
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        {% if ticket.ticket_tier.event.image %}
+                            <img src="{{ ticket.ticket_tier.event.image.url }}" 
+                                 class="img-fluid event-image" 
+                                 style="max-height: 120px; object-fit: cover;" 
+                                 alt="{{ ticket.ticket_tier.event.title }}">
+                        {% endif %}
+                    </div>
+                </div>
+
+                <hr class="divider">
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="section-title">Detalles del Ticket</h6>
+                        <div class="ticket-table">
+                            <table class="table-sm table-borderless">
+                                <tr>
+                                    <td>Tipo:</td>
+                                    <td>{{ ticket.ticket_tier.name }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Cantidad:</td>
+                                    <td>{{ ticket.quantity }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Precio Original:</td>
+                                    <td>${{ ticket.original_price }}</td>
+                                </tr>
+                                {% if ticket.promotion_used %}
+                                <tr>
+                                    <td>Descuento:</td>
+                                    <td class="discount-text">{{ ticket.promotion_used.code }} (-{{ ticket.promotion_used.discount_percentage }}%)</td>
+                                </tr>
+                                {% endif %}
+                                <tr class="total-row">
+                                    <td>Total Pagado:</td>
+                                    <td>${{ ticket.final_price }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="section-title">Estado</h6>
+                        <div class="mb-3">
+                            {% if ticket.ticket_tier.event.date > now %}
+                                <span class="status-badge status-valid">✓ Válido</span>
+                            {% else %}
+                                <span class="status-badge status-expired">⏰ Evento Finalizado</span>
+                            {% endif %}
+                        </div>
+                        
+                        <p class="purchase-date">
+                            <strong>Comprado:</strong> {{ ticket.created_at|date:"d/m/Y H:i" }}
+                        </p>
+
+                        {% if refund_request %}
+                            <div class="refund-alert">
+                                <strong>Solicitud de Reembolso:</strong><br>
+                                {% if refund_request.approved %}
+                                    <span class="refund-approved">✓ Aprobada</span>
+                                {% else %}
+                                    <span class="refund-pending">⏳ Pendiente</span>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="ticket-footer">
+                <a href="{% url 'user_profile' user.username %}" class="btn-back">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Volver a Mis Tickets
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

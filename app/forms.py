@@ -141,11 +141,15 @@ class EventModelForm(forms.ModelForm):
     date = forms.DateTimeField(widget = forms.DateTimeInput(attrs={'class':'form-control', 'type':'datetime-local'}, format='%Y-%m-%dT%H:%M'),input_formats=['%Y-%m-%dT%H:%M'])
     class Meta:
         model = Event
-        fields = ['category', 'venue_fk', 'title', 'description', 'date', 'image']
+        fields = ['category', 'venue_fk', 'autor' , 'title', 'description', 'date', 'image']
         widgets = {
             'category':forms.CheckboxSelectMultiple(),
             'venue_fk': forms.Select(attrs={
                 'class': 'form-control'
+                }),
+            'autor': forms.TextInput(attrs={ 
+                'class': 'form-control',
+                'placeholder': 'Autor (opcional)'
                 }),
             'title': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -161,6 +165,7 @@ class EventModelForm(forms.ModelForm):
         labels = {
             'category': 'Categoría',
             'venue_fk': 'Lugar',
+            'autor': 'Autor', 
             'title': 'Título',
             'description': 'Descripción',
             'date': 'Fecha y hora',

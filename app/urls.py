@@ -5,11 +5,9 @@ from .views import (
     EventDetailView,
     CommentCreateView,
     RatingCreateView,
-    TicketCreateView,
+    TicketPurchaseView,
     TicketListView,
     TicketDetailView,
-    NotificationListView,
-    NotificationDetailView,
     LoginView,
     SignUpView,
     AuthView,
@@ -39,15 +37,11 @@ urlpatterns = [
     path('events/', EventListView.as_view(), name='event_list'),
     path('events/<int:pk>/', EventDetailView.as_view(), name='event_detail'),
     path('events/<int:pk>/rating/', RatingCreateView.as_view(), name='add_rating'),
-    path('events/<int:event_pk>/comprar/<int:tier_id>/', TicketCreateView.as_view(), name='ticket_buy'),
+    path('events/<int:event_id>/comprar/<int:tier_id>/', TicketPurchaseView.as_view(), name='ticket_purchase'),
 
     # --- Tickets ---
     path('tickets/', TicketListView.as_view(), name='ticket_list'),
     path('tickets/<int:pk>/', TicketDetailView.as_view(), name='ticket_detail'),
-
-    # --- Notificaciones ---
-    path('notificaciones/', NotificationListView.as_view(), name='notificaciones'),
-    path('notificaciones/<int:pk>/', NotificationDetailView.as_view(), name='notification_detail'),
 
     # --- Autenticación ---
     path('login/', LoginView.as_view(), name='login'),
@@ -68,10 +62,10 @@ urlpatterns = [
 
     #comentarios
     path('events/<int:pk>/comentarios/', CommentListView.as_view(), name='comentario_listar'),
-    path('events/<int:pk_event>/comentarios/<int:pk>/', CommentDetailView.as_view(), name='comentario_detalle'),
-    path('events/<int:pk_event>/comentarios/crear/', CommentCreateView.as_view(), name='comentario_crear'),
-    path('events/<int:pk_event>/comentarios/<int:pk>/editar/', CommentUpdateView.as_view(), name='comentario_editar'),
-    path('events/<int:pk_event>/comentarios/<int:pk>/borrar/', CommentDeleteView.as_view(), name='comentario_borrar'),
+    path('events/<int:pk_event>/comentarios/<int:pk>/', CommentDetailView.as_view(), name='comentary_detail'),
+    path('events/<int:pk_event>/comentarios/crear/', CommentCreateView.as_view(), name='comentary_create'),
+    path('events/<int:pk_event>/comentarios/<int:pk>/editar/', CommentUpdateView.as_view(), name='comentary_edit'),
+    path('events/<int:pk_event>/comentarios/<int:pk>/borrar/', CommentDeleteView.as_view(), name='comentary_delete'),
 
 
     path('events/<int:pk_event>/rating/crear/', RatingCreateView.as_view(), name='rating_crear'),

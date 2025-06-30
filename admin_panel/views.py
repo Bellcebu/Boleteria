@@ -1,20 +1,18 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User, Group
 from django.views.generic import CreateView, UpdateView, DeleteView, ListView, DetailView, View
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy
-from django.forms import inlineformset_factory
 from django.utils import timezone
-from django.utils.timezone import now
 
-from app.models import Event, Category, Venue, RefundRequest, TicketTier, Ticket,Comment, Notification
-from app.forms import EventModelForm, CategoryModelForm, VenueModelForm, TicketModelForm, TicketTierFormSet,CommentForm,NotificationModelForm
+from app.models import Event, Category, Venue, RefundRequest, TicketTier, Ticket, Comment, Notification, Promotion
+from app.forms import EventModelForm, CategoryModelForm, VenueModelForm, TicketModelForm, NotificationModelForm
 
 
 def is_admin(user):
     return user.is_staff or user.groups.filter(name='Admin').exists()
+
 
 def is_vendedor(user):
     return user.groups.filter(name='Vendedor').exists() 
@@ -53,7 +51,6 @@ class VendedorHomeView(LoginRequiredMixin, UserPassesTestMixin, View):
 
 
 # --- Eventos CRUD ---
-
 class AdminEventView(LoginRequiredMixin, UserPassesTestMixin, View):
     template_name = 'admin_template/admin_event.html'
    
@@ -65,6 +62,7 @@ class AdminEventView(LoginRequiredMixin, UserPassesTestMixin, View):
             self.template_name = 'vendedor_template/vendedor_event.html'
         else:
             self.template_name = 'admin_template/admin_event.html'   
+        
         context = {
             'events': Event.objects.all().order_by('-created_at'),
             'categories': Category.objects.all(),
@@ -75,10 +73,11 @@ class AdminEventView(LoginRequiredMixin, UserPassesTestMixin, View):
    
     def post(self, request):
         action = request.POST.get('action')
+        
         if action == 'create':
             if is_vendedor(request.user):
                 messages.error(request, "No tienes permisos para crear eventos.")
-                return redirect('admin_event')
+                return redirect('event')
                
             form = EventModelForm(request.POST, request.FILES)
             if form.is_valid():
@@ -104,7 +103,7 @@ class AdminEventView(LoginRequiredMixin, UserPassesTestMixin, View):
         elif action == 'delete':
             if is_vendedor(request.user):
                 messages.error(request, "No tienes permisos para eliminar eventos.")
-                return redirect('admin_event')
+                return redirect('event')
                
             event_id = request.POST.get('event_id')
             event = get_object_or_404(Event, pk=event_id)
@@ -114,8 +113,8 @@ class AdminEventView(LoginRequiredMixin, UserPassesTestMixin, View):
        
         return redirect('event')
 
-# --- Ticket CRUD ---
 
+# --- Ticket CRUD ---
 class AdminEventTicketsView(LoginRequiredMixin, UserPassesTestMixin, View):
    
     def test_func(self):
@@ -176,8 +175,8 @@ class AdminEventTicketsView(LoginRequiredMixin, UserPassesTestMixin, View):
        
         return redirect('event_tickets', event_id=event_id)
 
-# --- Categorías CRUD ---
 
+# --- Categorías CRUD ---
 class AdminCategoriesView(LoginRequiredMixin, UserPassesTestMixin, View):
     template_name = 'admin_template/admin_categories.html'
     
@@ -222,10 +221,10 @@ class AdminCategoriesView(LoginRequiredMixin, UserPassesTestMixin, View):
             category.delete()
             messages.success(request, f"Categoría '{category_name}' eliminada con éxito.")
         
-        return redirect('admin_categories')
+        return redirect('categories')
+
 
 # --- Venues CRUD ---
-
 class AdminVenueView(LoginRequiredMixin, UserPassesTestMixin, View):
     template_name = 'admin_template/admin_venue.html'
     
@@ -270,12 +269,12 @@ class AdminVenueView(LoginRequiredMixin, UserPassesTestMixin, View):
             venue.delete()
             messages.success(request, f"Lugar '{venue_name}' eliminado con éxito.")
         
-        return redirect('admin_venue')
+        return redirect('venue')
 
 
 # --- Refund Requests CRUD ---
-
 class AdminRefundRequesView(LoginRequiredMixin, UserPassesTestMixin, View):
+    
     def test_func(self):
         return is_admin(self.request.user) or is_vendedor(self.request.user)
    
@@ -322,8 +321,8 @@ class AdminRefundRequesView(LoginRequiredMixin, UserPassesTestMixin, View):
         
         return redirect('refund_request')
 
-# --- Roles ---
 
+# --- Roles ---
 class AdminRolsView(LoginRequiredMixin, UserPassesTestMixin, View):
     template_name = 'admin_template/admin_rols.html'
    
@@ -354,9 +353,11 @@ class AdminRolsView(LoginRequiredMixin, UserPassesTestMixin, View):
             user_id = request.POST.get('user_id')
             role = request.POST.get('role')
             user = get_object_or_404(User, id=user_id)
+            
             if user == request.user and role != 'admin':
                 messages.error(request, "No puedes quitarte permisos de administrador a ti mismo.")
-                return redirect('admin_rols')
+                return redirect('rols')
+                
             user.groups.clear()
             if role == 'admin':
                 admin_group, _ = Group.objects.get_or_create(name='Admin')
@@ -375,50 +376,188 @@ class AdminRolsView(LoginRequiredMixin, UserPassesTestMixin, View):
                 user.save()
                 messages.success(request, f"Usuario '{user.username}' asignado como Usuario normal.")
         return redirect('rols')
+
+
+# --- Comments ---    
+class AdminCommentsView(LoginRequiredMixin, UserPassesTestMixin, View):
+    
+    def test_func(self):
+        return is_admin(self.request.user) or is_vendedor(self.request.user)
+    
+    def get(self, request):
+        if is_admin(self.request.user):
+            template_name = 'admin_template/admin_comments.html'
+        else:
+            template_name = 'vendedor_template/vendedor_comments.html'
         
-# List View
-class NotificationListView(LoginRequiredMixin, ListView):
+        comments = Comment.objects.all().select_related(
+            'user_fk', 'event_fk'
+        ).order_by('-created_at')
+        
+        events = Event.objects.all().order_by('title')
+        
+        context = {
+            'comments': comments,
+            'events': events,
+        }
+        return render(request, template_name, context)
+    
+    def post(self, request):
+        action = request.POST.get('action')
+        
+        if action == 'delete':
+            comment_id = request.POST.get('comment_id')
+            try:
+                comment = get_object_or_404(Comment, pk=comment_id)
+                comment_title = comment.title
+                comment.delete()
+                messages.success(request, f"Comentario '{comment_title}' eliminado con éxito.")
+            except Exception as e:
+                messages.error(request, f"Error al eliminar el comentario: {str(e)}")
+        
+        return redirect('comments')
+
+
+# --- Promotions ---    
+class AdminPromotionsView(LoginRequiredMixin, UserPassesTestMixin, View):
+    
+    def test_func(self):
+        return is_admin(self.request.user) or is_vendedor(self.request.user)
+    
+    def get(self, request):
+        if is_admin(self.request.user):
+            template_name = 'admin_template/admin_promotions.html'
+        else:
+            template_name = 'vendedor_template/vendedor_promotions.html'
+        
+        promotions = Promotion.objects.all().select_related('event', 'created_by').order_by('-created_at')
+        events = Event.objects.filter(date__gte=timezone.now()).order_by('date')
+        
+        context = {
+            'promotions': promotions,
+            'events': events,
+            'now': timezone.now(),
+        }
+        return render(request, template_name, context)
+    
+    def post(self, request):
+        action = request.POST.get('action')
+        
+        if action == 'create':
+            form_data = {
+                'code': request.POST.get('code'),
+                'discount_percentage': request.POST.get('discount_percentage'),
+                'start_date': request.POST.get('start_date'),
+                'end_date': request.POST.get('end_date'),
+                'max_uses': request.POST.get('max_uses'),
+            }
+            
+            try:
+                event = get_object_or_404(Event, pk=request.POST.get('event'))
+                promotion = Promotion.objects.create(
+                    event=event,
+                    code=form_data['code'].upper(),
+                    discount_percentage=form_data['discount_percentage'],
+                    start_date=form_data['start_date'],
+                    end_date=form_data['end_date'],
+                    max_uses=form_data['max_uses'],
+                    is_active=request.POST.get('is_active') == 'on',
+                    created_by=request.user
+                )
+                messages.success(request, f"Promoción '{promotion.code}' creada con éxito.")
+            except Exception as e:
+                messages.error(request, f"Error al crear la promoción: {str(e)}")
+        
+        elif action == 'edit':
+            promotion_id = request.POST.get('promotion_id')
+            try:
+                promotion = get_object_or_404(Promotion, pk=promotion_id)
+                event = get_object_or_404(Event, pk=request.POST.get('event'))
+                
+                promotion.event = event
+                promotion.code = request.POST.get('code').upper()
+                promotion.discount_percentage = request.POST.get('discount_percentage')
+                promotion.start_date = request.POST.get('start_date')
+                promotion.end_date = request.POST.get('end_date')
+                promotion.max_uses = request.POST.get('max_uses')
+                promotion.is_active = request.POST.get('is_active') == 'on'
+                promotion.save()
+                
+                messages.success(request, f"Promoción '{promotion.code}' actualizada con éxito.")
+            except Exception as e:
+                messages.error(request, f"Error al actualizar la promoción: {str(e)}")
+        
+        elif action == 'delete':
+            promotion_id = request.POST.get('promotion_id')
+            try:
+                promotion = get_object_or_404(Promotion, pk=promotion_id)
+                promotion_code = promotion.code
+                promotion.delete()
+                messages.success(request, f"Promoción '{promotion_code}' eliminada con éxito.")
+            except Exception as e:
+                messages.error(request, f"Error al eliminar la promoción: {str(e)}")
+        
+        return redirect('promotions')
+
+
+# --- Notificaciones CRUD ---
+class NotificationListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = Notification
     template_name = "notification/notification_list.html"
     context_object_name = "notifications"
+    
+    def test_func(self):
+        return is_admin(self.request.user)
 
-# Create View
-class NotificationCreateView(LoginRequiredMixin, CreateView):
+
+class NotificationCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Notification
     form_class = NotificationModelForm
     template_name = "notification/notification_form.html"
+    
+    def test_func(self):
+        return is_admin(self.request.user)
 
     def form_valid(self, form):
-        messages.success(self.request, "Notification created successfully.")
+        messages.success(self.request, "Notificación creada exitosamente.")
         return super().form_valid(form)
 
     def get_success_url(self):
         return reverse_lazy("notification_list")
 
-# Update View
-class NotificationUpdateView(LoginRequiredMixin, UpdateView):
+
+class NotificationUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Notification
     form_class = NotificationModelForm
     template_name = "notification/notification_form.html"
+    
+    def test_func(self):
+        return is_admin(self.request.user)
 
     def form_valid(self, form):
-        messages.success(self.request, f"Notification '{form.instance.title}' updated.")
+        messages.success(self.request, f"Notificación '{form.instance.title}' actualizada.")
         return super().form_valid(form)
 
     def get_success_url(self):
         return reverse_lazy("notification_list")
 
-# Delete View
-class NotificationDeleteView(LoginRequiredMixin, DeleteView):
+
+class NotificationDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Notification
     template_name = "notification/notification_confirm_delete.html"
+    
+    def test_func(self):
+        return is_admin(self.request.user)
 
     def get_success_url(self):
-        messages.success(self.request, "Notification deleted.")
+        messages.success(self.request, "Notificación eliminada.")
         return reverse_lazy("notification_list")
 
-# Detail View
-class NotificationDetailView(LoginRequiredMixin, DetailView):
+
+class NotificationDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     model = Notification
     template_name = "notification/notification_detail.html"
     context_object_name = "notification"
+    
+    def test_func(self):
+        return is_admin(self.request.user)

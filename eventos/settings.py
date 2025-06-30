@@ -104,7 +104,6 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 STATIC_URL = "/static/"
-STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = '/media/'
@@ -121,7 +120,9 @@ LANGUAGE_CODE = "es-ar"
 TIME_ZONE = 'America/Argentina/Buenos_Aires'
 
 USE_I18N = True
+USE_L10N = True  
 USE_TZ = True
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field

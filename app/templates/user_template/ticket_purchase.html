@@ -1,0 +1,71 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5" style="padding-top: 60px;">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Comprar Entradas - {{ ticket_tier.event.title }}</h3>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h5>{{ ticket_tier.name }}</h5>
+                        <p>Precio: ${{ ticket_tier.price }}</p>
+                        <p>Disponibles: {{ available_quantity }}</p>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="quantity">Cantidad</label>
+                            <input type="number" class="form-control" id="quantity" name="quantity" 
+                                   value="1" min="1" max="{{ available_quantity }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="promotion_code">Código Promocional (opcional)</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="promotion_code" 
+                                       name="promotion_code" placeholder="Código" style="text-transform: uppercase;">
+                                <button type="button" class="btn btn-outline-primary" id="check-promo">
+                                    Verificar
+                                </button>
+                            </div>
+                            <div id="promo-status" class="mt-2"></div>
+                        </div>
+
+                        <div class="mb-3 p-3 border rounded">
+                            <h5>Total: $<span id="total">{{ ticket_tier.price }}</span></h5>
+                            <div id="discount-info" style="display: none;">
+                                <small class="text-success">Descuento: <span id="discount-text"></span></small>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100">Comprar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- EXACTAMENTE TUS DATOS, SIN CAMBIOS -->
+<script>
+window.TICKET_DATA = {
+    UNIT_PRICE: parseFloat('{{ ticket_tier.price }}'),
+    PROMOTIONS: {
+        {% for promo in valid_promotions %}
+        '{{ promo.code }}': {
+            discount: parseFloat('{{ promo.discount_percentage }}'),
+            valid: true
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    }
+};
+</script>
+
+<script src="{% static 'js/user_js/ticket_purchase.js' %}"></script>
+{% endblock %}

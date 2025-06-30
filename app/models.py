@@ -67,6 +67,7 @@ class Venue(BaseModel):
 class Event(BaseModel):
     category = models.ManyToManyField('Category', related_name='events')
     venue_fk = models.ForeignKey("Venue", on_delete=models.CASCADE, related_name='events')
+    autor = models.CharField(max_length=100, blank=True, null=True) 
     title = models.CharField(max_length=200)
     description = models.TextField()
     date = models.DateTimeField()

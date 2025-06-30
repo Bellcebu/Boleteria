@@ -26,29 +26,48 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="id_title" class="form-label">Título del Evento</label>
-                                    <input type="text" class="form-control" name="title" id="id_title" placeholder="Título del evento" required>
+                                    <label for="id_autor" class="form-label">Autor</label>
+                                    <input type="text" class="form-control" name="autor" id="id_autor" placeholder="Autor (opcional)">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="id_date" class="form-label">Fecha y Hora</label>
-                                    <input type="datetime-local" class="form-control" name="date" id="id_date" required>
+                                    <label for="id_title" class="form-label">Título del Evento</label>
+                                    <input type="text" class="form-control" name="title" id="id_title" placeholder="Título del evento" required>
                                 </div>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="id_category" class="form-label">Categoría</label>
-                                    <select class="form-control" name="category" id="id_category" required>
-                                        <option value="">Seleccionar categoría</option>
-                                        {% for category in categories %}
-                                            <option value="{{ category.id }}">{{ category.name }}</option>
-                                        {% endfor %}
-                                    </select>
+                                    <label for="id_date" class="form-label">Fecha y Hora</label>
+                                    <input type="datetime-local" class="form-control" name="date" id="id_date" required>
                                 </div>
                             </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Categorías</label>
+                                    <div class="border rounded p-3" style="max-height: 120px; overflow-y: auto; background-color: #f8f9fa;">
+                                        <div class="row g-2">
+                                            {% for category in categories %}
+                                                <div class="col-md-6 col-lg-4 col-xl-3">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" 
+                                                               name="category" value="{{ category.id }}" 
+                                                               id="category_{{ category.id }}">
+                                                        <label class="form-check-label small" for="category_{{ category.id }}">
+                                                            {{ category.name }}
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">Puedes seleccionar múltiples categorías</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="id_venue_fk" class="form-label">Lugar</label>
@@ -98,6 +117,7 @@
                             <thead>
                                 <tr>
                                     <th>Imagen</th>
+                                    <th>Autor</th>
                                     <th>Título</th>
                                     <th>Categoría</th>
                                     <th>Lugar</th>
@@ -119,12 +139,30 @@
                                         {% endif %}
                                     </td>
                                     <td>
+                                        {% if event.autor %}
+                                            {{ event.autor }}
+                                        {% else %}
+                                            <small class="text-muted">Sin autor</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
                                         <strong>{{ event.title }}</strong>
                                         <br>
                                         <small class="text-muted">{{ event.description|truncatechars:50 }}</small>
                                     </td>
                                     <td>
-                                        <span class="badge bg-secondary">{{ event.category.name }}</span>
+                                        {% if event.category.all %}
+                                            <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#categoriesModal"
+                                                    data-event-title="{{ event.title }}"
+                                                    data-categories="{% for category in event.category.all %}{{ category.name }}{% if not forloop.last %}, {% endif %}{% endfor %}">
+                                                <i class="bi bi-tags me-1"></i>
+                                                Ver categorías ({{ event.category.count }})
+                                            </button>
+                                        {% else %}
+                                            <span class="text-muted">Sin categorías</span>
+                                        {% endif %}
                                     </td>
                                     <td>
                                         {{ event.venue_fk.name }}
@@ -150,10 +188,11 @@
                                             </button>
                                             <button type="button" class="btn btn-sm btn-outline-warning edit-btn" 
                                                     data-event-id="{{ event.id }}"
+                                                    data-autor="{{ event.autor|default:'' }}"
                                                     data-title="{{ event.title }}"
                                                     data-description="{{ event.description }}"
                                                     data-date="{{ event.date|date:'Y-m-d\TH:i' }}"
-                                                    data-category="{{ event.category.id }}"
+                                                    data-categories="{% for cat in event.category.all %}{{ cat.id }}{% if not forloop.last %},{% endif %}{% endfor %}"
                                                     data-venue="{{ event.venue_fk.id }}">
                                                 <i class="bi bi-pencil"></i> Editar
                                             </button>
@@ -167,7 +206,7 @@
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="7" class="text-center text-muted py-4">
+                                    <td colspan="8" class="text-center text-muted py-4">
                                         <i class="bi bi-calendar-x fs-1 mb-2 d-block"></i>
                                         No hay eventos creados aún
                                     </td>
@@ -177,6 +216,26 @@
                         </table>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="categoriesModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-tags me-2"></i>
+                    Categorías de <span id="eventTitleModal"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="categoriesContainer" class="d-flex flex-wrap gap-2">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
             </div>
         </div>
     </div>

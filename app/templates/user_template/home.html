@@ -1,0 +1,102 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}EventApp - Descubre los mejores eventos{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/user_css/home.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="hero-section">
+    {% if eventos %}
+        {% with eventos.0 as featured_event %}
+            <div class="hero-background">
+                {% if featured_event.image %}
+                    <img src="{{ featured_event.image.url }}" alt="{{ featured_event.title }}" class="hero-image">
+                {% else %}
+                    <div class="hero-placeholder"></div>
+                {% endif %}
+                <div class="hero-overlay"></div>
+            </div>
+            
+            <div class="hero-content">
+                <a href="{% url 'event_detail' featured_event.pk %}" class="btn hero-cta">Comprar Entradas</a>
+            </div>
+            
+            <div class="scroll-indicator">
+                <div class="scroll-arrow">↓</div>
+                <span class="scroll-text">Descubre más eventos</span>
+            </div>
+        {% endwith %}
+    {% else %}
+        <div class="hero-background">
+            <div class="hero-placeholder"></div>
+            <div class="hero-overlay"></div>
+        </div>
+        <div class="hero-content">
+            <h1 class="text-white">Próximamente</h1>
+            <p class="text-white-50">Nuevos eventos increíbles están por llegar</p>
+        </div>
+    {% endif %}
+</section>
+<section class="events-section">
+    <div class="container-fluid" style="padding: 0;">
+        <div class="sticky-events-header">
+            <div class="row justify-content-center mb-5">
+                <div class="col-12 text-center">
+                    <h2 class="section-title">Eventos Mas próximos</h2>
+                </div>
+            </div>
+        </div>
+
+        {% if eventos %}
+            <div class="row g-4 justify-content-center p-3" style = "z-index: 0;">
+                {% for evento in eventos %}
+                    <div class="col-xl-6 col-lg-6 col-md-6 col-12" >
+                        <div class="event-card">
+                            <div class="card-inner">
+                                <div class="card-front">
+                                    {% if evento.image %}
+                                        <img src="{{ evento.image.url }}" alt="{{ evento.title }}" class="card-image">
+                                    {% else %}
+                                        <div class="card-placeholder">
+                                            <span class="placeholder-icon">🎪</span>
+                                        </div>
+                                    {% endif %}
+                                    <div class="card-overlay">
+                                        <h3 class="card-title">{{ evento.title }}</h3>
+                                        <div class="card-meta">
+                                            <span class="badge card-date">{{ evento.date|date:"d M" }}</span>
+                                            <span class="badge card-category">{{ evento.category.name }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-back">
+                                    <div class="text-center">
+                                        <a href="{% url 'event_detail' evento.pk %}" class="btn btn-primary btn-ver-mas">Ver Más</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="row">
+                <div class="col-12">
+                    <div class="text-center py-5">
+                        <div class="no-events-icon mb-3">🎭</div>
+                        <h3 class="text-white">No hay eventos disponibles</h3>
+                        <p class="text-white-50">Vuelve pronto para descubrir nuevos eventos increíbles</p>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/user_js/home.js' %}"></script>
+{% endblock %}

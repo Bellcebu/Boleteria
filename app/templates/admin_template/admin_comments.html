@@ -1,0 +1,211 @@
+{% extends 'base/base_admin.html' %}
+{% load static %}
+
+{% block title %}Moderación Comentarios - EventApp{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin_css/admin_comments.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-chat-square-text me-2"></i>Moderación de Comentarios
+                    </h5>
+                    <small class="text-muted">Gestiona todos los comentarios de eventos</small>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                <input type="text" class="form-control" id="searchInput" placeholder="Buscar comentarios...">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-select" id="eventFilter">
+                                <option value="">Todos los eventos</option>
+                                {% for event in events %}
+                                    <option value="{{ event.id }}">{{ event.title }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-select" id="dateFilter">
+                                <option value="">Todas las fechas</option>
+                                <option value="today">Hoy</option>
+                                <option value="week">Esta semana</option>
+                                <option value="month">Este mes</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list me-2"></i>Lista de Comentarios
+                        <span class="badge bg-primary ms-2">{{ comments.count }} total</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="commentsTable">
+                            <thead>
+                                <tr>
+                                    <th>Evento</th>
+                                    <th>Usuario</th>
+                                    <th>Título</th>
+                                    <th>Comentario</th>
+                                    <th>Fecha</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for comment in comments %}
+                                <tr data-event-id="{{ comment.event_fk.id }}" data-date="{{ comment.created_at|date:'Y-m-d' }}">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if comment.event_fk.image %}
+                                                <img src="{{ comment.event_fk.image.url }}" class="event-image me-2" alt="{{ comment.event_fk.title }}">
+                                            {% else %}
+                                                <div class="no-image me-2">
+                                                    <i class="bi bi-calendar-event"></i>
+                                                </div>
+                                            {% endif %}
+                                            <div>
+                                                <strong>{{ comment.event_fk.title|truncatechars:30 }}</strong>
+                                                <br>
+                                                <small class="text-muted">{{ comment.event_fk.date|date:"d/m/Y" }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-person-circle me-2 text-primary"></i>
+                                            <div>
+                                                <strong>{{ comment.user_fk.username }}</strong>
+                                                <br>
+                                                <small class="text-muted">{{ comment.user_fk.email|truncatechars:25 }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <strong class="text-primary">{{ comment.title }}</strong>
+                                    </td>
+                                    <td>
+                                        <div class="comment-content" title="{{ comment.text }}">
+                                            {{ comment.text|truncatechars:50 }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ comment.created_at|date:"d/m/Y" }}</span>
+                                        <br>
+                                        <small class="text-muted">{{ comment.created_at|date:"H:i" }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-sm btn-outline-info view-btn" 
+                                                    data-comment-id="{{ comment.id }}"
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#viewModal">
+                                                <i class="bi bi-eye"></i> Ver
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-danger delete-btn" 
+                                                    data-comment-id="{{ comment.id }}"
+                                                    data-title="{{ comment.title }}"
+                                                    data-user="{{ comment.user_fk.username }}"
+                                                    data-event="{{ comment.event_fk.title }}">
+                                                <i class="bi bi-trash"></i> Borrar
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">
+                                        <i class="bi bi-chat-square-text fs-1 mb-2 d-block"></i>
+                                        No hay comentarios para mostrar
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para ver comentario completo -->
+<div class="modal fade" id="viewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-chat-square-text me-2"></i>
+                    Detalle del Comentario
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="commentDetails">
+                <!-- Se llenará dinámicamente -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para confirmar eliminación -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle me-2 text-warning"></i>
+                    Confirmar Eliminación
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Esta acción no se puede deshacer.
+                </div>
+                <p>¿Estás seguro de que quieres eliminar el comentario?</p>
+                <div class="comment-detail" id="commentToDelete">
+                    <!-- Se llenará dinámicamente -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="delete">
+                    <input type="hidden" name="comment_id" id="deleteCommentId">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-2"></i>
+                        Eliminar Comentario
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/admin_js/admin_comments.js' %}"></script>
+{% endblock %}

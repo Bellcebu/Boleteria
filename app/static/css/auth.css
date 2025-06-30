@@ -23,9 +23,14 @@ html, body {
   height: 100%;
 }
 
-.backLeft,
+.backLeft {
+  background-image: url("../images/right.jpg") !important ;
+  background-size: cover;
+  background-position: center 65%;
+  background-repeat: no-repeat;
+}
 .backRight {
-    background-image: url("/static/images/back.jpg");
+    background-image: url("../images/left.jpg") !important ;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;

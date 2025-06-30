@@ -1,0 +1,202 @@
+.ticket-detail-container {
+    background: #000000;
+    padding-top: 150px !important;
+    min-height: 100vh;
+    padding: 100px 0 60px;
+}
+
+.ticket-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+.ticket-header {
+    background: linear-gradient(45deg, #ff6b6b, #ffa726);
+    color: rgb(255, 255, 255);
+    padding: 20px;
+    text-align: center;
+}
+
+.ticket-header h4 {
+    margin: 0;
+    font-weight: 600;
+}
+
+.ticket-body {
+    padding: 30px;
+    color: rgb(255, 255, 255);
+}
+
+.event-image {
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease;
+}
+
+.event-image:hover {
+    transform: scale(1.05);
+}
+
+.event-title {
+    color: #ff6b6b;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+.event-info {
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 8px;
+}
+
+.event-info i {
+    color: #ffa726;
+    width: 20px;
+}
+
+.section-title {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.ticket-table {
+    border-radius: 10px;
+    padding: 15px;
+}
+
+.ticket-table td {
+    border: none;
+    padding: 8px 0;
+    color: rgb(255, 255, 255);
+}
+
+.ticket-table td:first-child {
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 500;
+}
+
+.total-row {
+    background: rgba(255, 107, 107, 0.1);
+    border-radius: 8px;
+    padding: 10px !important;
+}
+
+.total-row td {
+    color: #ff6b6b !important;
+    font-weight: 700 !important;
+    font-size: 1.1rem;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.status-valid {
+    background: linear-gradient(45deg, #4CAF50, #8BC34A);
+    color: white;
+}
+
+.status-expired {
+    background: rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.purchase-date {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.9rem;
+}
+
+.refund-alert {
+    background: rgba(255, 193, 7, 0.1);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    border-radius: 10px;
+    padding: 15px;
+    margin-top: 15px;
+}
+
+.refund-approved {
+    color: #4CAF50;
+}
+
+.refund-pending {
+    color: #ffa726;
+}
+
+.ticket-footer {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 20px;
+    text-align: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-back {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 12px 30px;
+    border-radius: 25px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.btn-back:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: #ff6b6b;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+}
+
+.btn-back i {
+    color: #ffa726;
+}
+
+.discount-text {
+    color: #4CAF50;
+    font-weight: 600;
+}
+
+.divider {
+    border-color: rgba(255, 255, 255, 0.1);
+    margin: 25px 0;
+}
+
+@media (max-width: 768px) {
+    .ticket-detail-container {
+        padding: 80px 15px 40px;
+    }
+    
+    .ticket-body {
+        padding: 20px;
+    }
+    
+    .ticket-header {
+        padding: 15px;
+    }
+    
+    .ticket-header h4 {
+        font-size: 1.3rem;
+    }
+    
+    .event-image {
+        margin-top: 15px;
+    }
+    
+    .btn-back {
+        padding: 10px 25px;
+        font-size: 0.9rem;
+    }
+}

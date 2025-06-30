@@ -1,0 +1,263 @@
+{% extends 'base/base_vendedor.html' %}
+{% load static %}
+
+{% block title %}Vendedor Promociones - EventApp{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/Vendedor_css/vendedor_promotions.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-percent me-2"></i>Crear Nueva Promoción
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="promotionForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="create" id="formAction">
+                        <input type="hidden" name="promotion_id" value="" id="promotionId">
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="id_event" class="form-label">Evento</label>
+                                    <select class="form-control" name="event" id="id_event" required>
+                                        <option value="">Seleccionar evento...</option>
+                                        {% for event in events %}
+                                            <option value="{{ event.id }}">{{ event.title }} - {{ event.date|date:"d/m/Y" }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="id_code" class="form-label">Código Promocional</label>
+                                    <input type="text" class="form-control" name="code" id="id_code" placeholder="Ej: DESCUENTO10" required style="text-transform: uppercase;">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="id_discount_percentage" class="form-label">Descuento (%)</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" name="discount_percentage" id="id_discount_percentage" 
+                                               placeholder="10" min="1" max="100" step="0.01" required>
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="id_start_date" class="form-label">Fecha de Inicio</label>
+                                    <input type="datetime-local" class="form-control" name="start_date" id="id_start_date" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="id_end_date" class="form-label">Fecha de Fin</label>
+                                    <input type="datetime-local" class="form-control" name="end_date" id="id_end_date" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="id_max_uses" class="form-label">Usos Máximos</label>
+                                    <input type="number" class="form-control" name="max_uses" id="id_max_uses" 
+                                           placeholder="100" min="1" required>
+                                    <small class="form-text text-muted">Número máximo de veces que se puede usar esta promoción</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="form-check mt-4">
+                                        <input class="form-check-input" type="checkbox" name="is_active" id="id_is_active" checked>
+                                        <label class="form-check-label" for="id_is_active">
+                                            <strong>Promoción activa</strong>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
+                                <i class="bi bi-save me-2"></i>Crear Promoción
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="cancelBtn" style="display: none;">
+                                <i class="bi bi-x-circle me-2"></i>Cancelar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list me-2"></i>Lista de Promociones
+                        <span class="badge bg-primary ms-2">{{ promotions.count }} total</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Evento</th>
+                                    <th>Código</th>
+                                    <th>Descuento</th>
+                                    <th>Vigencia</th>
+                                    <th>Usos</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for promotion in promotions %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if promotion.event.image %}
+                                                <img src="{{ promotion.event.image.url }}" class="event-image me-2" alt="{{ promotion.event.title }}">
+                                            {% else %}
+                                                <div class="no-image me-2">
+                                                    <i class="bi bi-calendar-event"></i>
+                                                </div>
+                                            {% endif %}
+                                            <div>
+                                                <strong>{{ promotion.event.title|truncatechars:25 }}</strong>
+                                                <br>
+                                                <small class="text-muted">{{ promotion.event.date|date:"d/m/Y H:i" }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <code class="bg-light p-1 rounded">{{ promotion.code }}</code>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success fs-6">{{ promotion.discount_percentage }}% OFF</span>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            <strong>Inicio:</strong> {{ promotion.start_date|date:"d/m/Y H:i" }}<br>
+                                            <strong>Fin:</strong> {{ promotion.end_date|date:"d/m/Y H:i" }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <div class="text-center">
+                                            <span class="badge bg-info">{{ promotion.current_uses }}/{{ promotion.max_uses }}</span>
+                                            <br>
+                                            <small class="text-muted">
+                                                {% widthratio promotion.current_uses promotion.max_uses 100 %}% usado
+                                            </small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if promotion.is_valid_now %}
+                                            <span class="badge bg-success promotion-status promotion-active">
+                                                <i class="bi bi-check-circle me-1"></i>ACTIVA
+                                            </span>
+                                        {% elif promotion.end_date < now %}
+                                            <span class="badge bg-danger promotion-status promotion-expired">
+                                                <i class="bi bi-x-circle me-1"></i>EXPIRADA
+                                            </span>
+                                        {% elif promotion.start_date > now %}
+                                            <span class="badge bg-warning promotion-status promotion-upcoming">
+                                                <i class="bi bi-clock me-1"></i>PRÓXIMA
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary promotion-status">
+                                                <i class="bi bi-pause-circle me-1"></i>INACTIVA
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-sm btn-outline-warning edit-btn" 
+                                                    data-promotion-id="{{ promotion.id }}"
+                                                    data-event="{{ promotion.event.id }}"
+                                                    data-code="{{ promotion.code }}"
+                                                    data-discount="{{ promotion.discount_percentage }}"
+                                                    data-start="{{ promotion.start_date|date:'Y-m-d\TH:i' }}"
+                                                    data-end="{{ promotion.end_date|date:'Y-m-d\TH:i' }}"
+                                                    data-max-uses="{{ promotion.max_uses }}"
+                                                    data-active="{{ promotion.is_active }}">
+                                                <i class="bi bi-pencil"></i> Editar
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-danger delete-btn" 
+                                                    data-promotion-id="{{ promotion.id }}"
+                                                    data-code="{{ promotion.code }}"
+                                                    data-event="{{ promotion.event.title }}">
+                                                <i class="bi bi-trash"></i> Borrar
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted py-4">
+                                        <i class="bi bi-percent fs-1 mb-2 d-block"></i>
+                                        No hay promociones creadas aún
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle me-2 text-warning"></i>
+                    Confirmar Eliminación
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Esta acción no se puede deshacer.
+                </div>
+                <p>¿Estás seguro de que quieres eliminar la promoción <strong id="promotionToDelete"></strong>?</p>
+                <p class="text-muted">Evento: <span id="eventToDelete"></span></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="delete">
+                    <input type="hidden" name="promotion_id" id="deletePromotionId">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-2"></i>Eliminar
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/Vendedor_js/vendedor_promotions.js' %}"></script>
+{% endblock %}

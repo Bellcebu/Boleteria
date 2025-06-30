@@ -19,6 +19,9 @@ urlpatterns = [
     path('venues/', views.AdminVenueView.as_view(), name='venue'),
     path('refund-requests/', views.AdminRefundRequesView.as_view(), name='refund_request'),
     path('rols/', views.AdminRolsView.as_view(), name='rols'),
+    path('comments/', views.AdminCommentsView.as_view(), name='comments'),
+    path('promotions/', views.AdminPromotionsView.as_view(), name='promotions'),
+    
 
   # --- notification ---
     path('notifications/', NotificationListView.as_view(), name='notification_list'),
