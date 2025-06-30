@@ -61,7 +61,7 @@ urlpatterns = [
     path('categories/<int:pk>/', CategoryDetailView.as_view(), name='category_detalle'),
 
     #comentarios
-    path('events/<int:pk>/comentarios/', CommentListView.as_view(), name='comentario_listar'),
+    path('events/<int:pk>/comentarios/', CommentListView.as_view(), name='comentary_list'),
     path('events/<int:pk_event>/comentarios/<int:pk>/', CommentDetailView.as_view(), name='comentary_detail'),
     path('events/<int:pk_event>/comentarios/crear/', CommentCreateView.as_view(), name='comentary_create'),
     path('events/<int:pk_event>/comentarios/<int:pk>/editar/', CommentUpdateView.as_view(), name='comentary_edit'),
