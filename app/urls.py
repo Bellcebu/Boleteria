@@ -23,6 +23,7 @@ from .views import (
     RatingCreateView,
     RatingUpdateView,
     RatingDeleteView,
+    NotificationListView,
 )
 
 urlpatterns = [
@@ -68,6 +69,8 @@ urlpatterns = [
     path('events/<int:pk_event>/rating/crear/', RatingCreateView.as_view(), name='rating_crear'),
     path('rating/<int:pk>/editar/', RatingUpdateView.as_view(), name='rating_editar'),
     path('rating/<int:pk>/borrar/', RatingDeleteView.as_view(), name='rating_borrar'),
+
+    path("notificaciones/", NotificationListView.as_view(), name='notification_listar')
 
 
 ]
