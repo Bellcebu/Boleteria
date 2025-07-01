@@ -1,6 +1,7 @@
 .card {
     border: none;
     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    background-color: rgb(37, 37, 37) !important;
     transition: all 0.3s ease;
 }
 
@@ -9,18 +10,34 @@
 }
 
 .card-header {
-    background-color: #f8f9fa;
+    background-color: rgb(37, 37, 37) !important;
+    color: white;
     border-bottom: 1px solid #dee2e6;
 }
 
+.border.rounded {
+    background-color: rgb(37, 37, 37) !important;
+    border: 1px solid rgba(102, 126, 234, 0.3) !important;
+    color: #ffffff;
+}
+
+.form-label{
+    color: #ffffff;
+}
+.text-muted{
+    color: #ffffff !important;
+}
+
 .table th {
-    background-color: #f8f9fa;
+    background-color: rgb(37, 37, 37) !important;
     border-top: none;
     font-weight: 600;
-    color: #495057;
+    color: #ffffff;
 }
 
 .table td {
+    background-color: rgb(37, 37, 37) !important;
+    color: white;
     vertical-align: middle;
 }
 
@@ -47,8 +64,8 @@
 }
 
 .btn-primary {
-    background-color: #0d6efd;
-    border-color: #0d6efd;
+    background: linear-gradient(135deg, #667eea, #764ba2) !important;
+    border: #667eea;
 }
 
 .btn-warning {

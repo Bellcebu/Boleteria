@@ -5,10 +5,12 @@ from .views import (
     EventDetailView,
     CommentCreateView,
     RatingCreateView,
+    EditCommentView,
     TicketPurchaseView,
     TicketListView,
     FavoriteListView,
     TicketDetailView,
+    DeleteCommentView,
     LoginView,
     SignUpView,
     AuthView,
@@ -46,6 +48,8 @@ urlpatterns = [
     # --- Usuarios ---
     path('users/<str:username>/', UserProfileView.as_view(), name='user_profile'),
     path('events/<int:pk_event>/comentarios/crear/', CommentCreateView.as_view(), name='comentary_create'),
+    path('event/<int:pk>/comment/edit/', EditCommentView.as_view(), name='edit_comment'),
+    path('event/<int:pk>/comment/delete/', DeleteCommentView.as_view(), name='delete_comment'),
 
     path('favoritos/', FavoriteListView.as_view(), name='favorite_list'),
     path('events/<int:pk_event>/rating/crear/', RatingCreateView.as_view(), name='rating_crear'),

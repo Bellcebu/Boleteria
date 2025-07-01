@@ -144,11 +144,9 @@ class EventListView(ListView):
         context['categoria_seleccionada'] = self.request.GET.get('categoria', '')
         return context
 
-
 class EventDetailView(View):
     def get(self, request, pk):
         event = get_object_or_404(Event, pk=pk)
-
         tiers_with_availability = [
             {
                 'tier': tier,
@@ -157,55 +155,69 @@ class EventDetailView(View):
             }
             for tier in event.ticket_tiers.filter(is_available=True)
         ]
-
         context = {
             'event': event,
             'tiers_with_availability': tiers_with_availability,
             'is_favorito': False,
         }
-
         if request.user.is_authenticated:
             context['is_favorito'] = Favorito.objects.filter(
                 user_fk=request.user,
                 event_fk=event
             ).exists()
-
         return render(request, 'user_template/event_detail.html', context)
 
     def post(self, request, pk):
         event = get_object_or_404(Event, pk=pk)
-
         if not request.user.is_authenticated:
             messages.error(request, "Debes iniciar sesión para realizar esta acción.")
             return redirect('login')
 
-        action = request.POST.get("action")
-        comment_id = request.POST.get("comment_id")
-
-        if action == "edit":
-            comment = get_object_or_404(Comment, pk=comment_id, user_fk=request.user)
-            form = CommentForm(request.POST, instance=comment)
-            if form.is_valid():
-                form.save()
-                messages.success(request, "Comentario actualizado con éxito.")
-            else:
-                messages.error(request, "Error al editar el comentario.")
-
-        elif action == "delete":
-            comment = get_object_or_404(Comment, pk=comment_id, user_fk=request.user)
-            comment.delete()
-            messages.success(request, "Comentario eliminado con éxito.")
-
+        favorito, created = Favorito.objects.get_or_create(user_fk=request.user, event_fk=event)
+        if not created:
+            favorito.delete()
+            messages.info(request, "Evento removido de favoritos.")
         else:
-            favorito, created = Favorito.objects.get_or_create(user_fk=request.user, event_fk=event)
-            if not created:
-                favorito.delete()
-                messages.info(request, "Evento removido de favoritos.")
-            else:
-                messages.success(request, "Evento agregado a tus favoritos.")
-
+            messages.success(request, "Evento agregado a tus favoritos.")
+        
         return redirect('event_detail', pk=pk)
 
+
+class EditCommentView(View):
+    def post(self, request, pk):
+        event = get_object_or_404(Event, pk=pk)
+        if not request.user.is_authenticated:
+            messages.error(request, "Debes iniciar sesión para realizar esta acción.")
+            return redirect('login')
+        
+        comment_id = request.POST.get("comment_id")
+        comment = get_object_or_404(Comment, pk=comment_id, user_fk=request.user)
+        
+        form = CommentForm(request.POST, instance=comment)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Comentario actualizado con éxito.")
+        else:
+            messages.error(request, "Error al editar el comentario.")
+        
+        return redirect('event_detail', pk=pk)
+
+
+class DeleteCommentView(View):
+    def post(self, request, pk):
+        event = get_object_or_404(Event, pk=pk)
+        if not request.user.is_authenticated:
+            messages.error(request, "Debes iniciar sesión para realizar esta acción.")
+            return redirect('login')
+        
+        comment_id = request.POST.get("comment_id")
+        comment = get_object_or_404(Comment, pk=comment_id, user_fk=request.user)
+        
+        comment.delete()
+        messages.success(request, "Comentario eliminado con éxito.")
+        
+        return redirect('event_detail', pk=pk)
+    
 class CommentCreateView(LoginRequiredMixin, CreateView):
     model = Comment
     form_class = CommentForm

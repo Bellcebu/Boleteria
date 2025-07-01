@@ -20,7 +20,7 @@ body {
 .sidebar-header {
     background: linear-gradient(135deg, #667eea, #764ba2) !important;
     padding: 1.5rem !important;
-    border-bottom: rgba(255, 107, 107, 0.2) !important;
+    border-bottom: rgba(114, 107, 255, 0.2) !important;
 }
 
 .sidebar-header h5 {
@@ -45,12 +45,12 @@ body {
 }
 
 .nav-link:hover {
-    background: rgba(255, 107, 107, 0.2) !important;
+    background: rgba(107, 119, 255, 0.2) !important;
     color: white !important;
 }
 
 .nav-link.active {
-    background: linear-gradient(135deg, #ff6b6b, #ffa726) !important;
+    background: linear-gradient(135deg, #667eea, #764ba2) !important;
     color: white !important;
 }
 

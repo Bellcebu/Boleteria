@@ -16,20 +16,59 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 </head>
 <body>
     <div class="navbar-hover-zone" id="navbar-hover-zone"></div>
     <nav class="navbar" id="navbar">
         <div class="nav-container">
-            <a href="{% url 'home' %}" class="logo">EventApp</a>
-            
+            <a href="{% url 'home' %}" class="logo">MiEventApp</a>
             <div class="nav-links">
                 <a href="{% url 'event_list' %}">Shows</a>
                 <a href="{% url 'favorite_list' %}">Favoritos</a>
             </div>
-
             <div class="nav-actions">
                 {% if user.is_authenticated %}
+                    <div class="notification-bell">
+                        <button class="btn notification-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            🔔
+                            <span class="notification-badge">3</span>
+                        </button>
+                        <ul class="dropdown-menu notification-dropdown">
+                            <li class="dropdown-header d-flex justify-content-between align-items-center">
+                                <span>Notificaciones</span>
+                                <small class="text-muted">3 nuevas</small>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item notification-item" href="#">
+                                    <div class="notification-content">
+                                        <div class="notification-title">Nuevo evento disponible</div>
+                                        <div class="notification-text">Concierto de rock este viernes</div>
+                                        <div class="notification-time">Hace 2 horas</div>
+                                    </div>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item notification-item" href="#">
+                                    <div class="notification-content">
+                                        <div class="notification-title">Ticket confirmado</div>
+                                        <div class="notification-text">Tu compra ha sido procesada</div>
+                                        <div class="notification-time">Hace 1 día</div>
+                                    </div>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item notification-item" href="#">
+                                    <div class="notification-content">
+                                        <div class="notification-title">Evento próximo</div>
+                                        <div class="notification-text">Tu evento es mañana</div>
+                                        <div class="notification-time">Hace 2 días</div>
+                                    </div>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                     <div class="dropdown">
                         <button class="btn p-0 border-0 dropdown-toggle-no-caret" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                             {% if user.profile.avatar and user.profile.avatar.url != '/media/avatars/default.png' %}
@@ -42,6 +81,7 @@
                         </button>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="{% url 'user_profile' user.username %}">Mi Perfil</a></li>
+                            <li><a class="dropdown-item" href="{% url 'ticket_list' %}">Mis Tickets</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{% url 'logout' %}">Cerrar Sesión</a></li>
                         </ul>
