@@ -462,7 +462,7 @@ class CommentForm(forms.ModelForm):
 class NotificationModelForm(forms.ModelForm):
     class Meta:
         model = Notification
-        fields = ['title', 'message', 'priority', 'is_read', 'users']
+        fields = ['title', 'message', 'priority', 'users']
 
         widgets = {
             'title': forms.TextInput(attrs={
@@ -477,11 +477,10 @@ class NotificationModelForm(forms.ModelForm):
             'priority': forms.Select(attrs={
                 'class': 'form-control',
             }),
-            'is_read': forms.CheckboxInput(attrs={
-                'class': 'form-check-input',
-            }),
-            'users': forms.SelectMultiple(attrs={
+           'users': forms.SelectMultiple(attrs={
                 'class': 'form-select',
+                'multiple': True,
+                'size': '5',  # Shows 5 options at once
             }),
         }
 
@@ -489,7 +488,6 @@ class NotificationModelForm(forms.ModelForm):
             'title': 'Título',
             'message': 'Mensaje',
             'priority': 'Prioridad',
-            'is_read': '¿Leída?',
             'users': 'Usuarios destinatarios',
         }
 
