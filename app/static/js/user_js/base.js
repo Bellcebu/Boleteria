@@ -5,27 +5,26 @@ document.addEventListener('DOMContentLoaded', function() {
     let isScrolled = false;
    
     const isHomePage = currentPath === '/' || currentPath === '/home/';
-    
+   
     if (!isHomePage) {
         navbar.classList.add('expanded');
         navbar.classList.add('hidden');
-        
+       
         function showNavbar() {
             navbar.classList.remove('hidden');
         }
-        
+       
         function hideNavbar() {
             navbar.classList.add('hidden');
         }
-        
+       
         navbar.addEventListener('mouseenter', showNavbar);
         navbar.addEventListener('mouseleave', hideNavbar);
-
         if (hoverZone) {
             hoverZone.addEventListener('mouseenter', showNavbar);
             hoverZone.addEventListener('mouseleave', hideNavbar);
         }
-        
+       
         navbar.addEventListener('focusin', showNavbar);
         navbar.addEventListener('focusout', function(e) {
             setTimeout(() => {
@@ -48,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
             isScrolled = false;
         }
     }
-    
+   
     let ticking = false;
     window.addEventListener('scroll', function() {
         if (!ticking) {
@@ -68,4 +67,29 @@ document.addEventListener('DOMContentLoaded', function() {
             bsAlert.close();
         });
     }, 5000);
+
+    const unreadItems = document.querySelectorAll('.notification-item.unread');
+    const badge = document.querySelector('.notification-badge');
+    const headerCount = document.querySelector('.dropdown-header small');
+    
+    const unreadCount = unreadItems.length;
+    
+    if (unreadCount > 0) {
+        badge.textContent = unreadCount;
+        badge.style.display = 'flex';
+        if (headerCount) {
+            headerCount.textContent = `${unreadCount} nueva${unreadCount > 1 ? 's' : ''}`;
+        }
+    } else {
+        badge.style.display = 'none';
+        if (headerCount) {
+            headerCount.textContent = 'Sin nuevas';
+        }
+    }
+    
+    unreadItems.forEach(item => {
+        item.style.fontWeight = 'bold';
+        item.style.backgroundColor = '#f8f9ff';
+        item.style.borderLeft = '3px solid #667eea';
+    });
 });

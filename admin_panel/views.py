@@ -501,9 +501,9 @@ class AdminPromotionsView(LoginRequiredMixin, UserPassesTestMixin, View):
 
 
 # --- Notificaciones CRUD ---
-class NotificationListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+class AdminNotificationListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = Notification
-    template_name = "notification/notification_list.html"
+    template_name = "admin_template/admin_notifications.html"
     context_object_name = "notifications"
     
     def test_func(self):
@@ -515,10 +515,10 @@ class NotificationListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
         return context
 
 
-class NotificationCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+class AdminNotificationCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Notification
     form_class = NotificationModelForm
-    template_name = "notification/notification_form.html"
+    template_name = "admin_template/admin_notifications.html"
     
     def test_func(self):
         return is_admin(self.request.user)
@@ -536,10 +536,10 @@ class NotificationCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView
         return reverse_lazy("notification_list")
 
 
-class NotificationUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+class AdminNotificationUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Notification
     form_class = NotificationModelForm
-    template_name = "notification/notification_form.html"
+    template_name = "admin_template/admin_notifications.html"
     
     def test_func(self):
         return is_admin(self.request.user)
@@ -557,9 +557,9 @@ class NotificationUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView
         return reverse_lazy("notification_list")
 
 
-class NotificationDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+class AdminNotificationDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Notification
-    template_name = "notification/notification_confirm_delete.html"
+    template_name = "admin_template/admin_notifications.html"
     
     def test_func(self):
         return is_admin(self.request.user)
@@ -569,9 +569,9 @@ class NotificationDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView
         return reverse_lazy("notification_list")
 
 
-class NotificationDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
+class AdminNotificationDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     model = Notification
-    template_name = "notification/notification_detail.html"
+    template_name = "admin_template/admin_notifications.html"
     context_object_name = "notification"
     
     def test_func(self):

@@ -510,10 +510,45 @@ class FavoriteListView(LoginRequiredMixin, ListView):
         return redirect('favoritos')
     
 
-class NotificationListView(ListView):
-    model=Notification
-    template_name="app/notification_list"
-    context_object_name="notificaciones"
-
+class NotificationListView(LoginRequiredMixin, ListView):
+    model = Notification
+    context_object_name = "notificaciones"
+    
     def get_queryset(self):
-        return Notification.objects.filter(users=self.request.user).order_by("-created_at")
+        return self.request.user.notificaciones.all().order_by("-created_at")
+    
+class NotificationMarkReadView(LoginRequiredMixin, View):
+    def post(self, request, notification_id):
+        try:
+            notification = get_object_or_404(
+                Notification, 
+                id=notification_id, 
+                users=request.user
+            )
+            notification.is_read = True
+            notification.save()
+            messages.success(request, "Notificación marcada como leída.")
+        except Exception as e:
+            messages.error(request, "Error al marcar notificación como leída.")
+
+        return redirect(request.META.get('HTTP_REFERER', 'home'))
+    
+class NotificationDetailView(LoginRequiredMixin, View):
+    def get(self, request, pk):
+        try:
+            notification = get_object_or_404(Notification, pk=pk)
+
+            if not notification.users.filter(id=request.user.id).exists():
+                messages.error(request, f"No tienes acceso a esta notificación. Usuario: {request.user.username}")
+                return redirect('home')
+
+            if not notification.is_read:
+                notification.is_read = True
+                notification.save()
+            
+            context = {'notificacion': notification}
+            return render(request, 'user_template/notification_detail.html', context)
+            
+        except Exception as e:
+            messages.error(request, f"Error: {str(e)}")
+            return redirect('home')

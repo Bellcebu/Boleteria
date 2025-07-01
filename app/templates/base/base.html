@@ -32,41 +32,33 @@
                     <div class="notification-bell">
                         <button class="btn notification-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                             🔔
-                            <span class="notification-badge">3</span>
+                            <span class="notification-badge" style="display: none;"></span>
                         </button>
                         <ul class="dropdown-menu notification-dropdown">
                             <li class="dropdown-header d-flex justify-content-between align-items-center">
                                 <span>Notificaciones</span>
-                                <small class="text-muted">3 nuevas</small>
+                                <small class="text-muted">Sin nuevas</small>
                             </li>
                             <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <a class="dropdown-item notification-item" href="#">
-                                    <div class="notification-content">
-                                        <div class="notification-title">Nuevo evento disponible</div>
-                                        <div class="notification-text">Concierto de rock este viernes</div>
-                                        <div class="notification-time">Hace 2 horas</div>
+                            
+                            {% for notificacion in user.notificaciones.all|slice:":5" %}
+                                <li>
+                                    <a class="dropdown-item notification-item {% if not notificacion.is_read %}unread{% endif %}" 
+                                       href="{% url 'user_notification_detail' notificacion.id %}">
+                                        <div class="notification-content">
+                                            <div class="notification-title">{{ notificacion.title }}</div>
+                                            <div class="notification-text">{{ notificacion.message|truncatechars:60 }}</div>
+                                            <div class="notification-time">{{ notificacion.created_at|timesince }} atrás</div>
+                                        </div>
+                                    </a>
+                                </li>
+                            {% empty %}
+                                <li>
+                                    <div class="dropdown-item-text text-center text-muted">
+                                        No tienes notificaciones
                                     </div>
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item notification-item" href="#">
-                                    <div class="notification-content">
-                                        <div class="notification-title">Ticket confirmado</div>
-                                        <div class="notification-text">Tu compra ha sido procesada</div>
-                                        <div class="notification-time">Hace 1 día</div>
-                                    </div>
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item notification-item" href="#">
-                                    <div class="notification-content">
-                                        <div class="notification-title">Evento próximo</div>
-                                        <div class="notification-text">Tu evento es mañana</div>
-                                        <div class="notification-time">Hace 2 días</div>
-                                    </div>
-                                </a>
-                            </li>
+                                </li>
+                            {% endfor %}
                         </ul>
                     </div>
                     <div class="dropdown">
@@ -93,6 +85,15 @@
         </div>
     </nav>
 
+    <div id="customModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 50000; justify-content: center; align-items: center;">
+        <div style="background: white; padding: 20px; border-radius: 10px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+            <h3 id="modalTitle" style="margin-bottom: 15px; color: #333;"></h3>
+            <p id="modalMessage" style="margin-bottom: 20px; color: #666; line-height: 1.5;"></p>
+            <button id="modalButton" onclick="handleModalAction()" class="btn btn-primary">Leído</button>
+            <button onclick="closeModal()" class="btn btn-secondary" style="margin-left: 10px;">Cerrar</button>
+        </div>
+    </div>
+
     {% if messages %}
         <div class="messages-container">
             {% for message in messages %}
@@ -105,6 +106,7 @@
     {% endif %}
 
     <main class="main-content">
+        {% csrf_token %}
         {% block content %}
         {% endblock %}
     </main>

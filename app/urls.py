@@ -20,6 +20,8 @@ from .views import (
     RatingUpdateView,
     RatingDeleteView,
     NotificationListView,
+    NotificationMarkReadView,
+    NotificationDetailView,
 )
 
 urlpatterns = [
@@ -56,8 +58,10 @@ urlpatterns = [
     path('rating/<int:pk>/editar/', RatingUpdateView.as_view(), name='rating_editar'),
     path('rating/<int:pk>/borrar/', RatingDeleteView.as_view(), name='rating_borrar'),
 
-    path("notificaciones/", NotificationListView.as_view(), name='notification_listar')
-
-
+    path("notificaciones/", NotificationListView.as_view(), name='notification_listar'),
+    path("notifications/mark-read/<int:notification_id>/", NotificationMarkReadView.as_view(), name='notification_mark_read'),
+    path("notification/<int:pk>/", NotificationDetailView.as_view(), name='user_notification_detail'),
 ]
+
+
 

@@ -1,11 +1,11 @@
 from django.urls import path
 from . import views
 from .views import(
-    NotificationListView,
-    NotificationCreateView,
-    NotificationUpdateView,
-    NotificationDeleteView,
-    NotificationDetailView,
+    AdminNotificationListView,
+    AdminNotificationCreateView,
+    AdminNotificationUpdateView,
+    AdminNotificationDeleteView,
+    AdminNotificationDetailView,
 )
 
 urlpatterns = [
@@ -24,11 +24,11 @@ urlpatterns = [
     
 
   # --- notification ---
-    path('notifications/', NotificationListView.as_view(), name='notification_list'),
-    path('notifications/create/', NotificationCreateView.as_view(), name='notification_create'),
-    path('notifications/<int:pk>/', NotificationDetailView.as_view(), name='notification_detail'),
-    path('notifications/<int:pk>/edit/', NotificationUpdateView.as_view(), name='notification_edit'),
-    path('notifications/<int:pk>/delete/', NotificationDeleteView.as_view(), name='notification_delete'),
+    path('notifications/', AdminNotificationListView.as_view(), name='notification_list'),
+    path('notifications/create/', AdminNotificationCreateView.as_view(), name='notification_create'),
+    path('notifications/<int:pk>/', AdminNotificationDetailView.as_view(), name='notification_detail'),
+    path('notifications/<int:pk>/edit/', AdminNotificationUpdateView.as_view(), name='notification_edit'),
+    path('notifications/<int:pk>/delete/', AdminNotificationDeleteView.as_view(), name='notification_delete'),
 
     # --- Vendedor ---
 
