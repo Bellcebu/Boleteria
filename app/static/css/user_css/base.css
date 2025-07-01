@@ -303,3 +303,15 @@ body {
       height: 100px;
   }
  }
+
+/* Make the hidden styles more specific */
+#navbar.navbar.hidden {
+    transform: translateX(-50%) translateY(-100px) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* Ensure transition works */
+#navbar.navbar {
+    transition: all 0.5s cubic-bezier(0.25, 0.1, 0.25, 1) !important;
+}

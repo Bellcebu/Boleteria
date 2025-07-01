@@ -32,6 +32,7 @@ from .models import (
     Category,
     Rating,
     Favorito,
+    Notification,
 )
 
 
@@ -495,3 +496,12 @@ class FavoriteListView(LoginRequiredMixin, ListView):
                 messages.error(request, "El evento no estaba en favoritos.")
         
         return redirect('favoritos')
+    
+
+class NotificationListView(ListView):
+    model=Notification
+    template_name="app/notification_list"
+    context_object_name="notificaciones"
+
+    def get_queryset(self):
+        return Notification.objects.filter(users=self.request.user).order_by("-created_at")
