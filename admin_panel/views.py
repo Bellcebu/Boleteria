@@ -509,6 +509,11 @@ class NotificationListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     def test_func(self):
         return is_admin(self.request.user)
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['users'] = User.objects.all().order_by('username')
+        return context
+
 
 class NotificationCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Notification
@@ -517,6 +522,11 @@ class NotificationCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView
     
     def test_func(self):
         return is_admin(self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['users'] = User.objects.all().order_by('username')
+        return context
 
     def form_valid(self, form):
         messages.success(self.request, "Notificación creada exitosamente.")
@@ -533,6 +543,11 @@ class NotificationUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView
     
     def test_func(self):
         return is_admin(self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['users'] = User.objects.all().order_by('username')
+        return context
 
     def form_valid(self, form):
         messages.success(self.request, f"Notificación '{form.instance.title}' actualizada.")
