@@ -8,10 +8,9 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.contrib.auth.models import User
-from datetime import datetime, time
 from django.utils import timezone
 from django.urls import reverse_lazy
-from django.db.models import BooleanField, ExpressionWrapper, Q, Value
+
 from admin_panel.views import is_admin, is_vendedor
 
 from .forms import (
@@ -225,21 +224,6 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
         messages.success(self.request, f"El comentario '{comment.title}' fue creado con éxito.")
         return super().form_valid(form)
 
-class CommentListView(LoginRequiredMixin, ListView):
-    model = Comment
-    context_object_name = "comentarios"
-
-    def get_queryset(self):
-        pk = self.kwargs.get('pk')
-        return Comment.objects.filter(event_fk=pk).order_by("-created_at")
-
-
-class CommentDetailView(LoginRequiredMixin, DetailView):
-    model = Comment
-    template_name = "comment/comment_detail.html"
-    context_object_name = "comentario"
-
-
 class TicketListView(LoginRequiredMixin, ListView):
     model = Ticket
     template_name = "user_template/tickets.html"
@@ -442,32 +426,6 @@ class UserProfileView(View):
                 'profile_user': profile_user,
                 'form': form
             })
-
-
-class VenueListView(ListView):
-    model = Venue
-    template_name = 'venue/venue_list.html'
-    context_object_name = 'venues'
-    paginate_by = 10
-
-
-class VenueDetailView(DetailView):
-    model = Venue
-    template_name = "venue/venue_detalle.html"
-    context_object_name = "venue"
-
-
-class CategoryListView(ListView):
-    model = Category
-    template_name = "category/category_list.html"
-    context_object_name = "categories"
-
-
-class CategoryDetailView(DetailView):
-    model = Category
-    template_name = "category/category_detail.html"
-    context_object_name = "category"
-
 
 class RatingCreateView(LoginRequiredMixin, CreateView):
     model = Rating

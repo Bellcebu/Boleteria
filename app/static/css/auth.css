@@ -49,9 +49,13 @@ html, body {
   max-height: 100%;
   height: 100%;
   overflow: hidden;
-  margin-left: 0;
+  margin-left: 0; 
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
   transition: margin-left 0.5s ease;
+}
+
+#slideBox[data-active-form="signup"] {
+  margin-left: 50%;
 }
 
 .topLayer {
@@ -59,7 +63,12 @@ html, body {
   height: 100%;
   position: relative;
   left: -100%;
+  margin-left: 100%;
   transition: margin-left 0.5s ease;
+}
+
+#slideBox[data-active-form="signup"] .topLayer {
+  margin-left: 0;
 }
 
 .left {
@@ -268,6 +277,13 @@ button:hover.off.login {
 @media only screen and (max-width: 768px) {
   #slideBox {
       width: 80% !important;
+  }
+
+  #slideBox {
+      margin-left: 20% !important;
+  }
+
+  #slideBox[data-active-form="signup"] {
       margin-left: 20% !important;
   }
 }

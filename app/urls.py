@@ -14,12 +14,6 @@ from .views import (
     AuthView,
     LogOutView,
     UserProfileView,
-    VenueListView,
-    VenueDetailView,
-    CategoryListView,
-    CategoryDetailView,
-    CommentListView,
-    CommentDetailView,
     RatingCreateView,
     RatingUpdateView,
     RatingDeleteView,
@@ -50,18 +44,6 @@ urlpatterns = [
 
     # --- Usuarios ---
     path('users/<str:username>/', UserProfileView.as_view(), name='user_profile'),
-
-    # --- Venues ---
-    path('venues/', VenueListView.as_view(), name='venue_listar'),
-    path('venues/<int:pk>/', VenueDetailView.as_view(), name='venue_detalle'),
-
-    # --- Categorías ---
-    path('categories/', CategoryListView.as_view(), name='category_listar'),
-    path('categories/<int:pk>/', CategoryDetailView.as_view(), name='category_detalle'),
-
-    #comentarios
-    path('events/<int:pk>/comentarios/', CommentListView.as_view(), name='comentary_list'),
-    path('events/<int:pk_event>/comentarios/<int:pk>/', CommentDetailView.as_view(), name='comentary_detail'),
     path('events/<int:pk_event>/comentarios/crear/', CommentCreateView.as_view(), name='comentary_create'),
 
     path('favoritos/', FavoriteListView.as_view(), name='favorite_list'),

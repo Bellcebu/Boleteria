@@ -6,7 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy
 from django.utils import timezone
 
-from app.models import Event, Category, Venue, RefundRequest, TicketTier, Ticket, Comment, Notification, Promotion
+from app.models import Event, Category, Venue, RefundRequest, TicketTier, Comment, Notification, Promotion
 from app.forms import EventModelForm, CategoryModelForm, VenueModelForm, TicketModelForm, NotificationModelForm
 
 

@@ -1,6 +1,7 @@
 .card {
     border: none;
     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    background-color: rgb(37, 37, 37) !important;
     transition: all 0.3s ease;
 }
 
@@ -9,8 +10,31 @@
 }
 
 .card-header {
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #dee2e6;
+    background-color: rgb(37, 37, 37);
+    color: #ffffff;
+    background: linear-gradient(135deg, #ff6b6b, #ffa726) !important;
+}
+
+.form-control{
+    background-color: rgb(37, 37, 37) !important;
+    color: #ffffff;
+}
+
+.form-control::placeholder {
+    color: white !important;
+}
+
+.border.rounded {
+    background-color: rgb(37, 37, 37) !important;
+    border: 1px solid rgba(102, 126, 234, 0.3) !important;
+    color: #ffffff;
+}
+
+.form-label{
+    color: #ffffff;
+}
+.text-muted{
+    color: #ffffff !important;
 }
 
 .event-image {
@@ -23,7 +47,7 @@
 .no-image {
     width: 60px;
     height: 60px;
-    background-color: #e9ecef;
+    background-color: rgb(37, 37, 37);
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -33,14 +57,16 @@
 }
 
 .table th {
-    background-color: #f8f9fa;
+    background-color: rgb(37, 37, 37) !important;
     border-top: none;
     font-weight: 600;
-    color: #495057;
+    color: #ffffff;
 }
 
 .table td {
     vertical-align: middle;
+    background-color: rgb(37, 37, 37) !important;
+    color: #ffffff !important;
 }
 
 .btn-group .btn {
@@ -53,11 +79,11 @@
 
 .form-control:focus {
     border-color: #0d6efd;
-    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    border: 1px solid rgba(102, 126, 234, 0.3) !important;
+    background-color: rgba(255, 255, 255, 0.1) !important;
 }
 
 .edit-mode {
-    background-color: #fff3cd;
     border-left: 4px solid #ffc107;
 }
 
@@ -66,8 +92,8 @@
 }
 
 .btn-primary {
-    background-color: #0d6efd;
-    border-color: #0d6efd;
+    background: linear-gradient(135deg, #ff6b6b, #ffa726) !important;
+    border: #ffa726;
 }
 
 .btn-warning {

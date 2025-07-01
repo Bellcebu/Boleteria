@@ -1,30 +1,80 @@
-.ticket-btn-card {
-    cursor: pointer;
-    border: 2px solid transparent;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+.card {
+    background: rgb(37, 37, 37) !important;
+    border: none !important;
+    border-radius: 20px !important;
+    color: white !important;
 }
+
+.card-header {
+    background: linear-gradient(135deg, #667eea, #764ba2) !important;
+    color: white !important;
+    border-radius: 20px 20px 0 0 !important;
+}
+
+.bg-light {
+    background: rgba(102, 126, 234, 0.1) !important;
+    border-radius: 15px !important;
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, #ff6b6b, #ffa726) !important;
+    color: rgb(255, 255, 255);
+    border: none !important;
+    border-radius: 50px !important;
+}
+
+.btn-outline-warning {
+    border: 2px solid #ff6b6b !important;
+    color: #ff6b6b !important;
+    border-radius: 50px !important;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2) !important;
+    border: none !important;
+    border-radius: 50px !important;
+}
+
+.btn-outline-primary {
+    border: 2px solid #667eea !important;
+    color: #667eea !important;
+    border-radius: 50px !important;
+}
+
 .ticket-btn-card.available {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-    color: white;
+    background: linear-gradient(135deg, #28a745, #20c997) !important;
+    color: white !important;
 }
+
 .ticket-btn-card.sold-out {
-    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
-    color: white;
+    background: linear-gradient(135deg, #6c757d, #495057) !important;
+    color: white !important;
 }
+
 .ticket-btn-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-3px) !important;
 }
-.ticket-btn-card .badge {
-    font-size: 1rem;
-    padding: 0.5rem 0.75rem;
-    font-weight: 600;
-}
+
 .comment-form {
     display: none;
-    border: 2px dashed #007bff;
-    background-color: #f8f9fa;
-    padding: 1rem;
-    border-radius: 0.25rem;
+    border: 2px dashed #667eea !important;
+    background: rgba(102, 126, 234, 0.1) !important;
+    border-radius: 20px !important;
+}
+
+.form-control {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(102, 126, 234, 0.3) !important;
+    color: white !important;
+    border-radius: 12px !important;
+}
+
+.dropdown-menu {
+    background: rgb(37, 37, 37) !important;
+    border: 1px solid rgba(102, 126, 234, 0.3) !important;
+    border-radius: 12px !important;
+}
+
+.dropdown-item {
+    color: white !important;
 }

@@ -1,0 +1,67 @@
+.card {
+    background: rgb(37, 37, 37);
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.card-header {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 2rem;
+    border-bottom: none;
+}
+
+.card-header h3 {
+    margin: 0;
+    font-weight: 700;
+}
+
+.card-body {
+    padding: 2rem;
+    color: white;
+}
+
+.form-control {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    border-radius: 12px;
+    color: white;
+    padding: 0.75rem;
+}
+
+.form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    color: white;
+}
+
+.btn-outline-primary {
+    border: 1px solid #667eea;
+    color: #667eea;
+    border-radius: 12px;
+    padding: 0.75rem 1.5rem;
+}
+
+.btn-outline-primary:hover {
+    background: #667eea;
+    color: white;
+}
+
+.border.rounded {
+    background: rgba(102, 126, 234, 0.1);
+    border: 2px solid rgba(102, 126, 234, 0.3) !important;
+    border-radius: 20px !important;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #28a745, #20c997) !important;
+    border: none !important;
+    border-radius: 50px !important;
+    padding: 1rem 2rem !important;
+    font-weight: 700 !important;
+}
+
+.btn-success:hover {
+    transform: translateY(-2px) !important;
+}

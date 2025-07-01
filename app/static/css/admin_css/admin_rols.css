@@ -1,6 +1,7 @@
 .card {
     border: none;
     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    background-color: rgb(37, 37, 37) !important;
     transition: all 0.3s ease;
 }
 
@@ -9,18 +10,37 @@
 }
 
 .card-header {
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #dee2e6;
+    background-color: rgb(37, 37, 37);
+    color: #ffffff;
+    background: linear-gradient(135deg, #ff6b6b, #ffa726) !important;
+}
+
+.form-control{
+    background-color: rgb(37, 37, 37) !important;
+    color: #ffffff;
+}
+
+.form-control::placeholder {
+    color: white !important;
+}
+
+.form-label{
+    color: #ffffff;
+}
+.text-muted{
+    color: #ffffff !important;
 }
 
 .table th {
-    background-color: #f8f9fa;
+    background-color: rgb(37, 37, 37) !important;
     border-top: none;
     font-weight: 600;
-    color: #495057;
+    color: #fdfeff;
 }
 
 .table td {
+    background-color: rgb(37, 37, 37) !important;
+    color: #ffffff;
     vertical-align: middle;
 }
 

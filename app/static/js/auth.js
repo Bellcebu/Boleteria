@@ -1,38 +1,30 @@
 document.addEventListener("DOMContentLoaded", function () {
-  const goRight = document.getElementById("goRight");
-  const goLeft = document.getElementById("goLeft");
-  const slideBox = document.getElementById("slideBox");
-  const topLayer = document.querySelector(".topLayer");
+    const goRight = document.getElementById("goRight");
+    const goLeft = document.getElementById("goLeft");
+    const slideBox = document.getElementById("slideBox");
+    const topLayer = document.querySelector(".topLayer");
   
- 
-  function showLogin() {
-    slideBox.dataset.activeForm = "login";
-    slideBox.style.marginLeft = "0";
-    topLayer.style.marginLeft = "100%";
-    }
-
-function showSignup() {
-    slideBox.dataset.activeForm = "signup";
-    const marginLeft = window.innerWidth > 769 ? "50%" : "20%";
-    slideBox.style.marginLeft = marginLeft;
-    topLayer.style.marginLeft = "0";
+    function showLogin() {
+      slideBox.dataset.activeForm = "login";
+      slideBox.style.marginLeft = window.innerWidth <= 768 ? "20%" : "0";
+      topLayer.style.marginLeft = "100%";
     }
   
-  const activeForm = slideBox?.dataset.activeForm;
-  if (activeForm === "signup") {
-      showSignup();
-  } else {
-      showLogin(); 
-  }
-  
-  goRight?.addEventListener("click", showLogin);
-  goLeft?.addEventListener("click", showSignup);
-  
+    function showSignup() {
+      slideBox.dataset.activeForm = "signup";
+      slideBox.style.marginLeft = window.innerWidth <= 768 ? "20%" : "50%";
+      topLayer.style.marginLeft = "0";
+    }
 
-  window.addEventListener("resize", function() {
-      if (slideBox.dataset.activeForm === "signup") {
-          const marginLeft = window.innerWidth > 769 ? "50%" : "20%";
-          slideBox.style.marginLeft = marginLeft;
+    goRight?.addEventListener("click", showLogin);
+    goLeft?.addEventListener("click", showSignup);
+  
+    window.addEventListener("resize", function() {
+      const activeForm = slideBox.dataset.activeForm;
+      if (activeForm === "signup") {
+        slideBox.style.marginLeft = window.innerWidth <= 768 ? "20%" : "50%";
+      } else {
+        slideBox.style.marginLeft = window.innerWidth <= 768 ? "20%" : "0";
       }
+    });
   });
-});

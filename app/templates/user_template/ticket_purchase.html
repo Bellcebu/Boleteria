@@ -1,6 +1,10 @@
 {% extends 'base/base.html' %}
 {% load static %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/user_css/ticket_purchase.css' %}">
+{% endblock %}
+
 {% block content %}
 <div class="container mt-5" style="padding-top: 60px;">
     <div class="row justify-content-center">
@@ -52,7 +56,6 @@
     </div>
 </div>
 
-<!-- EXACTAMENTE TUS DATOS, SIN CAMBIOS -->
 <script>
 window.TICKET_DATA = {
     UNIT_PRICE: parseFloat('{{ ticket_tier.price }}'),
